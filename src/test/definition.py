@@ -34,7 +34,7 @@ def pickleAndReloadDefinition(path, definition):
 
         filesToDelete.append(path)
 
-        DefinitionLibraryModule.loadDefinitionFromFile(path)
+        DefinitionLibraryModule.loadDefinitionFromFullFilePath(path)
     except Exception, e:
         logging.error("errored with msg >> %s" % e)
         pass
@@ -56,7 +56,9 @@ def createWordCountDefinition():
     row.setColumn('target', 'output file')
 
     
-    command = ['%s/resources/testdata/TestExecute/wordcount.py' % POMSET_ROOT]
+    # command = ['%s/resources/testdata/TestExecute/wordcount.py' % POMSET_ROOT]
+    command = POMSET_ROOT.split(os.path.sep) + ['resources', 'testdata',
+               'TestExecute', 'wordcount.py']
     executable = TaskCommandModule.Executable()
     executable.stageable(True)
     executable.path(command)
@@ -90,7 +92,8 @@ def createWordCountReduceDefinition():
     row.setColumn('source', 'input files')
     row.setColumn('target', 'output file')
     
-    command = ['%s/resources/testdata/TestExecute/wordcount_reduce.py' % POMSET_ROOT]
+    command = POMSET_ROOT.split(os.path.sep) + ['resources', 'testdata',
+               'TestExecute', 'wordcount_reduce.py']
     executable = TaskCommandModule.Executable()
     executable.stageable(True)
     executable.path(command)

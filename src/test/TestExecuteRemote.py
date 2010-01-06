@@ -35,22 +35,22 @@ def loadCredentials():
     configFilePath = '%s/.pomsets/config' % user.home
     with open(configFilePath) as f:
 
-	config = ConfigModule.load(f)
-	return config['remote execute credentials']
+        config = ConfigModule.load(f)
+        return config['remote execute credentials']
 
     raise NotImplemented(
         'could not read credentials from config file %s' % configFilePath)
-    
-    
+
+
 def getShell():
-    
+
     shell = ShellModule.SecureShell()
     # set the hostname, user, and keyfile
-    
+
     credentials = loadCredentials()
 
     credential = credentials[0]
-    
+
     hostname = credential['hostname']
     user = credential['user']
     keyfile = credential['keyfile']
@@ -69,7 +69,7 @@ class TestConnection(unittest.TestCase):
     def testConnect(self):
 
         shell = getShell()
-        
+
         shell.establishConnection()
 
         shell.disconnect()
@@ -131,7 +131,7 @@ class TestCase2(BaseModule.TestCase2):
 
     def createExecuteEnvironment(self):
         return self.shell
-    
+
     # END class TestCase2
     pass
 
@@ -216,7 +216,7 @@ class TestCase9(BaseModule.TestCase9):
 
     def createExecuteEnvironment(self):
         return self.shell
-    
+
     # END class TestCase9
     pass
 
@@ -276,7 +276,7 @@ class TestParameterSweep1(BaseModule.TestParameterSweep1):
 class TestParameterSweep2(BaseModule.TestParameterSweep2):
 
     BASE_DIR = os.path.sep + os.path.join('tmp', 'TestExecuteRemote', 'TestParameterSweep2')
-    
+
     def removeFile(self, file):
         try:
             self.fs.remove(file)
@@ -290,8 +290,8 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
         except IOError:
             return False
         return True
-    
-    
+
+
     def setUp(self):
 
         # TODO:
@@ -299,59 +299,61 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
 
         self.shell = getShell()
         self.shell.establishConnection()
-        
+
         self.fs = self.shell.getFS()	
-	
+
         BaseModule.TestParameterSweep2.setUp(self)
-        
-	self.stageFiles()
-	return
-    
-    
+
+        self.stageFiles()
+        return
+
+
     def stageFiles(self):
-	pathParts = TestParameterSweep2.BASE_DIR.split(os.path.sep)[2:]
-	# assumes /tmp is already created
-	currentPath = os.path.sep + 'tmp'
-	for part in pathParts:
-	    currentPath = os.path.join(currentPath, part)
-	    self.fs.mkdir(currentPath)
-	
+        pathParts = TestParameterSweep2.BASE_DIR.split(os.path.sep)[2:]
+        # assumes /tmp is already created
+        currentPath = os.path.sep + 'tmp'
+        for part in pathParts:
+            currentPath = os.path.join(currentPath, part)
+            if self.fileExists(currentPath):
+                continue
+            self.fs.mkdir(currentPath)
+
         inputFilesRemote = [
             os.path.join(x, y)
             for x,y in zip(
-	        [TestParameterSweep2.BASE_DIR]*len(BaseModule.TestParameterSweep2.INPUT_FILES), 
-	        BaseModule.TestParameterSweep2.INPUT_FILES)
+                [TestParameterSweep2.BASE_DIR]*len(BaseModule.TestParameterSweep2.INPUT_FILES), 
+                BaseModule.TestParameterSweep2.INPUT_FILES)
         ]
-	for localFile, remoteFile in zip(self.inputFiles, inputFilesRemote):
-	    self.fs.put(localFile, remoteFile)
-	self.inputFiles = inputFilesRemote
-	
+        for localFile, remoteFile in zip(self.inputFiles, inputFilesRemote):
+            self.fs.put(localFile, remoteFile)
+        self.inputFiles = inputFilesRemote
+
         return
 
     def removeFiles(self):
 
-	# this only removed the input files
+        # this only removed the input files
         BaseModule.TestParameterSweep2.removeFiles(self)
-	
+
         for inputFile in self.inputFiles:
             self.removeFile(inputFile)
             pass
-	
-	# path to not remove
-	# assumes /tmp was already created
-	pathToKeep = os.path.sep + 'tmp'
-	currentPath = TestParameterSweep2.BASE_DIR
-	while len(currentPath) and not currentPath == pathToKeep:
-	    self.fs.rmdir(currentPath)
-	    currentPath = currentPath[:currentPath.rfind(os.path.sep)]
-	
+
+        # path to not remove
+        # assumes /tmp was already created
+        pathToKeep = os.path.sep + 'tmp'
+        currentPath = TestParameterSweep2.BASE_DIR
+        while len(currentPath) and not currentPath == pathToKeep:
+            self.fs.rmdir(currentPath)
+            currentPath = currentPath[:currentPath.rfind(os.path.sep)]
+
         return
 
     def tearDown(self):
         BaseModule.TestParameterSweep2.tearDown(self)
         self.shell.disconnect()
-	return
-    
+        return
+
     def createExecuteEnvironment(self):
         return self.shell
 
@@ -362,22 +364,22 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
 class TestParameterSweep3(BaseModule.TestParameterSweep3):
 
     BASE_DIR = os.path.sep + os.path.join('tmp', 'TestExecuteRemote', 'TestParameterSweep3')
-    
+
     def removeFile(self, file):
         try:
             self.fs.remove(file)
         except IOError:
             pass
         return
-    
+
     def fileExists(self, file):
         try:
             self.fs.open(file)
         except IOError:
             return False
         return True
-    
-    
+
+
     def setUp(self):
 
         # TODO:
@@ -385,60 +387,60 @@ class TestParameterSweep3(BaseModule.TestParameterSweep3):
 
         self.shell = getShell()
         self.shell.establishConnection()
-        
+
         self.fs = self.shell.getFS()
-        
+
         BaseModule.TestParameterSweep3.setUp(self)
-	
-	self.stageFiles()
-	return
-    
+
+        self.stageFiles()
+        return
+
     def stageFiles(self):
-	pathParts = TestParameterSweep3.BASE_DIR.split(os.path.sep)[2:]
-	# assumes /tmp is already created
-	currentPath = os.path.sep + 'tmp'
-	for part in pathParts:
-	    currentPath = os.path.join(currentPath, part)
-	    self.fs.mkdir(currentPath)
-	
+        pathParts = TestParameterSweep3.BASE_DIR.split(os.path.sep)[2:]
+        # assumes /tmp is already created
+        currentPath = os.path.sep + 'tmp'
+        for part in pathParts:
+            currentPath = os.path.join(currentPath, part)
+            self.fs.mkdir(currentPath)
+
         inputFilesRemote = [
             os.path.join(x, y) 
             for x,y in zip(
-	        [TestParameterSweep3.BASE_DIR]*len(BaseModule.TestParameterSweep3.INPUT_FILES), 
-	        BaseModule.TestParameterSweep3.INPUT_FILES)
+                [TestParameterSweep3.BASE_DIR]*len(BaseModule.TestParameterSweep3.INPUT_FILES), 
+                BaseModule.TestParameterSweep3.INPUT_FILES)
         ]
-	
-	for localFile, remoteFile in zip(self.inputFiles, inputFilesRemote):
-	    self.fs.put(localFile, remoteFile)
-	self.inputFiles = inputFilesRemote
-	
-	
+
+        for localFile, remoteFile in zip(self.inputFiles, inputFilesRemote):
+            self.fs.put(localFile, remoteFile)
+        self.inputFiles = inputFilesRemote
+
+
         return
 
     def removeFiles(self):
-	
-	# this only removed the output files
+
+        # this only removed the output files
         BaseModule.TestParameterSweep3.removeFiles(self)
-	
+
         for inputFile in self.inputFiles:
             self.removeFile(inputFile)
             pass
-	
-	# path to not remove
-	# assumes /tmp was already created
-	pathToKeep = os.path.sep + 'tmp'
-	currentPath = TestParameterSweep3.BASE_DIR
-	while len(currentPath) and not currentPath == pathToKeep:
-	    self.fs.rmdir(currentPath)
-	    currentPath = currentPath[:currentPath.rfind(os.path.sep)]
-	    
+
+        # path to not remove
+        # assumes /tmp was already created
+        pathToKeep = os.path.sep + 'tmp'
+        currentPath = TestParameterSweep3.BASE_DIR
+        while len(currentPath) and not currentPath == pathToKeep:
+            self.fs.rmdir(currentPath)
+            currentPath = currentPath[:currentPath.rfind(os.path.sep)]
+
         return
 
     def tearDown(self):
         BaseModule.TestParameterSweep3.tearDown(self)
         self.shell.disconnect()
-	return
-    
+        return
+
     def createExecuteEnvironment(self):
         return self.shell
 
@@ -458,19 +460,19 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
         except IOError:
             pass
         return
-    
+
     def fileExists(self, file):
         try:
             self.fs.open(file)
         except IOError:
             return False
         return True
-    
+
     def setUp(self):
 
         self.shell = getShell()
         self.shell.establishConnection()
-        
+
         self.fs = self.shell.getFS()
 
         BaseModule.TestParameterSweep4.setUp(self)
@@ -479,18 +481,18 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
 
 
     def stageFiles(self):
-	pathParts = TestParameterSweep4.BASE_DIR.split(os.path.sep)[2:]
-	# assumes /tmp is already created
-	currentPath = os.path.sep + 'tmp'
-	for part in pathParts:
-	    currentPath = os.path.join(currentPath, part)
-	    self.fs.mkdir(currentPath)
-	
+        pathParts = TestParameterSweep4.BASE_DIR.split(os.path.sep)[2:]
+        # assumes /tmp is already created
+        currentPath = os.path.sep + 'tmp'
+        for part in pathParts:
+            currentPath = os.path.join(currentPath, part)
+            self.fs.mkdir(currentPath)
+
         inputFilesRemote = [
             os.path.join(x, y)
             for x,y in zip(
-	        [TestParameterSweep4.BASE_DIR]*len(BaseModule.TestParameterSweep4.INPUT_FILES), 
-	        BaseModule.TestParameterSweep4.INPUT_FILES)
+                [TestParameterSweep4.BASE_DIR]*len(BaseModule.TestParameterSweep4.INPUT_FILES), 
+                BaseModule.TestParameterSweep4.INPUT_FILES)
         ]
         self.intermediateFiles = [
             os.path.join(x, y)
@@ -498,43 +500,43 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
                            TestParameterSweep4.INTERMEDIATE_FILES)
         ]
 
-	
-	for localFile, remoteFile in zip(self.inputFiles, inputFilesRemote):
-	    self.fs.put(localFile, remoteFile)
-	self.inputFiles = inputFilesRemote
-	
-	
+
+        for localFile, remoteFile in zip(self.inputFiles, inputFilesRemote):
+            self.fs.put(localFile, remoteFile)
+        self.inputFiles = inputFilesRemote
+
+
         return
 
     def removeFiles(self):
-	
-	# this only removed the output files
+
+        # this only removed the output files
         BaseModule.TestParameterSweep4.removeFiles(self)
-	
+
         for inputFile in self.inputFiles:
             self.removeFile(inputFile)
             pass
-	
-	# path to not remove
-	# assumes /tmp was already created
-	pathToKeep = os.path.sep + 'tmp'
-	currentPath = TestParameterSweep4.BASE_DIR
-	while len(currentPath) and not currentPath == pathToKeep:
-	    self.fs.rmdir(currentPath)
-	    currentPath = currentPath[:currentPath.rfind(os.path.sep)]
-	    
+
+        # path to not remove
+        # assumes /tmp was already created
+        pathToKeep = os.path.sep + 'tmp'
+        currentPath = TestParameterSweep4.BASE_DIR
+        while len(currentPath) and not currentPath == pathToKeep:
+            self.fs.rmdir(currentPath)
+            currentPath = currentPath[:currentPath.rfind(os.path.sep)]
+
         return
 
     def tearDown(self):
         BaseModule.TestParameterSweep4.tearDown(self)
         self.shell.disconnect()
-	return
-    
-    
-    
+        return
+
+
+
     def createExecuteEnvironment(self):
         return self.shell
-    
+
     # END class TestParameterSweep4
     pass
 
@@ -545,6 +547,7 @@ def main():
     util.configLogging()
 
     suite = unittest.TestSuite()
+
 
     suite.addTest(unittest.makeSuite(TestConnection, 'test'))
     suite.addTest(unittest.makeSuite(TestCase1, 'test'))

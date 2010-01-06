@@ -1,5 +1,6 @@
 import copy
 import logging
+import os
 import threadpool
 
 import cloudpool.task as TaskModule
@@ -641,7 +642,9 @@ class AtomicTask(Task):
         executable = self.definition().executable()
 
         # if executable needs to be staged
-
+        if not executable.stageable():
+            return
+        
         request = self.workRequest()
         shell = request.kwds['execute environment']
         fs = shell.getFS()

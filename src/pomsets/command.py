@@ -57,12 +57,11 @@ def buildCommandFunction_default(task):
 
 def buildCommandFunction_commandlineArgs(task):
 
-    
-    #command = task.definition().executable().command() + \
-    command = task.definition().executable().path() + \
+    command = [os.path.sep.join(task.definition().executable().path())] + \
             task.definition().executable().staticArgs() + \
             buildCommandFunction_commandlineArgsOnly(task)
     
+    execPath = task.definition().executable().path()
 
     return command
 
