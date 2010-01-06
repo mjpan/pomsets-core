@@ -1,0 +1,13 @@
+export APP_ROOT=$PWD
+
+export PYPATTERNS_ROOT=$APP_ROOT
+export PYPATTERNS_HOME=${PYPATTERNS_ROOT}/pypatterns/src
+
+export CLOUDPOOL_ROOT=$APP_ROOT
+export CLOUDPOOL_HOME=${CLOUDPOOL_ROOT}/cloudpool/src
+
+export CURRYPY_ROOT=$APP_ROOT
+export CURRYPY_HOME=${CURRYPY_ROOT}/currypy/src
+
+export POMSETS_ROOT=$APP_ROOT
+export POMSETS_HOME=${POMSETS_ROOT}/pomsets/src

@@ -1,0 +1,6 @@
+
+
+class DefinitionWriter(object):
+    pass
+
+
