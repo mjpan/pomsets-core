@@ -12,23 +12,15 @@ import util
 util.setPythonPath()
 POMSET_ROOT = util.getPomsetRoot()
 
-"""
-APP_ROOT = os.getenv('APP_ROOT')
-sys.path.insert(0, '%s/pypatterns/src' % APP_ROOT)
-sys.path.insert(0, '%s/currypy/src' % APP_ROOT)
-sys.path.insert(0, '%s/cloudpool/src' % APP_ROOT)
-
-POMSET_ROOT = "%s/pomsets" % APP_ROOT
-sys.path.insert(0, '%s/src' % POMSET_ROOT)
-"""
 
 import currypy
 import pypatterns.command as CommandPatternModule
+import pypatterns.filter as FilterModule
+import pypatterns.relational as RelationalModule
 
 import cloudpool.shell as ShellModule
 
 import pomsets.automaton as AutomatonModule
-import pypatterns.filter as FilterModule
 
 import pomsets.command as TaskCommandModule
 import pomsets.definition as DefinitionModule
@@ -40,9 +32,11 @@ import test.definition as TestDefinitionModule
 import test.generate_library as GenerateLibraryModule
 
 
+
+
 def runBootstrapLoader(automaton, library):
-    
-    definition = library.definitions()[GenerateLibraryModule.ID_BOOTSTRAPLOADER]
+
+    definition = library.getBootstrapLoader()
     
     task = TaskModule.CompositeTask()
     task.definition(definition)
@@ -107,15 +101,29 @@ class TestBase(unittest.TestCase):
     def testLoadBootstrapLoader(self):
         library = self.initializeLibrary()
         
-        loadedDefinitions = library.definitions()
+        loadedDefinitionTable = library.definitionTable()
         
-        self.assertEqual(2, len(loadedDefinitions))
+        self.assertEqual(2, loadedDefinitionTable.rowCount())
         
-        self.assertTrue(GenerateLibraryModule.ID_BOOTSTRAPLOADER in loadedDefinitions)
-        self.assertTrue(GenerateLibraryModule.ID_LOADLIBRARYDEFINITION in loadedDefinitions)
+        for definitionId, expectedValue in [
+            (DefinitionLibraryModule.ID_BOOTSTRAPLOADER, True),
+            (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
+            (GenerateLibraryModule.ID_WORDCOUNT_REDUCE, False),
+            (GenerateLibraryModule.ID_WORDCOUNT, False)]:
+            
+            filter = RelationalModule.ColumnValueFilter(
+                'definition',
+                FilterModule.IdFilter(definitionId))
+            self.assertEquals(library.hasDefinition(filter), expectedValue)
+            pass
+            
         
-        self.assertTrue(all(x.isLibraryDefinition() 
-                            for x in loadedDefinitions.values()))
+        
+        filter = FilterModule.TRUE_FILTER
+        allDefinitions = RelationalModule.Table.reduceRetrieve(
+            loadedDefinitionTable,
+            filter, ['definition'], [])
+        self.assertTrue(all(x.isLibraryDefinition() for x in allDefinitions))
         
         return
     
@@ -153,25 +161,44 @@ class TestBootstrapLoader(unittest.TestCase):
             
         
         library = self.initializeLibrary()
+
+        loadedDefinitionTable = library.definitionTable()
         
-        definitions = library.definitions()
-        self.assertTrue(len(definitions) is 2)
-        self.assertTrue(GenerateLibraryModule.ID_BOOTSTRAPLOADER in definitions)
-        self.assertTrue(GenerateLibraryModule.ID_LOADLIBRARYDEFINITION in definitions)
-        self.assertFalse(GenerateLibraryModule.ID_WORDCOUNT_REDUCE in definitions)
-        self.assertFalse(GenerateLibraryModule.ID_WORDCOUNT in definitions)
+        self.assertEqual(2, loadedDefinitionTable.rowCount())
+
+        for definitionId, expectedValue in [
+            (DefinitionLibraryModule.ID_BOOTSTRAPLOADER, True),
+            (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
+            (GenerateLibraryModule.ID_WORDCOUNT_REDUCE, False),
+            (GenerateLibraryModule.ID_WORDCOUNT, False)]:
+            
+            filter = RelationalModule.ColumnValueFilter(
+                'definition',
+                FilterModule.IdFilter(definitionId))
+            self.assertEquals(library.hasDefinition(filter), expectedValue)
+        
+        
+        
+        
         
         runBootstrapLoader(self.automaton, library)
-        
-        definitions = library.definitions()
-        self.assertTrue(len(definitions) is 4)
-        self.assertTrue(GenerateLibraryModule.ID_BOOTSTRAPLOADER in definitions)
-        self.assertTrue(GenerateLibraryModule.ID_LOADLIBRARYDEFINITION in definitions)
-        self.assertTrue(GenerateLibraryModule.ID_WORDCOUNT_REDUCE in definitions)
-        self.assertTrue(GenerateLibraryModule.ID_WORDCOUNT in definitions)
-        
+
+        self.assertEqual(4, loadedDefinitionTable.rowCount())
+        for definitionId, expectedValue in [
+            (DefinitionLibraryModule.ID_BOOTSTRAPLOADER, True),
+            (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
+            (GenerateLibraryModule.ID_WORDCOUNT_REDUCE, True),
+            (GenerateLibraryModule.ID_WORDCOUNT, True)]:
+            
+            filter = RelationalModule.ColumnValueFilter(
+                'definition',
+                FilterModule.IdFilter(definitionId))
+            self.assertEquals(library.hasDefinition(filter), expectedValue)
+
+            
         return
-    
+
+
     
     def testPickleAndLoad(self):
         """
@@ -189,22 +216,25 @@ class TestBootstrapLoader(unittest.TestCase):
 
         runBootstrapLoader(self.automaton, library)
         
-        loadedDefinitions = library.definitions()
-        
         # create the pomset, add a node
         # and have that node reference a library definition
+        filter = RelationalModule.ColumnValueFilter(
+            'definition',
+            FilterModule.IdFilter(GenerateLibraryModule.ID_WORDCOUNT))
+        definitionToReference = library.getDefinition(filter)
         compositeDefinition = DefinitionModule.getNewNestDefinition()
         mapperNode = compositeDefinition.createNode(id='mapper')
-        mapperNode.definitionToReference(loadedDefinitions[GenerateLibraryModule.ID_WORDCOUNT])
+        mapperNode.definitionToReference(definitionToReference)
 
         # pickle the pomset
         # unpickle the pomset
         definition = TestDefinitionModule.pickleAndReloadDefinition(
-            '/tmp/foo.pomset',
+            os.path.join('tmp', 'foo.pomset'),
             compositeDefinition
         )
         
-        assert definition.nodes()[0].definitionToReference() is loadedDefinitions[GenerateLibraryModule.ID_WORDCOUNT]
+        definitionToReference = library.getDefinition(filter)
+        assert definition.nodes()[0].definitionToReference() is definitionToReference
         
         return
 
@@ -251,20 +281,29 @@ class TestLoadAcrossSessions(unittest.TestCase):
         
         runBootstrapLoader(self.automaton, library)
         
-        loadedDefinitions = library.definitions()
+        # loadedDefinitions = library.definitions()
+
         
+        # TODO:
+        # implement something that will re-generate
+        # the pomset for the test
         definition = DefinitionLibraryModule.loadDefinitionFromFullFilePath(
             os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'foo.pomset'))
 
         
         # at this point, the definitions are different
-        assert definition.nodes()[0].definitionToReference() is not loadedDefinitions[GenerateLibraryModule.ID_WORDCOUNT]
+        filter = RelationalModule.ColumnValueFilter(
+            'definition',
+            FilterModule.IdFilter(GenerateLibraryModule.ID_WORDCOUNT))
+        libraryDefinition = library.getDefinition(filter)
+
+        assert definition.nodes()[0].definitionToReference() is not libraryDefinition
         
         # update the references
         library.updateWithLibraryDefinitions(definition)
         
         # now, the definitions should be the same
-        assert definition.nodes()[0].definitionToReference() is loadedDefinitions[GenerateLibraryModule.ID_WORDCOUNT]
+        assert definition.nodes()[0].definitionToReference() is libraryDefinition
         
         return
     

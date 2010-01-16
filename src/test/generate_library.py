@@ -6,6 +6,7 @@ import util
 util.setPythonPath()
 
 import pomsets.definition as DefinitionModule
+import pomsets.library as LibraryModule
 import pomsets.parameter as ParameterModule
 
 import test.definition as DefinitionTestModule
@@ -13,22 +14,21 @@ import test.definition as DefinitionTestModule
 
 ID_WORDCOUNT = 'word count::8613fe86-e7fc-4487-b4d2-0989706f8825'
 ID_WORDCOUNT_REDUCE = 'word count reducer::08979d5f-6c0d-43b7-9206-dfe69eae6c26'
-ID_LOADLIBRARYDEFINITION = 'load library definition::bb028375-bbd5-43ec-b6c3-4955c062063f'
-ID_BOOTSTRAPLOADER = 'library bootstrap loader::751fe366-1448-4db3-9db4-944075de7a5b'
 
 def main(argv=None):
     
     if argv is None:
         argv = []
 
-    if len(argv) < 1:
+    if len(argv) < 2:
         raise ValueError('need to specify directory to output the definitions')
         
     outputDir = argv[1]
     
     defToLoadDef = DefinitionModule.AtomicDefinition()
     defToLoadDef.commandBuilderType('python eval')
-    defToLoadDef.id(ID_LOADLIBRARYDEFINITION)
+    defToLoadDef.id(LibraryModule.ID_LOADLIBRARYDEFINITION)
+    defToLoadDef.name('load library definition')
     # need a command builder to call the loadPomset function
     # need a python eval environment to execute the output of commandbuilder
     parameter = ParameterModule.DataParameter(
@@ -48,8 +48,7 @@ def main(argv=None):
     wcDefinitionPath = 'wordcount.pomset'
     wcDefinition.url(wcDefinitionPath)
     DefinitionTestModule.pickleDefinition(
-        wcDefinitionPath, wcDefinition)
-    # definitionsToLoad.append('wordcount.pomset')
+        os.path.join(outputDir, wcDefinitionPath), wcDefinition)
     definitionsToLoad.append(wcDefinition)
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
@@ -57,8 +56,7 @@ def main(argv=None):
     wcrDefinitionPath = 'wordcount_reduce.pomset'
     wcrDefinition.url(wcrDefinitionPath)
     DefinitionTestModule.pickleDefinition(
-        wcrDefinitionPath, wcrDefinition)
-    # definitionsToLoad.append('wordcount_reduce.pomset')
+        os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
     definitionsToLoad.append(wcrDefinition)
     
     # now create a load library definitions pomset
@@ -70,7 +68,8 @@ def main(argv=None):
         loadNode.name('load %s' % definitionToLoad.url())
         loadNode.setParameterBinding('pomset url', definitionToLoad.url())
         pass
-    defToLoadDefs.id(ID_BOOTSTRAPLOADER)
+    defToLoadDefs.id(LibraryModule.ID_BOOTSTRAPLOADER)
+    defToLoadDefs.name('bootstrap pomsets loader')
     DefinitionTestModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     

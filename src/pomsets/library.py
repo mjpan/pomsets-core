@@ -6,9 +6,15 @@ import pickle
 import cloudpool.environment as EnvironmentModule
 import cloudpool.task as TaskModule
 
-import pomsets.resource as ResourceModule
+import pypatterns.filter as FilterModule
+import pypatterns.relational as RelationalModule
 
 import pomsets.definition as DefinitionModule
+import pomsets.resource as ResourceModule
+
+
+ID_LOADLIBRARYDEFINITION = 'load library definition::bb028375-bbd5-43ec-b6c3-4955c062063f'
+ID_BOOTSTRAPLOADER = 'library bootstrap loader::751fe366-1448-4db3-9db4-944075de7a5b'
 
 
 def loadDefinitionFromFullFilePath(path):
@@ -87,7 +93,7 @@ class Library(ResourceModule.Struct):
     
     ATTRIBUTES = [
         'hasLoadedDefinitions', 
-        'definitions',
+        'definitionTable',
         'bootstrapLoaderDefinitionsDir',
         'bootstrapLoaderDefinitions'
     ]
@@ -95,8 +101,14 @@ class Library(ResourceModule.Struct):
     def __init__(self):
         ResourceModule.Struct.__init__(self)
         self.hasLoadedDefinitions(False)
-        self.definitions({})
         self.bootstrapLoaderDefinitions({})
+        
+        # self.definitions({})
+        table = RelationalModule.createTable(
+            'definitions', 
+            ['definition', 'id', 'name'])
+        self.definitionTable(table)
+
         return
     
     def updateWithLibraryDefinitions(self, definition, recursive=True):
@@ -106,7 +118,7 @@ class Library(ResourceModule.Struct):
         if not isinstance(definition, DefinitionModule.CompositeDefinition):
             return
         
-        libraryDefinitions = self.definitions()
+        # libraryDefinitions = self.definitions()
         
         for referenceDefinition in definition.nodes():
             if not referenceDefinition.referencesLibraryDefinition():
@@ -114,9 +126,19 @@ class Library(ResourceModule.Struct):
             
             referencedDefinition = referenceDefinition.definitionToReference()
             libraryDefinitionId = referencedDefinition.id()
-            if libraryDefinitionId in libraryDefinitions:
-                referenceDefinition.definitionToReference(
-                    libraryDefinitions[libraryDefinitionId])
+            
+            filter = RelationalModule.ColumnValueFilter(
+                'definition',
+                FilterModule.IdFilter(libraryDefinitionId))
+            
+            matchingDefinitions = RelationalModule.Table.reduceRetrieve(
+                self.definitionTable(), filter, ['definition'], [])
+            # if libraryDefinitionId in libraryDefinitions:
+            #    referenceDefinition.definitionToReference(
+            #        libraryDefinitions[libraryDefinitionId])
+            if len(matchingDefinitions) is not 0:
+                referencedDefinition.definitionToReference(
+                    matchingDefinitions[0])
             elif recursive and referencedDefinition is not definition:
                 # recursively traverse and update with library definitions
                 # but do so only if the reference is not recursive
@@ -134,7 +156,8 @@ class Library(ResourceModule.Struct):
     def loadDefinitionFromFullFilePath(self, fullPath):
         definition = loadDefinitionFromFullFilePath(fullPath)
         definition.isLibraryDefinition(True)
-        self.definitions()[definition.id()] = definition
+        # self.definitions()[definition.id()] = definition
+        self.addDefinition(definition)
         self.updateWithLibraryDefinitions(self, definition)
         return definition
     
@@ -148,6 +171,23 @@ class Library(ResourceModule.Struct):
             self.bootstrapLoaderDefinitions()[bootstrapLoaderFile] = definition
             pass
         return
+
+    def addDefinition(self, definition):
+        row = self.definitionTable().addRow()
+        row.setColumn('id', definition.id())
+        row.setColumn('name', definition.name())
+        row.setColumn('definition', definition)
+        return
+    
+    def hasDefinition(self, filter):
+        matchingDefinitions = RelationalModule.Table.reduceRetrieve(
+            self.definitionTable(), filter, ['definition'], [])
+        return len(matchingDefinitions) is not 0
+    
+    def getDefinition(self, filter):
+        matchingDefinitions = RelationalModule.Table.reduceRetrieve(
+            self.definitionTable(), filter, ['definition'], [])
+        return matchingDefinitions[0]
     
     """
     def loadDefinitions(self):
@@ -177,5 +217,13 @@ class Library(ResourceModule.Struct):
         
         return
     
+    def getBootstrapLoader(self):
+        filter = RelationalModule.ColumnValueFilter(
+            'definition',
+            FilterModule.IdFilter(ID_BOOTSTRAPLOADER))
+        definition = self.getDefinition(filter)
+        return definition
+    
     # END class Library
     pass
+

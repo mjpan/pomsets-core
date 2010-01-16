@@ -78,6 +78,7 @@ def createWordCountDefinition():
         parameterOrderings = parameterOrdering,
         executable = executable
     )
+    definition.name('wordcount mapper')
     
     return definition
 
@@ -119,6 +120,9 @@ def createWordCountReduceDefinition():
         parameterOrderings = parameterOrdering,
         executable = executable
     )
+    
+    definition.name('wordcount reducer')
+    
     return definition
 
 DEFINITION_WORDCOUNT_REDUCE = createWordCountReduceDefinition()
@@ -168,9 +172,10 @@ def createPomsetContainingBranchDefinition():
     
     branchNode = compositeDefinition.createNode(id='branch')
     branchNode.definitionToReference(branchDefinition)
-    
+
     return compositeDefinition
-    
+
+
 def bindBranchDefinitionParameters(definition):
     nodes = [x for x in definition.nodes() if x.id() == 'branch']
     branchNode = nodes[0]
@@ -272,6 +277,8 @@ def createPomsetContainingParameterSweep():
         mapperNode, 'temporal output',
         reducerNode, 'temporal input',
     )
+    
+    compositeDefinition.name('basic map-reduce')
     
     return compositeDefinition
 
