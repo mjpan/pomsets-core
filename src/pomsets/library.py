@@ -106,7 +106,7 @@ class Library(ResourceModule.Struct):
         # self.definitions({})
         table = RelationalModule.createTable(
             'definitions', 
-            ['definition', 'id', 'name'])
+            ['definition', 'id'])
         self.definitionTable(table)
 
         return
@@ -175,7 +175,6 @@ class Library(ResourceModule.Struct):
     def addDefinition(self, definition):
         row = self.definitionTable().addRow()
         row.setColumn('id', definition.id())
-        row.setColumn('name', definition.name())
         row.setColumn('definition', definition)
         return
     

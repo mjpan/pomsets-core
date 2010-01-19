@@ -47,11 +47,11 @@ class Definition(ResourceModule.Struct):
     
     ATTRIBUTES = [
         'id',
-        'name',
         'parametersTable',
         'isLibraryDefinition',
         'url',
-        'description'
+        'description',
+        'name'
     ]
 
     SYMBOL_INPUT = 'input'
@@ -73,6 +73,7 @@ class Definition(ResourceModule.Struct):
         self.initializeParameters()
         self.isLibraryDefinition(False)
         return
+    
     
     def addParameter(self, parameter, id=None):
         
@@ -662,6 +663,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         'parameterSweepGroups',
         'guiOptions',
         'parameterStagingMap',
+        'comment'
     ]
     
     def __init__(self, id=None, graph=None):
