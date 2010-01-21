@@ -293,12 +293,19 @@ def bindParameterSweepDefinitionParameters(definition):
 
     nodes = [x for x in definition.nodes() if x.id() == 'reducer']
     reducerNode = nodes[0]
-    
-    mapperNode.setParameterBinding('input file', 
-                                   ['/tmp/text1', '/tmp/text2'])
-    definition.setParameterBinding('intermediate file', 
-                                   ['/tmp/count1', '/tmp/count2'])
-    reducerNode.setParameterBinding('output file', ['/tmp/count_all'])
+
+    (dataNode, parameterToEdit) = \
+     mapperNode.getParameterToEdit('input file')
+    dataNode.setParameterBinding(parameterToEdit,
+                                 ['/tmp/text1', '/tmp/text2'])
+
+    (dataNode, parameterToEdit) = \
+     mapperNode.getParameterToEdit('output file')
+    dataNode.setParameterBinding(parameterToEdit,
+                                 ['/tmp/count1', '/tmp/count2'])
+    (dataNode, parameterToEdit) = \
+     reducerNode.getParameterToEdit('output file')
+    dataNode.setParameterBinding(parameterToEdit, ['/tmp/count_all'])
     
     # write out to a different location
     mapperNode.parameterStagingRequired('input file', True)
