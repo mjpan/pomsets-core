@@ -27,7 +27,7 @@ class ParameterBindingsHolder(ResourceModule.Struct):
         pass
 
     def setParameterBinding(self, key, value):
-        logging.debug('setting key %s values %s to %s\'s parameter bindings' % 
+        logging.debug('setting key "%s" to values "%s" to %s\'s parameter bindings' % 
                       (key, value, self))       
         self.parameterBindings()[key] = value
     

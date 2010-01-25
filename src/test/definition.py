@@ -296,16 +296,17 @@ def bindParameterSweepDefinitionParameters(definition):
 
     (dataNode, parameterToEdit) = \
      mapperNode.getParameterToEdit('input file')
-    dataNode.setParameterBinding(parameterToEdit,
+    dataNode.setParameterBinding(parameterToEdit.id(),
                                  ['/tmp/text1', '/tmp/text2'])
 
     (dataNode, parameterToEdit) = \
      mapperNode.getParameterToEdit('output file')
-    dataNode.setParameterBinding(parameterToEdit,
+    print "editing %s.%s" % (dataNode.name(), parameterToEdit)
+    dataNode.setParameterBinding(parameterToEdit.id(),
                                  ['/tmp/count1', '/tmp/count2'])
     (dataNode, parameterToEdit) = \
      reducerNode.getParameterToEdit('output file')
-    dataNode.setParameterBinding(parameterToEdit, ['/tmp/count_all'])
+    dataNode.setParameterBinding(parameterToEdit.id(), ['/tmp/count_all'])
     
     # write out to a different location
     mapperNode.parameterStagingRequired('input file', True)
