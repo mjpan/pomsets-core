@@ -31,10 +31,7 @@ def configLogging():
 
 
 def setPythonPath():
-    for key in ['PYPATTERNS_HOME',
-                'CURRYPY_HOME',
-                'CLOUDPOOL_HOME',
-                'POMSETS_HOME']:
+    for key in ['POMSETS_HOME']:
         value = os.getenv(key)
         if value is None:
             continue

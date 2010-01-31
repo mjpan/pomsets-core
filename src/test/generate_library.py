@@ -16,6 +16,8 @@ ID_WORDCOUNT = 'word count::8613fe86-e7fc-4487-b4d2-0989706f8825'
 ID_WORDCOUNT_REDUCE = 'word count reducer::08979d5f-6c0d-43b7-9206-dfe69eae6c26'
 
 def main(argv=None):
+
+    util.configLogging()
     
     if argv is None:
         argv = []
@@ -25,6 +27,8 @@ def main(argv=None):
         
     outputDir = argv[1]
     
+    definitionsToLoad = []
+
     defToLoadDef = DefinitionModule.AtomicDefinition()
     defToLoadDef.commandBuilderType('python eval')
     defToLoadDef.id(LibraryModule.ID_LOADLIBRARYDEFINITION)
@@ -41,7 +45,7 @@ def main(argv=None):
     DefinitionTestModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
     
-    definitionsToLoad = []
+    definitionsToLoad.append(defToLoadDef)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
     wcDefinition.id(ID_WORDCOUNT)
@@ -59,6 +63,7 @@ def main(argv=None):
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
     definitionsToLoad.append(wcrDefinition)
     
+    """
     # now create a load library definitions pomset
     # that will load the two wordcount pomsets
     defToLoadDefs = DefinitionModule.getNewNestDefinition()
@@ -70,6 +75,12 @@ def main(argv=None):
         pass
     defToLoadDefs.id(LibraryModule.ID_BOOTSTRAPLOADER)
     defToLoadDefs.name('bootstrap pomsets loader')
+
+    """
+    library = LibraryModule.Library()
+    map(library.addDefinition, definitionsToLoad)
+
+    defToLoadDefs = library.generateBootstrapLoaderPomset()
     DefinitionTestModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     

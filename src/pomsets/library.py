@@ -1,7 +1,9 @@
 from __future__ import with_statement
 
+import logging
 import os
 import pickle
+import uuid
 
 import cloudpool.environment as EnvironmentModule
 import cloudpool.task as TaskModule
@@ -87,8 +89,8 @@ class Path(ResourceModule.Struct):
 class Library(ResourceModule.Struct):
 
     BOOTSTRAP_LOADER_FILES = [
-        'loadLibraryDefinition.pomset',
-        'loadLibraryDefinitions.pomset'
+        (ID_LOADLIBRARYDEFINITION, 'loadLibraryDefinition.pomset'),
+        (ID_BOOTSTRAPLOADER, 'loadLibraryDefinitions.pomset')
     ]
     
     ATTRIBUTES = [
@@ -165,16 +167,35 @@ class Library(ResourceModule.Struct):
     def loadBootstrapLoaderDefinitions(self):
         
         dirPath = self.bootstrapLoaderDefinitionsDir()
-        for bootstrapLoaderFile in Library.BOOTSTRAP_LOADER_FILES:
+        if not os.path.exists(dirPath):
+            raise NotImplementedError('need to handle when bootstrap loader definitions dir does not exist')
+        
+        for definitionId, bootstrapLoaderFile in Library.BOOTSTRAP_LOADER_FILES:
             fullPath = os.path.join(dirPath, bootstrapLoaderFile)
+
+            if not os.path.exists(fullPath):
+                raise NotImplementedError('need to handle when bootstrap loader file %s does not exist')
+            
             definition = self.loadDefinitionFromFullFilePath(fullPath)
-            self.bootstrapLoaderDefinitions()[bootstrapLoaderFile] = definition
+            self.addDefinition(definition)
             pass
         return
 
     def addDefinition(self, definition):
+        definitionId = definition.id()
+        if definitionId in [ID_LOADLIBRARYDEFINITION,
+                            ID_BOOTSTRAPLOADER]:
+            logging.debug("adding definition %s to bootstrap id %s" %
+                          (definition, definitionId))
+
+            self.bootstrapLoaderDefinitions()[definitionId] = definition
+            pass
+
+        logging.debug("adding definition %s with id %s to library" % 
+                      (definition, definitionId))
+
         row = self.definitionTable().addRow()
-        row.setColumn('id', definition.id())
+        row.setColumn('id', definitionId)
         row.setColumn('definition', definition)
         return
     
@@ -222,6 +243,35 @@ class Library(ResourceModule.Struct):
             FilterModule.IdFilter(ID_BOOTSTRAPLOADER))
         definition = self.getDefinition(filter)
         return definition
+
+
+    def generateBootstrapLoaderPomset(self):
+        # now create a load library definitions pomset
+        # that will load the two wordcount pomsets
+        defToLoadDef = self.bootstrapLoaderDefinitions()[ID_LOADLIBRARYDEFINITION]
+
+        defToLoadDefs = DefinitionModule.getNewNestDefinition()
+
+        definitions = RelationalModule.Table.reduceRetrieve(
+            self.definitionTable(), FilterModule.TRUE_FILTER, 
+            ['definition'], [])
+
+        for definitionToLoad in definitions:
+            loadNode = defToLoadDefs.createNode(id=uuid.uuid4())
+            loadNode.definitionToReference(defToLoadDef)
+            loadNode.name('load %s' % definitionToLoad.url())
+            loadNode.setParameterBinding('pomset url', definitionToLoad.url())
+            pass
+        defToLoadDefs.id(ID_BOOTSTRAPLOADER)
+        defToLoadDefs.name('bootstrap pomsets loader')
+
+        return defToLoadDefs
+        
+    def saveBootstrapLoaderPomset(self):
+        #DefinitionTestModule.pickleDefinition(
+        #    os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
+        return
+
     
     # END class Library
     pass

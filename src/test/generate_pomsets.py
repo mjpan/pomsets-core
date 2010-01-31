@@ -8,6 +8,8 @@ import test.definition as DefinitionModule
 
 
 def main(argv=None):
+
+    util.configLogging()
     
     if argv is None:
         argv = []
