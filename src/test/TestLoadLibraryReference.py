@@ -76,9 +76,7 @@ def runBootstrapLoader(automaton, library):
     threadPool.putRequest(request)
     threadPool.wait()
     
-    assert not request.exception
-    
-    return
+    return request
 
     
 class TestBase(unittest.TestCase):
@@ -181,7 +179,9 @@ class TestBootstrapLoader(unittest.TestCase):
         
         
         
-        runBootstrapLoader(self.automaton, library)
+        request = runBootstrapLoader(self.automaton, library)
+        assert not request.exception
+    
 
         self.assertEqual(4, loadedDefinitionTable.rowCount())
         for definitionId, expectedValue in [
@@ -214,8 +214,9 @@ class TestBootstrapLoader(unittest.TestCase):
         # load the library definitions
         library = self.initializeLibrary()
 
-        runBootstrapLoader(self.automaton, library)
-        
+        request = runBootstrapLoader(self.automaton, library)
+        assert not request.exception
+
         # create the pomset, add a node
         # and have that node reference a library definition
         filter = RelationalModule.ColumnValueFilter(
@@ -242,6 +243,48 @@ class TestBootstrapLoader(unittest.TestCase):
     # END class TestBoostrapLoader
     pass
 
+
+class TestRecoverFromLoadFailure(unittest.TestCase):
+
+    def setUp(self):
+        # generate and/or specify the location
+        # of a bootstrap pomsets
+        # that will fail
+        return
+
+    def tearDown(self):
+        return
+
+    def testLoad1(self):
+        """
+        this should use the library in
+        resources/testdata/TestLibrary/libraryFailure1 
+        which specifies only a single pomset to load
+        That pomset is unloadable
+        """
+        # run the bootstrap loader
+        # ensure that the there's no error
+        # ensure that only the non-failed ones
+        # are in the library
+
+        return
+
+    def testLoad2(self):
+        """
+        this should use the library in
+        resources/testdata/TestLibrary/libraryFailure1 
+        which specifies only two pomsets to load
+        of which one is unloadable
+        """
+        # run the bootstrap loader
+        # ensure that the there's no error
+        # ensure that only the non-failed ones
+        # are in the library
+
+        return
+
+    # END class TestRecoverFromLoadFailure
+    pass
     
 class TestLoadAcrossSessions(unittest.TestCase):
 
@@ -279,11 +322,9 @@ class TestLoadAcrossSessions(unittest.TestCase):
     
         library = self.initializeLibrary()
         
-        runBootstrapLoader(self.automaton, library)
-        
-        # loadedDefinitions = library.definitions()
-
-        
+        request = runBootstrapLoader(self.automaton, library)
+        assert not request.exception
+            
         # TODO:
         # implement something that will re-generate
         # the pomset for the test
