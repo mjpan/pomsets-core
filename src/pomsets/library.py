@@ -252,8 +252,16 @@ class Library(ResourceModule.Struct):
 
         defToLoadDefs = DefinitionModule.getNewNestDefinition()
 
+        bootstrapLoaderFilter = RelationalModule.ColumnValueFilter(
+            'definition',
+            FilterModule.IdFilter(ID_LOADLIBRARYDEFINITION)
+        )
+        notBootstrapLoaderFilter = FilterModule.constructNotFilter()
+        notBootstrapLoaderFilter.addFilter(bootstrapLoaderFilter)
+        
         definitions = RelationalModule.Table.reduceRetrieve(
-            self.definitionTable(), FilterModule.TRUE_FILTER, 
+            self.definitionTable(), 
+            notBootstrapLoaderFilter,
             ['definition'], [])
 
         for definitionToLoad in definitions:

@@ -3,6 +3,7 @@ import sys
 
 import resource as ResourceModule
 
+import pomsets.error as ErrorModule
 
 class Automaton(ResourceModule.Struct):
 
@@ -114,7 +115,7 @@ class Automaton(ResourceModule.Struct):
         return
     
     
-    def enqueueRequest(self, request, shouldWait=True):
+    def enqueueRequest(self, request, shouldWait=True, isCritical=False):
 
         # set the execute environment of the request
         if self.executeEnvironment() is not None:
@@ -127,8 +128,9 @@ class Automaton(ResourceModule.Struct):
         if shouldWait:
             threadpool.wait()
 
-        if request.exception:
-            print "errored >> %s" % request.exception
+        if request.exception and isCritical:
+            raise ErrorModule.ExecutionError(
+                "request errored")
         
         return
 
