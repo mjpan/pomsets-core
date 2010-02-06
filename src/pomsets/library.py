@@ -32,6 +32,26 @@ def loadDefinitionFromFullFilePath(path):
     return definition
 
 
+def pickleDefinition(path, definition):
+
+    try:
+        pickleCreated = False
+        with open(path, 'w') as f:
+            pickle.dump(definition, f)
+            pickleCreated = True
+            pass
+
+        if not pickleCreated:
+            raise Exception('failed on creating pickle')
+
+    except Exception, e:
+        logging.error("errored with msg >> %s" % e)
+        pass
+
+    return
+
+
+
 class CommandBuilder(TaskModule.CommandBuilder):
 
     def buildCommand(self, task):
@@ -165,6 +185,11 @@ class Library(ResourceModule.Struct):
     
     
     def loadBootstrapLoaderDefinitions(self):
+        """
+        This loads the two bootstrapper pomsets
+        * the atomic one that loads a single pomset
+        * the composite one that specifies a bunch of pomsets to be loaded
+        """
         
         dirPath = self.bootstrapLoaderDefinitionsDir()
         if not os.path.exists(dirPath):
@@ -209,34 +234,7 @@ class Library(ResourceModule.Struct):
         matchingDefinitions = RelationalModule.Table.reduceRetrieve(
             self.definitionTable(), filter, ['definition'], [])
         return matchingDefinitions[0]
-    
-    """
-    def loadDefinitions(self):
-        if self.hasLoadedDefinitions():
-            raise ValueError('has already loaded definitions')
-        
-        self.loadBootstrapLoaderDefinitions()
-        
-        definitions = reduce(
-            list.__add__,
-            map(self.loadDefinitionsFromPathObject, self.paths()))
 
-        # set the isLibrary flag 
-        # for all the definitions that have b
-        [x.isLibraryDefinition(True) for x in definitions]
-        
-        self.definitions().update(dict([(x.id(), x) for x in definitions]))
-        
-        self.hasLoadedDefinitions(True)
-        return
-    """
-
-    
-    def buildManifestPomset(self):
-
-        
-        
-        return
     
     def getBootstrapLoader(self):
         filter = RelationalModule.ColumnValueFilter(
@@ -247,6 +245,10 @@ class Library(ResourceModule.Struct):
 
 
     def generateBootstrapLoaderPomset(self):
+        """
+        generates the composite pomset used to load
+        all the library pomsets
+        """
         # now create a load library definitions pomset
         # that will load the two wordcount pomsets
         defToLoadDef = self.bootstrapLoaderDefinitions()[ID_LOADLIBRARYDEFINITION]
@@ -278,10 +280,17 @@ class Library(ResourceModule.Struct):
         defToLoadDefs.name('bootstrap pomsets loader')
 
         return defToLoadDefs
-        
+
+    
     def saveBootstrapLoaderPomset(self):
-        #DefinitionTestModule.pickleDefinition(
-        #    os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
+        outputPath = os.path.join(
+            self.bootstrapLoaderDefinitionsDir(),
+            'loadLibraryDefinitions.pomset')
+
+        pomset = self.generateBootstrapLoaderPomset()
+        
+        pickleDefinition(outputPath, pomset)
+
         return
 
     

@@ -130,23 +130,6 @@ DEFINITION_WORDCOUNT_REDUCE = createWordCountReduceDefinition()
 
 
 
-def pickleDefinition(path, definition):
-
-    try:
-        pickleCreated = False
-        with open(path, 'w') as f:
-            pickle.dump(definition, f)
-            pickleCreated = True
-            pass
-
-        if not pickleCreated:
-            raise Exception('failed on creating pickle')
-
-    except Exception, e:
-        logging.error("errored with msg >> %s" % e)
-        pass
-
-    return
 
 def createNestDefinition():
     compositeDefinition = DefinitionModule.getNewNestDefinition()
@@ -301,7 +284,7 @@ def bindParameterSweepDefinitionParameters(definition):
 
     (dataNode, parameterToEdit) = \
      mapperNode.getParameterToEdit('output file')
-    print "editing %s.%s" % (dataNode.name(), parameterToEdit)
+
     dataNode.setParameterBinding(parameterToEdit.id(),
                                  ['/tmp/count1', '/tmp/count2'])
     (dataNode, parameterToEdit) = \

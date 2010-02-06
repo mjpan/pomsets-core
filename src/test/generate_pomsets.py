@@ -4,6 +4,8 @@ import sys
 import util
 util.setPythonPath()
 
+import pomsets.library as LibraryModule
+
 import test.definition as DefinitionModule
 
 
@@ -19,18 +21,18 @@ def main(argv=None):
     outputDir = argv[1]
     
     baseDefinition = DefinitionModule.createPomsetContainingParameterSweep()
-    DefinitionModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'mr_wordcount.pomset'), baseDefinition)
     DefinitionModule.bindParameterSweepDefinitionParameters(baseDefinition)
-    DefinitionModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'mr_wordcount_staging.pomset'), baseDefinition)
 
     
     baseDefinition = DefinitionModule.createPomsetContainingLoopDefinition()
-    DefinitionModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'loop_wordcount.pomset'), baseDefinition)
     DefinitionModule.bindLoopDefinitionParameters(baseDefinition)
-    DefinitionModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'loop_wordcount_staging.pomset'), baseDefinition)
 
     

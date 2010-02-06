@@ -73,8 +73,6 @@ def runBootstrapLoader(automaton, library, isCritical=False):
 
     task.automaton(automaton)
 
-    #threadPool.putRequest(request)
-    #threadPool.wait()
     automaton.enqueueRequest(request, shouldWait=True)
     
     return request

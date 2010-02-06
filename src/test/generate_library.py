@@ -39,7 +39,7 @@ def generateDefaultLoader(outputDir):
     definitionsToLoad = []
 
     defToLoadDef = generateBootstrapper()
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
     
     definitionsToLoad.append(defToLoadDef)
@@ -48,7 +48,7 @@ def generateDefaultLoader(outputDir):
     wcDefinition.id(ID_WORDCOUNT)
     wcDefinitionPath = 'wordcount.pomset'
     wcDefinition.url(wcDefinitionPath)
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, wcDefinitionPath), wcDefinition)
     definitionsToLoad.append(wcDefinition)
     
@@ -56,7 +56,7 @@ def generateDefaultLoader(outputDir):
     wcrDefinition.id(ID_WORDCOUNT_REDUCE)
     wcrDefinitionPath = 'wordcount_reduce.pomset'
     wcrDefinition.url(wcrDefinitionPath)
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
     definitionsToLoad.append(wcrDefinition)
     
@@ -64,7 +64,7 @@ def generateDefaultLoader(outputDir):
     map(library.addDefinition, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     
     return
@@ -74,7 +74,7 @@ def generateLoaderWithFailure1(outputDir):
     definitionsToLoad = []
 
     defToLoadDef = generateBootstrapper()
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
     
     definitionsToLoad.append(defToLoadDef)
@@ -85,7 +85,7 @@ def generateLoaderWithFailure1(outputDir):
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
     # to ensure that the loading fi
-    #DefinitionTestModule.pickleDefinition(
+    #LibraryModule.pickleDefinition(
     #    os.path.join(outputDir, wcDefinitionPath), wcDefinition)
     definitionsToLoad.append(wcDefinition)
     
@@ -93,7 +93,7 @@ def generateLoaderWithFailure1(outputDir):
     map(library.addDefinition, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     
     return
@@ -105,7 +105,7 @@ def generateLoaderWithFailure2(outputDir):
     definitionsToLoad = []
 
     defToLoadDef = generateBootstrapper()
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
     
     definitionsToLoad.append(defToLoadDef)
@@ -116,7 +116,7 @@ def generateLoaderWithFailure2(outputDir):
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
     # to ensure that the loading fi
-    #DefinitionTestModule.pickleDefinition(
+    #LibraryModule.pickleDefinition(
     #    os.path.join(outputDir, wcDefinitionPath), wcDefinition)
     definitionsToLoad.append(wcDefinition)
     
@@ -124,7 +124,7 @@ def generateLoaderWithFailure2(outputDir):
     wcrDefinition.id(ID_WORDCOUNT_REDUCE)
     wcrDefinitionPath = 'wordcount_reduce.pomset'
     wcrDefinition.url(wcrDefinitionPath)
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
     definitionsToLoad.append(wcrDefinition)
     
@@ -132,7 +132,7 @@ def generateLoaderWithFailure2(outputDir):
     map(library.addDefinition, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
-    DefinitionTestModule.pickleDefinition(
+    LibraryModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     
     return
