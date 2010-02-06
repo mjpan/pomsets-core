@@ -34,7 +34,7 @@ import test.generate_library as GenerateLibraryModule
 
 
 
-def runBootstrapLoader(automaton, library):
+def runBootstrapLoader(automaton, library, isCritical=False):
 
     definition = library.getBootstrapLoader()
     
@@ -73,30 +73,35 @@ def runBootstrapLoader(automaton, library):
 
     task.automaton(automaton)
 
-    threadPool.putRequest(request)
-    threadPool.wait()
+    #threadPool.putRequest(request)
+    #threadPool.wait()
+    automaton.enqueueRequest(request, shouldWait=True)
     
     return request
 
     
 class TestBase(unittest.TestCase):
 
-    def setUp(self):
-        return
 
-    def tearDown(self):
-        return
 
     def initializeLibrary(self):
         library = DefinitionLibraryModule.Library()
-        library.bootstrapLoaderDefinitionsDir(
-            os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library'))
+        libraryDir = self.getLibraryDir()
+        library.bootstrapLoaderDefinitionsDir(libraryDir)
+
         library.loadBootstrapLoaderDefinitions()
         return library
     
+    # END TestBase
+    pass
+
     
+class TestBootstrapLoader(TestBase):
+
+    def getLibraryDir(self):
+        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library')
     
-    def testLoadBootstrapLoader(self):
+    def test1(self):
         library = self.initializeLibrary()
         
         loadedDefinitionTable = library.definitionTable()
@@ -127,11 +132,14 @@ class TestBase(unittest.TestCase):
     
     
     
-    # END class TestBase
+    # END class TestBootstrapLoader
     pass
 
 
-class TestBootstrapLoader(unittest.TestCase):
+class TestBootstrapLoaderPomset(TestBase):
+
+    def getLibraryDir(self):
+        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library')
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
@@ -141,19 +149,6 @@ class TestBootstrapLoader(unittest.TestCase):
         return
 
     
-    def tearDown(self):
-        return
-
-    
-    def initializeLibrary(self):
-        library = DefinitionLibraryModule.Library()
-        library.bootstrapLoaderDefinitionsDir(
-            os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library'))
-        library.loadBootstrapLoaderDefinitions()
-        return library
-    
-
-
     
     def test1(self):
             
@@ -244,16 +239,19 @@ class TestBootstrapLoader(unittest.TestCase):
     pass
 
 
-class TestRecoverFromLoadFailure(unittest.TestCase):
+class TestRecoverFromLoadFailure1(TestBase):
+
+    def getLibraryDir(self):
+        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'libraryFailure1')
+
 
     def setUp(self):
-        # generate and/or specify the location
-        # of a bootstrap pomsets
-        # that will fail
+        automaton = AutomatonModule.Automaton()
+        automaton.setThreadPool(None, threadpool.ThreadPool(1))
+        automaton.commandManager(CommandPatternModule.CommandManager())
+        self.automaton = automaton
         return
 
-    def tearDown(self):
-        return
 
     def testLoad1(self):
         """
@@ -267,9 +265,44 @@ class TestRecoverFromLoadFailure(unittest.TestCase):
         # ensure that only the non-failed ones
         # are in the library
 
+        library = self.initializeLibrary()
+
+        loadedDefinitionTable = library.definitionTable()
+        
+        self.assertEqual(2, loadedDefinitionTable.rowCount())
+
+        request = runBootstrapLoader(self.automaton, library, isCritical=False)
+
+        self.assertEqual(2, loadedDefinitionTable.rowCount())
+
+        # assert not request.exception
+
         return
 
-    def testLoad2(self):
+
+    # END class TestRecoverFromLoadFailure
+    pass
+
+
+class TestRecoverFromLoadFailure2(TestBase):
+
+    def getLibraryDir(self):
+        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'libraryFailure2')
+
+
+    def setUp(self):
+        automaton = AutomatonModule.Automaton()
+        automaton.setThreadPool(None, threadpool.ThreadPool(1))
+        automaton.commandManager(CommandPatternModule.CommandManager())
+        self.automaton = automaton
+        return
+
+
+    def tearDown(self):
+        return
+
+
+    def testLoad1(self):
         """
         this should use the library in
         resources/testdata/TestLibrary/libraryFailure1 
@@ -280,13 +313,36 @@ class TestRecoverFromLoadFailure(unittest.TestCase):
         # ensure that the there's no error
         # ensure that only the non-failed ones
         # are in the library
+        library = self.initializeLibrary()
+
+        loadedDefinitionTable = library.definitionTable()
+        
+        self.assertEqual(2, loadedDefinitionTable.rowCount())
+
+        request = runBootstrapLoader(self.automaton, library, isCritical=False)
+
+        self.assertEqual(3, loadedDefinitionTable.rowCount())
+
+        parentTask = request.kwds['task']
+        childTasks = parentTask.getChildTasks()
+        requestExceptions = [x.workRequest().exception for x in childTasks]
+        
+        # these 3 assertions will ensure that 
+        # there's only one success and one failure
+        self.assertEqual(2, len(requestExceptions))
+        self.assertTrue(any(requestExceptions))
+        self.assertTrue(not all(requestExceptions))
 
         return
 
     # END class TestRecoverFromLoadFailure
     pass
     
-class TestLoadAcrossSessions(unittest.TestCase):
+
+class TestLoadAcrossSessions(TestBase):
+
+    def getLibraryDir(self):
+        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library')
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
@@ -294,17 +350,6 @@ class TestLoadAcrossSessions(unittest.TestCase):
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
         return
-    
-    def tearDown(self):
-        return
-    
-    def initializeLibrary(self):
-        library = DefinitionLibraryModule.Library()
-        library.bootstrapLoaderDefinitionsDir(
-            os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library'))
-        library.loadBootstrapLoaderDefinitions()
-        
-        return library
     
     
     def testLoad1(self):
@@ -360,10 +405,12 @@ def main():
 
     suite = unittest.TestSuite()
     
-    suite.addTest(unittest.makeSuite(TestBase, 'test'))
     suite.addTest(unittest.makeSuite(TestBootstrapLoader, 'test'))
-    suite.addTest(unittest.makeSuite(TestLoadAcrossSessions, 'test'))
-    
+    suite.addTest(unittest.makeSuite(TestBootstrapLoaderPomset, 'test'))
+    # suite.addTest(unittest.makeSuite(TestLoadAcrossSessions, 'test'))
+    suite.addTest(unittest.makeSuite(TestRecoverFromLoadFailure1, 'test'))
+    suite.addTest(unittest.makeSuite(TestRecoverFromLoadFailure2, 'test'))
+
     runner = unittest.TextTestRunner()
     runner.run(suite)
     return

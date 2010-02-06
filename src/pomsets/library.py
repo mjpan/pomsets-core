@@ -155,10 +155,10 @@ class Library(ResourceModule.Struct):
         fullPath = os.path.join(self.bootstrapLoaderDefinitionsDir(), relativePath)
         return self.loadDefinitionFromFullFilePath(fullPath)
     
+
     def loadDefinitionFromFullFilePath(self, fullPath):
         definition = loadDefinitionFromFullFilePath(fullPath)
         definition.isLibraryDefinition(True)
-        # self.definitions()[definition.id()] = definition
         self.addDefinition(definition)
         self.updateWithLibraryDefinitions(self, definition)
         return definition
@@ -177,9 +177,9 @@ class Library(ResourceModule.Struct):
                 raise NotImplementedError('need to handle when bootstrap loader file %s does not exist')
             
             definition = self.loadDefinitionFromFullFilePath(fullPath)
-            self.addDefinition(definition)
             pass
         return
+
 
     def addDefinition(self, definition):
         definitionId = definition.id()
@@ -197,6 +197,7 @@ class Library(ResourceModule.Struct):
         row = self.definitionTable().addRow()
         row.setColumn('id', definitionId)
         row.setColumn('definition', definition)
+
         return
     
     def hasDefinition(self, filter):
@@ -252,6 +253,8 @@ class Library(ResourceModule.Struct):
 
         defToLoadDefs = DefinitionModule.getNewNestDefinition()
 
+        # we need to filter out the bootstrap pomset loader
+        # because it should not be loaded again
         bootstrapLoaderFilter = RelationalModule.ColumnValueFilter(
             'definition',
             FilterModule.IdFilter(ID_LOADLIBRARYDEFINITION)
@@ -267,6 +270,7 @@ class Library(ResourceModule.Struct):
         for definitionToLoad in definitions:
             loadNode = defToLoadDefs.createNode(id=uuid.uuid4())
             loadNode.definitionToReference(defToLoadDef)
+            loadNode.isCritical(False)
             loadNode.name('load %s' % definitionToLoad.url())
             loadNode.setParameterBinding('pomset url', definitionToLoad.url())
             pass

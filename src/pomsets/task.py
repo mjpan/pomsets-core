@@ -292,10 +292,6 @@ class CompositeTask(Task):
         # we will get multiple rows that match
         rows = [x for x in self.tasksTable().retrieveForModification(filter)]
         
-        # TODO:
-        # need to select the threadpool
-        # if there are multiple ones
-
         # the processing of each row
         # can probably be transformed into a command
         # that creates the task, creates the request
@@ -337,15 +333,9 @@ class CompositeTask(Task):
         # TODO:
         # should instead at this time determine 
         # the actual threadpool to place the request
-        # now enqueue the requests
-        #logging.debug("calling self.threadpool().putRequest(%s)" % requests)
-        # map(self.threadPool().putRequest, requests)
-        # threadpools = map(self.automaton().getThreadPoolUsingRequest, requests)
-        #for request in requests:
-        #    threadPool = self.automaton().getThreadPoolUsingRequest(request)
-        #    logging.debug("calling %s.putRequest(%s)" % (threadPool, request))
-        #    threadPool.putRequest(request)
-        #    pass
+        
+        
+        # enqueue the requests
         map(self.automaton().enqueueRequest, requests, 
             # threadpool.wait is not re-entrant
             # so we don't want it to wait
@@ -353,6 +343,7 @@ class CompositeTask(Task):
         
         return
 
+    
     def instantiateTaskAndWorkRequestFromDefinition(self, definition):
         task = self.instantiateTaskForChildDefinition(definition)
         request = self.instantiateWorkRequestForTask(task)

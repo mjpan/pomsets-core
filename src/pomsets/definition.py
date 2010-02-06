@@ -663,7 +663,8 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         'parameterSweepGroups',
         'guiOptions',
         'parameterStagingMap',
-        'comment'
+        'comment',
+        'isCritical'
     ]
     
     def __init__(self, id=None, graph=None):
@@ -682,7 +683,10 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         self.guiOptions({})
         
         self.parameterStagingMap({})
-        
+
+        # default to True
+        self.isCritical(True)
+
         pass
 
     def __eq__(self, other):

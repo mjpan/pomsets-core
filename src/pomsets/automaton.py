@@ -66,12 +66,45 @@ class Automaton(ResourceModule.Struct):
     
     
     @staticmethod
-    def taskErrorCallback(request, errorInfo):
+    def compositeTaskCriticalErrorCallback(request, errorInfo):
         
         logging.error("%s errored >> %s" % (request, errorInfo))
         
         task = request.kwds['task']
         task.notifyParentOfError(errorInfo)
+        
+        return
+
+
+    @staticmethod
+    def atomicTaskCriticalErrorCallback(request, errorInfo):
+        
+        logging.error("%s errored >> %s" % (request, errorInfo))
+        
+        request.exception = True
+        task = request.kwds['task']
+
+        error = NotImplementedError('task %s has errored')
+        errorInfo = (type(error), error, errorInfo)
+        request.kwds['error info'] = errorInfo
+
+        task.notifyParentOfError(errorInfo)
+        
+        return
+
+
+    @staticmethod
+    def taskNonCriticalErrorCallback(request, errorInfo):
+        
+        logging.warn("%s errored >> %s" % (request, errorInfo))
+        
+        request.exception = True
+        error = NotImplementedError('child task %s has errored')
+        errorInfo = (type(error), error, errorInfo)
+        request.kwds['error info'] = errorInfo
+
+        task = request.kwds['task']
+        task.notifyParentOfCompletion()
         
         return
 
@@ -115,7 +148,7 @@ class Automaton(ResourceModule.Struct):
         return
     
     
-    def enqueueRequest(self, request, shouldWait=True, isCritical=False):
+    def enqueueRequest(self, request, shouldWait=True):
 
         # set the execute environment of the request
         if self.executeEnvironment() is not None:
@@ -128,7 +161,7 @@ class Automaton(ResourceModule.Struct):
         if shouldWait:
             threadpool.wait()
 
-        if request.exception and isCritical:
+        if request.exception:
             raise ErrorModule.ExecutionError(
                 "request errored")
         
@@ -149,7 +182,20 @@ class Automaton(ResourceModule.Struct):
         return Automaton.atomicTaskCompleteCallback
     
     def getErrorCallbackFor(self, task):
-        return Automaton.taskErrorCallback
+
+        definition = task.definition()
+
+        # if the definition does not specify a value for isCritical
+        # or if it specifies it and the value is True
+        if not hasattr(definition, 'isCritical') or \
+                definition.isCritical():
+
+            import pomsets.task as TaskModule
+            if isinstance(task, TaskModule.CompositeTask):
+                return Automaton.compositeTaskCriticalErrorCallback
+            return Automaton.atomicTaskCriticalErrorCallback
+
+        return Automaton.taskNonCriticalErrorCallback
     
 
     def getExecuteTaskFunction(self, task):
