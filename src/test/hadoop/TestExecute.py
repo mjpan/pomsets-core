@@ -5,16 +5,12 @@ import sys
 import threadpool
 import unittest
 import logging
-import pickle
 import shutil
 
 # TODO:
 # figure out how to use the code in test.util
 # to configure the environment correctly
 APP_ROOT = os.getenv('APP_ROOT')
-sys.path.insert(0, '%s/currypy/src' % APP_ROOT)
-sys.path.insert(0, '%s/pypatterns/src' % APP_ROOT)
-sys.path.insert(0, '%s/cloudpool/src' % APP_ROOT)
 
 POMSET_ROOT = "%s/pomsets/src" % APP_ROOT
 sys.path.insert(0, POMSET_ROOT)

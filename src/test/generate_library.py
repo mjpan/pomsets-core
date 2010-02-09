@@ -12,8 +12,8 @@ import pomsets.parameter as ParameterModule
 import test.definition as DefinitionTestModule
 
 
-ID_WORDCOUNT = 'word count::8613fe86-e7fc-4487-b4d2-0989706f8825'
-ID_WORDCOUNT_REDUCE = 'word count reducer::08979d5f-6c0d-43b7-9206-dfe69eae6c26'
+ID_WORDCOUNT = 'word count_8613fe86-e7fc-4487-b4d2-0989706f8825'
+ID_WORDCOUNT_REDUCE = 'word count reducer_08979d5f-6c0d-43b7-9206-dfe69eae6c26'
 
 
 def generateBootstrapper():
@@ -46,7 +46,8 @@ def generateDefaultLoader(outputDir):
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
     wcDefinition.id(ID_WORDCOUNT)
-    wcDefinitionPath = 'wordcount.pomset'
+    # wcDefinitionPath = 'wordcount.pomset'
+    wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
     LibraryModule.pickleDefinition(
         os.path.join(outputDir, wcDefinitionPath), wcDefinition)
@@ -54,7 +55,8 @@ def generateDefaultLoader(outputDir):
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
     wcrDefinition.id(ID_WORDCOUNT_REDUCE)
-    wcrDefinitionPath = 'wordcount_reduce.pomset'
+    # wcrDefinitionPath = 'wordcount_reduce.pomset'
+    wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
     LibraryModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
@@ -81,7 +83,8 @@ def generateLoaderWithFailure1(outputDir):
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
     wcDefinition.id(ID_WORDCOUNT)
-    wcDefinitionPath = 'wordcount.pomset'
+    # wcDefinitionPath = 'wordcount.pomset'
+    wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
     # to ensure that the loading fi
@@ -112,7 +115,8 @@ def generateLoaderWithFailure2(outputDir):
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
     wcDefinition.id(ID_WORDCOUNT)
-    wcDefinitionPath = 'wordcount.pomset'
+    # wcDefinitionPath = 'wordcount.pomset'
+    wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
     # to ensure that the loading fi
@@ -122,7 +126,8 @@ def generateLoaderWithFailure2(outputDir):
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
     wcrDefinition.id(ID_WORDCOUNT_REDUCE)
-    wcrDefinitionPath = 'wordcount_reduce.pomset'
+    # wcrDefinitionPath = 'wordcount_reduce.pomset'
+    wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
     LibraryModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)

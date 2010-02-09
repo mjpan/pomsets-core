@@ -109,19 +109,9 @@ class Resource(object):
             setattr(self, "__id", id)
             pass
 
-        """
-	try:
-	    self.__id
-	except AttributeError:
-	    #need to create unique id here
-	    self.__id = Resource.ID_GENERATOR()
-            pass
-        """
         if not hasattr(self, "__id"):
-            # self.__id = Resource.ID_GENERATOR()
             setattr(self, "__id", Resource.ID_GENERATOR())
 
-        #return self.__id
         return getattr(self, "__id")
 
 

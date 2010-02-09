@@ -5,7 +5,6 @@ import sys
 import threadpool
 import unittest
 import logging
-import pickle
 
 APP_ROOT = os.getenv('APP_ROOT')
 POMSET_ROOT = "%s/pomsets" % APP_ROOT
@@ -23,14 +22,8 @@ def pickleAndReloadDefinition(path, definition):
     # and the reloading it
     filesToDelete = []
     try:
-        pickleCreated = False
-        with open(path, 'w') as f:
-            pickle.dump(definition, f)
-            pickleCreated = True
-            pass
 
-        if not pickleCreated:
-            raise Exception('failed on creating pickle')
+        DefinitionLibraryModule.pickleDefinition(path, definition)
 
         filesToDelete.append(path)
 

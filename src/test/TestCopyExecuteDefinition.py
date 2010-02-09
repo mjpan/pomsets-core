@@ -3,7 +3,6 @@ import os
 import sys
 import unittest
 import logging
-import pickle
 
 import StringIO
 

@@ -5,7 +5,6 @@ import sys
 import threadpool
 import unittest
 import logging
-import pickle
 import uuid
 
 import util

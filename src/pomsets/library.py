@@ -230,6 +230,11 @@ class Library(ResourceModule.Struct):
             self.definitionTable(), filter, ['definition'], [])
         return len(matchingDefinitions) is not 0
     
+    def removeDefinition(self, filter):
+        self.definitionTable().removeRows(filter)
+        return
+
+    
     def getDefinition(self, filter):
         matchingDefinitions = RelationalModule.Table.reduceRetrieve(
             self.definitionTable(), filter, ['definition'], [])
@@ -255,11 +260,20 @@ class Library(ResourceModule.Struct):
 
         defToLoadDefs = DefinitionModule.getNewNestDefinition()
 
-        # we need to filter out the bootstrap pomset loader
+        # we need to filter out the bootstrap pomset loaders
         # because it should not be loaded again
-        bootstrapLoaderFilter = RelationalModule.ColumnValueFilter(
-            'definition',
-            FilterModule.IdFilter(ID_LOADLIBRARYDEFINITION)
+        bootstrapLoaderFilter = FilterModule.constructOrFilter()
+        bootstrapLoaderFilter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'definition',
+                FilterModule.IdFilter(ID_LOADLIBRARYDEFINITION)
+            )
+        )
+        bootstrapLoaderFilter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'definition',
+                FilterModule.IdFilter(ID_BOOTSTRAPLOADER)
+            )
         )
         notBootstrapLoaderFilter = FilterModule.constructNotFilter()
         notBootstrapLoaderFilter.addFilter(bootstrapLoaderFilter)
@@ -268,7 +282,7 @@ class Library(ResourceModule.Struct):
             self.definitionTable(), 
             notBootstrapLoaderFilter,
             ['definition'], [])
-
+        
         for definitionToLoad in definitions:
             loadNode = defToLoadDefs.createNode(id=uuid.uuid4())
             loadNode.definitionToReference(defToLoadDef)
@@ -276,16 +290,20 @@ class Library(ResourceModule.Struct):
             loadNode.name('load %s' % definitionToLoad.url())
             loadNode.setParameterBinding('pomset url', definitionToLoad.url())
             pass
+        
         defToLoadDefs.id(ID_BOOTSTRAPLOADER)
         defToLoadDefs.name('bootstrap pomsets loader')
 
         return defToLoadDefs
 
     
-    def saveBootstrapLoaderPomset(self):
-        outputPath = os.path.join(
-            self.bootstrapLoaderDefinitionsDir(),
-            'loadLibraryDefinitions.pomset')
+    def saveBootstrapLoaderPomset(self, outputPath=None):
+        
+        # default to the library's specified dir
+        if outputPath is None:
+            outputPath = os.path.join(
+                self.bootstrapLoaderDefinitionsDir(),
+                'loadLibraryDefinitions.pomset')
 
         pomset = self.generateBootstrapLoaderPomset()
         
