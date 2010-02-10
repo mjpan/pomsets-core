@@ -1,0 +1,11 @@
+{
+    "cloud controller credentials": [], 
+    "hadoop configurations": [], 
+    "remote execute credentials": [
+        {
+            "hostname": "cerritosi.local", 
+            "keyfile": "/Users/mjpan/.ssh/id_rsa", 
+            "user": "mjpan"
+        }
+    ]
+}

@@ -10,10 +10,13 @@ import logging
 # TODO:
 # figure out how to use the code in test.util
 # to configure the environment correctly
-APP_ROOT = os.getenv('APP_ROOT')
+# APP_ROOT = os.getenv('APP_ROOT')
 
-POMSET_ROOT = "%s/pomsets/src" % APP_ROOT
-sys.path.insert(0, POMSET_ROOT)
+#POMSET_ROOT = "%s/pomsets/src" % APP_ROOT
+#sys.path.insert(0, POMSET_ROOT)
+
+if not os.getenv('HADOOP_HOME'):
+    os.environ['HADOOP_HOME'] = '/hadoop'
 
 import currypy
 
@@ -84,9 +87,6 @@ class TestHadoop(unittest.TestCase):
         task.setParameterBinding('mapper', ['myMapper'])
         task.setParameterBinding('reducer', ['myReducer'])
         
-        #commandBuilder = HadoopModule.JarCommandBuilder(
-        #    buildCommandFunction=TaskCommandModule.buildCommandFunction_commandlineArgsOnly
-        #)
         commandBuilder = TaskCommandModule.CommandBuilder(
             TaskCommandModule.buildCommandFunction_commandlineArgs
         )

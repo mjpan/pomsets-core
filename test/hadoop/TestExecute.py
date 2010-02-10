@@ -10,10 +10,14 @@ import shutil
 # TODO:
 # figure out how to use the code in test.util
 # to configure the environment correctly
-APP_ROOT = os.getenv('APP_ROOT')
+#APP_ROOT = os.getenv('APP_ROOT')
 
-POMSET_ROOT = "%s/pomsets/src" % APP_ROOT
-sys.path.insert(0, POMSET_ROOT)
+#POMSET_ROOT = "%s/pomsets/src" % APP_ROOT
+#sys.path.insert(0, POMSET_ROOT)
+
+if not os.getenv('HADOOP_HOME'):
+    os.environ['HADOOP_HOME'] = '/hadoop'
+
 
 import currypy
 import pypatterns.command as CommandPatternModule
@@ -37,17 +41,20 @@ import test.TestExecute as BaseModule
 import test.util as UtilsModule
 
 
+#def getHadoopExecutable():
+#    return os.path.join(os.getenv('HADOOP_HOME'), 'bin', 'hadoop')
 
-HADOOP_EXECUTABLE = os.path.join(os.getenv('HADOOP_HOME'), 'bin', 'hadoop')
 
-
-class TestHadoopBase(BaseModule.TestBase):
+class TestHadoopBase(object):
     """
     Verifies that we can execute Hadoop nodes
     """
     
     def setUp(self):
-        BaseModule.TestBase.setUp(self)
+
+        BaseModule.BaseTestClass.setUp(self)
+
+        self.assertTrue(self.fileExists(HadoopModule.getExecutablePath()))
 
         # TODO:
         # will need to place test data into HDFS
@@ -57,11 +64,11 @@ class TestHadoopBase(BaseModule.TestBase):
     
     def tearDown(self):
         self.removeOutputFiles()
-        BaseModule.TestBase.tearDown(self)
+        BaseModule.BaseTestClass.tearDown(self)
         return
     
     def fileExists(self, file):
-        f = os.system('%s fs -stat %s' % (HADOOP_EXECUTABLE, file))
+        f = os.system('%s fs -stat %s' % (HadoopModule.getExecutablePath(), file))
         return f is 0
     
     
@@ -71,31 +78,32 @@ class TestHadoopBase(BaseModule.TestBase):
             TaskCommandModule.buildCommandFunction_commandlineArgs
         )
         
-        hadoopJarCommandBuilder =  HadoopModule.JarCommandBuilder(
-            buildCommandFunction=TaskCommandModule.buildCommandFunction_commandlineArgsOnly
-        )
+        #hadoopJarCommandBuilder =  HadoopModule.JarCommandBuilder(
+        #    buildCommandFunction=TaskCommandModule.buildCommandFunction_commandlineArgsOnly
+        #)
 
-        hadoopPipesCommandBuilder = HadoopModule.PipesCommandBuilder(
-            buildCommandFunction=TaskCommandModule.buildCommandFunction_commandlineArgsOnly
-        )
+        #hadoopPipesCommandBuilder = HadoopModule.PipesCommandBuilder(
+        #    buildCommandFunction=TaskCommandModule.buildCommandFunction_commandlineArgsOnly
+        #)
 
         commandBuilderMap = {
             'shell process':defaultCommandBuilder,
             'print task':defaultCommandBuilder,
-            'hadoop jar':hadoopJarCommandBuilder,
-            'hadoop pipes':hadoopPipesCommandBuilder
+            #'hadoop jar':hadoopJarCommandBuilder,
+            #'hadoop pipes':hadoopPipesCommandBuilder
         }
         return commandBuilderMap
     
     
 
-    
+    def removeOutputFiles(self):
+        return
     
     # END class TestHadoopBase
     pass
 
 
-class TestHadoop1(TestHadoopBase):
+class TestHadoop1(TestHadoopBase, unittest.TestCase):
     """
     Verifies that we can execute Hadoop nodes
     """
@@ -123,7 +131,7 @@ class TestHadoop1(TestHadoopBase):
                os.path.join('tmp', 'TestExecute.TestHadoop1.testExecute2')
     
     def assertPostExecute(self):
-        BaseModule.TestBase.assertPostExecute(self)
+        BaseModule.BaseTestClass.assertPostExecute(self)
         
         # now verify that the output file exists
         self.assertTrue(self.fileExists(TestHadoop1.DIR_OUTPUT))
@@ -140,14 +148,14 @@ class TestHadoop1(TestHadoopBase):
     def removeOutputFiles(self):
         # ensure that the outdir does not exist
         if self.fileExists(TestHadoop1.DIR_OUTPUT):
-            os.system('%s fs -rmr %s' % (HADOOP_EXECUTABLE, TestHadoop1.DIR_OUTPUT))
+            os.system('%s fs -rmr %s' % (HadoopModule.getExecutablePath(), TestHadoop1.DIR_OUTPUT))
         return
     
     # END class TestHadoop1
     pass
 
 
-class TestHadoopStreaming1(TestHadoopBase):
+class TestHadoopStreaming1(TestHadoopBase, unittest.TestCase):
     """
     Verifies that we can execute Hadoop streaming nodes
     """
@@ -160,8 +168,11 @@ class TestHadoopStreaming1(TestHadoopBase):
         task.setParameterBinding('input file', ['input'])
         task.setParameterBinding('output file', [TestHadoopStreaming1.DIR_OUTPUT])
         task.setParameterBinding(
-            'reducer', [os.path.join(APP_ROOT, 'pomsets', 'resources', 'testdata', 'TestHadoop', 'wordcount', 'reducer.py')])
-        task.setParameterBinding('mapper', [os.path.join(APP_ROOT, 'pomsets', 'resources', 'testdata', 'TestHadoop', 'wordcount', 'mapper.py')])
+            'reducer', 
+            [os.path.join('resources', 'testdata', 'TestHadoop', 'wordcount', 'reducer.py')])
+        task.setParameterBinding(
+            'mapper', 
+            [os.path.join('resources', 'testdata', 'TestHadoop', 'wordcount', 'mapper.py')])
         
         return task
     
@@ -178,7 +189,7 @@ class TestHadoopStreaming1(TestHadoopBase):
                os.path.join('tmp', 'TestExecute.TestHadoopStreaming1.testExecute2')
     
     def assertPostExecute(self):
-        BaseModule.TestBase.assertPostExecute(self)
+        BaseModule.BaseTestClass.assertPostExecute(self)
         
         # now verify that the output file exists
         self.assertTrue(self.fileExists(TestHadoopStreaming1.DIR_OUTPUT))
@@ -195,7 +206,7 @@ class TestHadoopStreaming1(TestHadoopBase):
     def removeOutputFiles(self):
         # ensure that the outdir does not exist
         if self.fileExists(TestHadoopStreaming1.DIR_OUTPUT):
-            os.system('%s fs -rmr %s' % (HADOOP_EXECUTABLE, TestHadoopStreaming1.DIR_OUTPUT))
+            os.system('%s fs -rmr %s' % (HadoopModule.getExecutablePath(), TestHadoopStreaming1.DIR_OUTPUT))
         return
     
     # END class TestHadoopStreaming1

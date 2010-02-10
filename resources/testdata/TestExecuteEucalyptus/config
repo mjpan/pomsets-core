@@ -1,0 +1,15 @@
+{
+    "cloud controller credentials": [
+        {
+            "service API": "euca2ools", 
+            "service name": "Eucalyptus", 
+            "values": {
+                "default image id": "emi-AD9013E6", 
+                "identity file": "/Users/mjpan/ec2/euca/key.private", 
+                "user key pair": "33:0e:c3:e8:32:55:d8:67:c8:0c:d9:e7:11:34:9e:af:1d:34:bc:b0"
+            }
+        }
+    ], 
+    "hadoop configurations": [], 
+    "remote execute credentials": []
+}

@@ -7,9 +7,9 @@ import unittest
 import logging
 import shutil
 
-import util
-util.setPythonPath()
-POMSET_ROOT = util.getPomsetRoot()
+import utils
+utils.setPythonPath()
+POMSET_ROOT = utils.getPomsetRoot()
 
 import currypy
 import pypatterns.command as CommandPatternModule
@@ -27,7 +27,6 @@ import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 
 import test.TestExecute as BaseModule
-import test.definition as GeneratePomsetsModule
 
 
 
@@ -65,7 +64,7 @@ def createLinguisticDefinition():
 DEFINITION_LINGUISTIC = createLinguisticDefinition()
 
 
-class TestCase1(BaseModule.TestBase):
+class TestCase1(BaseModule.BaseTestClass):
     """
     execute of atomic linguistic function
     """
@@ -93,7 +92,7 @@ class TestCase1(BaseModule.TestBase):
 
 
     def assertPostExecute(self):
-        BaseModule.TestBase.assertPostExecute(self)
+        BaseModule.BaseTestClass.assertPostExecute(self)
 
         request = self.request
         task = request.kwds['task']
@@ -106,7 +105,7 @@ class TestCase1(BaseModule.TestBase):
     # END class TestCase1
     pass
 
-class TestCase2(BaseModule.TestBase):
+class TestCase2(BaseModule.BaseTestClass):
     """
     execute of linguistic composite function
     """
@@ -169,7 +168,7 @@ class TestCase2(BaseModule.TestBase):
         return commandBuilderMap
 
     def assertPostExecute(self):
-        BaseModule.TestBase.assertPostExecute(self)
+        BaseModule.BaseTestClass.assertPostExecute(self)
 
         request = self.request
         task = request.kwds['task']
@@ -182,7 +181,7 @@ class TestCase2(BaseModule.TestBase):
     # END class TestCase2
     pass
 
-class TestCase3(BaseModule.TestBase):
+class TestCase3(BaseModule.BaseTestClass):
     """
     execute of linguistic composite function
     """
@@ -257,7 +256,7 @@ class TestCase3(BaseModule.TestBase):
 
 
     def assertPostExecute(self):
-        BaseModule.TestBase.assertPostExecute(self)
+        BaseModule.BaseTestClass.assertPostExecute(self)
 
         request = self.request
         task = request.kwds['task']
@@ -271,7 +270,7 @@ class TestCase3(BaseModule.TestBase):
     # END class TestCase3
     pass
 
-class TestCase4(BaseModule.TestBase):
+class TestCase4(BaseModule.BaseTestClass):
     """
     execute of linguistic composite function
     """
@@ -350,7 +349,7 @@ class TestCase4(BaseModule.TestBase):
 
 
     def assertPostExecute(self):
-        BaseModule.TestBase.assertPostExecute(self)
+        BaseModule.BaseTestClass.assertPostExecute(self)
 
         request = self.request
         task = request.kwds['task']
@@ -374,7 +373,7 @@ class TestCase4(BaseModule.TestBase):
 
 def main():
     
-    util.configLogging()
+    utils.configLogging()
 
     suite = unittest.TestSuite()
 

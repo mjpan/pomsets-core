@@ -77,11 +77,10 @@ class Node (GraphObject):
 
         if not isinstance(other, self.__class__):
             yield "self is of class %s, other is of class %s" % (self.__class__, other.__class__)
-        """
-        if not self.getKeyForEquivalenceTesting() == other.getKeyForEquivalenceTesting():
-            yield "self has equivalence key %s, other has %s" % (self.getKeyForEquivalenceTesting(),
-                                                                 other.getKeyForEquivalenceTesting())
-        """ 
+
+        #if not self.getKeyForEquivalenceTesting() == other.getKeyForEquivalenceTesting():
+        #    yield "self has equivalence key %s, other has %s" % (self.getKeyForEquivalenceTesting(),
+        #                                                         other.getKeyForEquivalenceTesting())
             
         selfIncomingEdges = self.getEdges(self.incomingEdgeFilter())
         otherIncomingEdges = other.getEdges(other.incomingEdgeFilter())
@@ -703,6 +702,25 @@ def assertGraphAutomorphism(expected, actual,
         x for x in determineGraphAutomorphismDifferences(
             expected, actual, headNodeFunction, isContainer=isContainer, extractContainer=extractContainer)
     ]
+    print "asserting differences >> %s" % differences
+
+    def nameCmp(x,y):
+        return cmp(str(x), str(y))
+
+    expectedNodes = expected.nodes()
+    expectedNodes.sort(cmp=nameCmp)
+    expectedEdges = expected.edges()
+    expectedEdges.sort(cmp=nameCmp)
+    actualNodes = actual.nodes()
+    actualNodes.sort(cmp=nameCmp)
+    actualEdges = actual.edges()
+    actualEdges.sort(cmp=nameCmp)
+    
+    print "expected nodes >> %s" % expectedNodes
+    print "actual nodes >> %s" % actualNodes
+    print "expected.edges >> %s" % expectedEdges
+    print "actual.nodes >> %s" % actualEdges
+
     assert len(differences) is 0
     return True
 
@@ -736,10 +754,11 @@ def determineGraphAutomorphismDifferences(expected, actual,
             yield 'expected node %s is not the same as actual node %s' % (
                 expectedNode, actualNode)
 
-        for expectedEdge, actualEdge in zip(sorted(expectedNode.getEdges(expectedNode.incomingEdgeFilter()),
-                                                   Edge.nameComparator),
-                                            sorted(actualNode.getEdges(actualNode.incomingEdgeFilter()),
-                                                   Edge.nameComparator)):
+        for expectedEdge, actualEdge in \
+                zip(sorted(expectedNode.getEdges(expectedNode.incomingEdgeFilter()),
+                           Edge.nameComparator),
+                    sorted(actualNode.getEdges(actualNode.incomingEdgeFilter()),
+                           Edge.nameComparator)):
             expectedPredecessor = expectedEdge.entities()[0]
             actualPredecessor = actualEdge.entities()[0]
             if expectedPredecessor in nodesToProcess:
@@ -751,10 +770,11 @@ def determineGraphAutomorphismDifferences(expected, actual,
             nodesToProcess[expectedPredecessor] = actualPredecessor
             pass
         
-        for expectedEdge, actualEdge in zip(sorted(expectedNode.getEdges(expectedNode.outgoingEdgeFilter()),
-                                                   Edge.nameComparator),
-                                            sorted(actualNode.getEdges(actualNode.outgoingEdgeFilter()),
-                                                   Edge.nameComparator)):
+        for expectedEdge, actualEdge in \
+                zip(sorted(expectedNode.getEdges(expectedNode.outgoingEdgeFilter()),
+                           Edge.nameComparator),
+                    sorted(actualNode.getEdges(actualNode.outgoingEdgeFilter()),
+                           Edge.nameComparator)):
             expectedSuccessor = expectedEdge.entities()[1]
             actualSuccessor = actualEdge.entities()[1]
             if expectedSuccessor in nodesToProcess:

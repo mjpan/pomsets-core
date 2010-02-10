@@ -271,7 +271,7 @@ S'parameters'
 p101
 sbsS'_isLibraryDefinition'
 p102
-I00
+I01
 sg57
 S'wordcount mapper'
 p103
@@ -360,14 +360,12 @@ aS'pomsets'
 p142
 aS'pomsets.20100105'
 p143
-aS'pomsets'
-p144
 aS'resources'
-p145
+p144
 aS'testdata'
-p146
+p145
 aS'TestExecute'
-p147
+p146
 aS'wordcount.py'
-p148
+p147
 asbsb.

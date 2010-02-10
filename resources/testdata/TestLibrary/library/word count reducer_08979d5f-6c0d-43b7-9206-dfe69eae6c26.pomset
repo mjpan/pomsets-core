@@ -285,7 +285,7 @@ S'parameters'
 p109
 sbsS'_isLibraryDefinition'
 p110
-I00
+I01
 sg57
 S'wordcount reducer'
 p111
@@ -374,14 +374,12 @@ aS'pomsets'
 p150
 aS'pomsets.20100105'
 p151
-aS'pomsets'
-p152
 aS'resources'
-p153
+p152
 aS'testdata'
-p154
+p153
 aS'TestExecute'
-p155
+p154
 aS'wordcount_reduce.py'
-p156
+p155
 asbsb.

@@ -2,18 +2,16 @@ import os
 import sys
 import uuid
 
-import util
-util.setPythonPath()
+sys.path.insert(0, os.getenv('POMSETS_HOME'))
 
 import pomsets.definition as DefinitionModule
 import pomsets.library as LibraryModule
 import pomsets.parameter as ParameterModule
 
-import test.definition as DefinitionTestModule
+import utils
+import utils.definition as DefinitionTestModule
 
 
-ID_WORDCOUNT = 'word count_8613fe86-e7fc-4487-b4d2-0989706f8825'
-ID_WORDCOUNT_REDUCE = 'word count reducer_08979d5f-6c0d-43b7-9206-dfe69eae6c26'
 
 
 def generateBootstrapper():
@@ -45,7 +43,6 @@ def generateDefaultLoader(outputDir):
     definitionsToLoad.append(defToLoadDef)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
-    wcDefinition.id(ID_WORDCOUNT)
     # wcDefinitionPath = 'wordcount.pomset'
     wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
@@ -54,7 +51,6 @@ def generateDefaultLoader(outputDir):
     definitionsToLoad.append(wcDefinition)
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
-    wcrDefinition.id(ID_WORDCOUNT_REDUCE)
     # wcrDefinitionPath = 'wordcount_reduce.pomset'
     wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
@@ -82,7 +78,7 @@ def generateLoaderWithFailure1(outputDir):
     definitionsToLoad.append(defToLoadDef)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
-    wcDefinition.id(ID_WORDCOUNT)
+    # wcDefinition.id(ID_WORDCOUNT)
     # wcDefinitionPath = 'wordcount.pomset'
     wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
@@ -114,7 +110,7 @@ def generateLoaderWithFailure2(outputDir):
     definitionsToLoad.append(defToLoadDef)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
-    wcDefinition.id(ID_WORDCOUNT)
+    # wcDefinition.id(ID_WORDCOUNT)
     # wcDefinitionPath = 'wordcount.pomset'
     wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
@@ -125,7 +121,7 @@ def generateLoaderWithFailure2(outputDir):
     definitionsToLoad.append(wcDefinition)
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
-    wcrDefinition.id(ID_WORDCOUNT_REDUCE)
+    # wcrDefinition.id(ID_WORDCOUNT_REDUCE)
     # wcrDefinitionPath = 'wordcount_reduce.pomset'
     wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
@@ -146,7 +142,7 @@ def generateLoaderWithFailure2(outputDir):
 
 def main(argv):
 
-    util.configLogging()
+    utils.configLogging()
     
     if argv is None:
         argv = []

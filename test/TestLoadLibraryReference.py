@@ -7,9 +7,9 @@ import unittest
 import logging
 import shutil
 
-import util
-util.setPythonPath()
-POMSET_ROOT = util.getPomsetRoot()
+#import util
+#util.setPythonPath()
+#POMSET_ROOT = util.getPomsetRoot()
 
 
 import currypy
@@ -27,9 +27,7 @@ import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 
-import test.definition as TestDefinitionModule
-import test.generate_library as GenerateLibraryModule
-
+import utils.definition as TestDefinitionModule
 
 
 
@@ -77,7 +75,7 @@ def runBootstrapLoader(automaton, library, isCritical=False):
     return request
 
     
-class TestBase(unittest.TestCase):
+class BaseTestClass(unittest.TestCase):
 
 
 
@@ -89,14 +87,14 @@ class TestBase(unittest.TestCase):
         library.loadBootstrapLoaderDefinitions()
         return library
     
-    # END TestBase
+    # END BaseTestClass
     pass
 
     
-class TestBootstrapLoader(TestBase):
+class TestBootstrapLoader(BaseTestClass):
 
     def getLibraryDir(self):
-        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library')
+        return os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'library')
     
     def test1(self):
         library = self.initializeLibrary()
@@ -108,8 +106,8 @@ class TestBootstrapLoader(TestBase):
         for definitionId, expectedValue in [
             (DefinitionLibraryModule.ID_BOOTSTRAPLOADER, True),
             (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
-            (GenerateLibraryModule.ID_WORDCOUNT_REDUCE, False),
-            (GenerateLibraryModule.ID_WORDCOUNT, False)]:
+            (TestDefinitionModule.ID_WORDCOUNT_REDUCE, False),
+            (TestDefinitionModule.ID_WORDCOUNT, False)]:
             
             filter = RelationalModule.ColumnValueFilter(
                 'definition',
@@ -133,10 +131,10 @@ class TestBootstrapLoader(TestBase):
     pass
 
 
-class TestBootstrapLoaderPomset(TestBase):
+class TestBootstrapLoaderPomset(BaseTestClass):
 
     def getLibraryDir(self):
-        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library')
+        return os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'library')
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
@@ -159,8 +157,8 @@ class TestBootstrapLoaderPomset(TestBase):
         for definitionId, expectedValue in [
             (DefinitionLibraryModule.ID_BOOTSTRAPLOADER, True),
             (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
-            (GenerateLibraryModule.ID_WORDCOUNT_REDUCE, False),
-            (GenerateLibraryModule.ID_WORDCOUNT, False)]:
+            (TestDefinitionModule.ID_WORDCOUNT_REDUCE, False),
+            (TestDefinitionModule.ID_WORDCOUNT, False)]:
             
             filter = RelationalModule.ColumnValueFilter(
                 'definition',
@@ -179,8 +177,8 @@ class TestBootstrapLoaderPomset(TestBase):
         for definitionId, expectedValue in [
             (DefinitionLibraryModule.ID_BOOTSTRAPLOADER, True),
             (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
-            (GenerateLibraryModule.ID_WORDCOUNT_REDUCE, True),
-            (GenerateLibraryModule.ID_WORDCOUNT, True)]:
+            (TestDefinitionModule.ID_WORDCOUNT_REDUCE, True),
+            (TestDefinitionModule.ID_WORDCOUNT, True)]:
             
             filter = RelationalModule.ColumnValueFilter(
                 'definition',
@@ -213,7 +211,7 @@ class TestBootstrapLoaderPomset(TestBase):
         # and have that node reference a library definition
         filter = RelationalModule.ColumnValueFilter(
             'definition',
-            FilterModule.IdFilter(GenerateLibraryModule.ID_WORDCOUNT))
+            FilterModule.IdFilter(TestDefinitionModule.ID_WORDCOUNT))
         definitionToReference = library.getDefinition(filter)
         compositeDefinition = DefinitionModule.getNewNestDefinition()
         mapperNode = compositeDefinition.createNode(id='mapper')
@@ -222,7 +220,7 @@ class TestBootstrapLoaderPomset(TestBase):
         # pickle the pomset
         # unpickle the pomset
         definition = TestDefinitionModule.pickleAndReloadDefinition(
-            os.path.join('tmp', 'foo.pomset'),
+            os.sep.join(['', 'tmp', 'foo.pomset']),
             compositeDefinition
         )
         
@@ -236,10 +234,10 @@ class TestBootstrapLoaderPomset(TestBase):
     pass
 
 
-class TestRecoverFromLoadFailure1(TestBase):
+class TestRecoverFromLoadFailure1(BaseTestClass):
 
     def getLibraryDir(self):
-        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'libraryFailure1')
+        return os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'libraryFailure1')
 
 
     def setUp(self):
@@ -281,10 +279,10 @@ class TestRecoverFromLoadFailure1(TestBase):
     pass
 
 
-class TestRecoverFromLoadFailure2(TestBase):
+class TestRecoverFromLoadFailure2(BaseTestClass):
 
     def getLibraryDir(self):
-        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'libraryFailure2')
+        return os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'libraryFailure2')
 
 
     def setUp(self):
@@ -336,10 +334,10 @@ class TestRecoverFromLoadFailure2(TestBase):
     pass
     
 
-class TestLoadAcrossSessions(TestBase):
+class TestLoadAcrossSessions(BaseTestClass):
 
     def getLibraryDir(self):
-        return os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'library')
+        return os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'library')
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
@@ -371,13 +369,13 @@ class TestLoadAcrossSessions(TestBase):
         # implement something that will re-generate
         # the pomset for the test
         definition = DefinitionLibraryModule.loadDefinitionFromFullFilePath(
-            os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestLibrary', 'foo.pomset'))
+            os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'foo.pomset'))
 
         
         # at this point, the definitions are different
         filter = RelationalModule.ColumnValueFilter(
             'definition',
-            FilterModule.IdFilter(GenerateLibraryModule.ID_WORDCOUNT))
+            FilterModule.IdFilter(TestDefinitionModule.ID_WORDCOUNT))
         libraryDefinition = library.getDefinition(filter)
 
         assert definition.nodes()[0].definitionToReference() is not libraryDefinition
@@ -385,6 +383,9 @@ class TestLoadAcrossSessions(TestBase):
         # update the references
         library.updateWithLibraryDefinitions(definition)
         
+        print "actual >> %s" % definition.nodes()[0].definitionToReference().id()
+        print "expected >> %s" % libraryDefinition.id()
+
         # now, the definitions should be the same
         assert definition.nodes()[0].definitionToReference() is libraryDefinition
         

@@ -6,8 +6,8 @@ import logging
 
 import StringIO
 
-import util
-util.setPythonPath()
+import utils
+utils.setPythonPath()
 
 
 import threadpool
@@ -22,7 +22,7 @@ import cloudpool.environment as ExecuteEnvironmentModule
 import pomsets.command as TaskCommandModule
 import pomsets.task as TaskModule
 
-import test.definition as GeneratePomsetsModule
+import utils.definition as GeneratePomsetsModule
 
 
 import TestExecute as TestExecuteModule
@@ -221,7 +221,7 @@ class TestReferenceDefinition(unittest.TestCase):
 
 
 def main():
-    util.configLogging()
+    utils.configLogging()
 
     suite = unittest.TestSuite()
     

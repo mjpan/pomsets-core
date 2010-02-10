@@ -45,5 +45,9 @@ def getPomsetRoot():
     # configure POMSET_ROOT
     POMSET_ROOT = os.getenv('POMSET_ROOT')
     if POMSET_ROOT is None:
-        POMSET_ROOT = '%s/pomsets' % os.getenv('APP_ROOT')
+        APP_ROOT = os.getenv('APP_ROOT')
+        if APP_ROOT is not None:
+            POMSET_ROOT = os.sep.join([os.getenv('APP_ROOT'), 'pomsets'])
+        else:
+            POMSET_ROOT = ''
     return POMSET_ROOT

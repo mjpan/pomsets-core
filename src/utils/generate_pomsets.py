@@ -1,17 +1,17 @@
 import os
 import sys
 
-import util
-util.setPythonPath()
+sys.path.insert(0, os.getenv('POMSETS_HOME'))
 
 import pomsets.library as LibraryModule
 
-import test.definition as DefinitionModule
+import utils
+import utils.definition as DefinitionModule
 
 
 def main(argv=None):
 
-    util.configLogging()
+    utils.configLogging()
     
     if argv is None:
         argv = []

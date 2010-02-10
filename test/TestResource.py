@@ -4,14 +4,14 @@ import sys
 import unittest
 
 
-APP_ROOT = os.getenv('APP_ROOT')
-sys.path.insert(0, '%s/currypy/src' % APP_ROOT)
-sys.path.insert(0, '%s/pomsets/src' % APP_ROOT)
+#APP_ROOT = os.getenv('APP_ROOT')
+#sys.path.insert(0, '%s/currypy/src' % APP_ROOT)
+#sys.path.insert(0, '%s/pomsets/src' % APP_ROOT)
 
 
 import pomsets.resource as ResourceModule
 
-import util
+# import utils
 
 class TestStruct(unittest.TestCase):
     

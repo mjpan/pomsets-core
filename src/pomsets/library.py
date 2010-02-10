@@ -159,7 +159,7 @@ class Library(ResourceModule.Struct):
             #    referenceDefinition.definitionToReference(
             #        libraryDefinitions[libraryDefinitionId])
             if len(matchingDefinitions) is not 0:
-                referencedDefinition.definitionToReference(
+                referenceDefinition.definitionToReference(
                     matchingDefinitions[0])
             elif recursive and referencedDefinition is not definition:
                 # recursively traverse and update with library definitions

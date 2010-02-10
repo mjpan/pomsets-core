@@ -4,25 +4,27 @@ import os
 import sys
 import unittest
 
-import util
+#import util
 
 import StringIO
 
-APP_ROOT = os.getenv('APP_ROOT')
+#APP_ROOT = os.getenv('APP_ROOT')
 
-sys.path.insert(0, '%s/pypatterns/src' % APP_ROOT)
-sys.path.insert(0, '%s/currypy/src' % APP_ROOT)
-sys.path.insert(0, '%s/cloudpool/src' % APP_ROOT)
+#sys.path.insert(0, '%s/pypatterns/src' % APP_ROOT)
+#sys.path.insert(0, '%s/currypy/src' % APP_ROOT)
+#sys.path.insert(0, '%s/cloudpool/src' % APP_ROOT)
+
 import currypy
 
 
-sys.path.insert(0,"%s/pomsets/src" % APP_ROOT)
+#sys.path.insert(0,"%s/pomsets/src" % APP_ROOT)
 import pypatterns.filter as FilterModule
 
 import cloudpool.environment as ExecuteEnvironmentModule
 
 import TestExecute as BaseModule
 
+#POMSET_ROOT = util.getPomsetRoot()
 
 class TestCase1(BaseModule.TestCase1):
     """
@@ -203,13 +205,13 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
         return self.env
 
     def assertPostExecute(self):
-        expected = """%s/pomsets/resources/testdata/TestExecute/wordcount.py %s/pomsets/resources/testdata/TestExecute/text1 /tmp/count1
-%s/pomsets/resources/testdata/TestExecute/wordcount.py %s/pomsets/resources/testdata/TestExecute/text2 /tmp/count2
-""" % (APP_ROOT, APP_ROOT, APP_ROOT, APP_ROOT)
-        
+        expected = """%s/resources/testdata/TestExecute/wordcount.py resources/testdata/TestExecute/text1 /tmp/count1\n%s/resources/testdata/TestExecute/wordcount.py resources/testdata/TestExecute/text2 /tmp/count2
+""" % (os.getcwd(), os.getcwd())
+
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
+        return
+
     
     # END class TestParameterSweep2
     pass
@@ -225,13 +227,12 @@ class TestParameterSweep3(BaseModule.TestParameterSweep3):
         return self.env
 
     def assertPostExecute(self):
-        expected = """%s/pomsets/resources/testdata/TestExecute/wordcount_reduce.py -input %s/pomsets/resources/testdata/TestExecute/count1 %s/pomsets/resources/testdata/TestExecute/count2 -output /tmp/count_reduce
-""" % (APP_ROOT, APP_ROOT, APP_ROOT)
+        expected = """%s/resources/testdata/TestExecute/wordcount_reduce.py -input resources/testdata/TestExecute/count1 resources/testdata/TestExecute/count2 -output /tmp/count_reduce
+""" %  os.getcwd()
         
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
-
+        self.assertEquals(expected, actual)
+        return
     
     # END class TestParameterSweep3
     pass
@@ -250,14 +251,12 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
         return self.env
     
     def assertPostExecute(self):
-        expected = """%s/pomsets/resources/testdata/TestExecute/wordcount.py %s/pomsets/resources/testdata/TestExecute/text1 /tmp/count1
-%s/pomsets/resources/testdata/TestExecute/wordcount.py %s/pomsets/resources/testdata/TestExecute/text2 /tmp/count2
-%s/pomsets/resources/testdata/TestExecute/wordcount_reduce.py -input /tmp/count1 /tmp/count2 -output /tmp/count_reduce
-""" % (APP_ROOT, APP_ROOT, APP_ROOT, APP_ROOT, APP_ROOT)
-        
+        expected = """%s/resources/testdata/TestExecute/wordcount.py resources/testdata/TestExecute/text1 /tmp/count1\n%s/resources/testdata/TestExecute/wordcount.py resources/testdata/TestExecute/text2 /tmp/count2\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input /tmp/count1 /tmp/count2 -output /tmp/count_reduce
+"""  % (os.getcwd(), os.getcwd(), os.getcwd())
+
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
+        return
     
     # END class TestParameterSweep4
     pass

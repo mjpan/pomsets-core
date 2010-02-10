@@ -7,7 +7,7 @@ import pomsets.definition as DefinitionModule
 
 
 def getHomeLocation():
-    return os.getenv('HADOOP_HOME')
+    return os.getenv('HADOOP_HOME') 
 
 def getExecutablePath():
     return os.path.join(getHomeLocation(), 'bin', 'hadoop')

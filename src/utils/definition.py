@@ -6,15 +6,14 @@ import threadpool
 import unittest
 import logging
 
-APP_ROOT = os.getenv('APP_ROOT')
-POMSET_ROOT = "%s/pomsets" % APP_ROOT
-
 import pomsets.command as TaskCommandModule
 import pomsets.definition as DefinitionModule
 import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 
+ID_WORDCOUNT = 'word count_8613fe86-e7fc-4487-b4d2-0989706f8825'
+ID_WORDCOUNT_REDUCE = 'word count reducer_08979d5f-6c0d-43b7-9206-dfe69eae6c26'
 
 def pickleAndReloadDefinition(path, definition):
 
@@ -49,8 +48,7 @@ def createWordCountDefinition():
     row.setColumn('target', 'output file')
 
     
-    # command = ['%s/resources/testdata/TestExecute/wordcount.py' % POMSET_ROOT]
-    command = POMSET_ROOT.split(os.path.sep) + ['resources', 'testdata',
+    command = os.getcwd().split(os.path.sep) + ['resources', 'testdata',
                'TestExecute', 'wordcount.py']
     executable = TaskCommandModule.Executable()
     executable.stageable(True)
@@ -72,6 +70,8 @@ def createWordCountDefinition():
         executable = executable
     )
     definition.name('wordcount mapper')
+    definition.id(ID_WORDCOUNT)
+    definition.isLibraryDefinition(True)
     
     return definition
 
@@ -86,7 +86,7 @@ def createWordCountReduceDefinition():
     row.setColumn('source', 'input files')
     row.setColumn('target', 'output file')
     
-    command = POMSET_ROOT.split(os.path.sep) + ['resources', 'testdata',
+    command = os.getcwd().split(os.path.sep) + ['resources', 'testdata',
                'TestExecute', 'wordcount_reduce.py']
     executable = TaskCommandModule.Executable()
     executable.stageable(True)
@@ -115,6 +115,8 @@ def createWordCountReduceDefinition():
     )
     
     definition.name('wordcount reducer')
+    definition.id(ID_WORDCOUNT_REDUCE)
+    definition.isLibraryDefinition(True)
     
     return definition
 

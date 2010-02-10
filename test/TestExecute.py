@@ -7,9 +7,9 @@ import unittest
 import logging
 import shutil
 
-import util
-util.setPythonPath()
-POMSET_ROOT = util.getPomsetRoot()
+#import utils
+#utils.setPythonPath()
+#POMSET_ROOT = utils.getPomsetRoot()
 
 import currypy
 import pypatterns.command as CommandPatternModule
@@ -26,7 +26,7 @@ import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 
-import test.definition as GeneratePomsetsModule
+import utils.definition as GeneratePomsetsModule
 
 
 
@@ -58,13 +58,16 @@ DEFINITION_WORDCOUNT_REDUCE = GeneratePomsetsModule.createWordCountReduceDefinit
 
 
 
-class TestBase(unittest.TestCase):
+class BaseTestClass(object):
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
         automaton.setThreadPool(None, threadpool.ThreadPool(1))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
+        return
+
+    def tearDown(self):
         return
 
     def createCommandBuilderMap(self):
@@ -169,11 +172,11 @@ class TestBase(unittest.TestCase):
         return 
 
     
-    # END class TestBase
+    # END class BaseTestClass
     pass
 
 
-class TestCase1(TestBase):
+class TestCase1(BaseTestClass, unittest.TestCase):
     """
     execute of atomic function
     """
@@ -195,7 +198,7 @@ class TestCase1(TestBase):
     pass
 
 
-class TestCase2(TestBase):
+class TestCase2(BaseTestClass, unittest.TestCase):
     """
     execute of atomic function
     """
@@ -217,7 +220,7 @@ class TestCase2(TestBase):
     
 
 
-class TestCase4(TestBase):
+class TestCase4(BaseTestClass, unittest.TestCase):
     """
     execute of composite function
     """
@@ -261,7 +264,7 @@ class TestCase4(TestBase):
 
     
 
-class TestCase8(TestBase):
+class TestCase8(BaseTestClass, unittest.TestCase):
     """
     execute of composite function
     """
@@ -302,7 +305,7 @@ class TestCase8(TestBase):
     pass
 
 
-class TestCase9(TestBase):
+class TestCase9(BaseTestClass, unittest.TestCase):
     """
     execute of composite function
     """
@@ -354,7 +357,7 @@ class TestCase9(TestBase):
     pass
 
     
-class TestCase10(TestBase):
+class TestCase10(BaseTestClass, unittest.TestCase):
     """
     execution fails due to incomplete parameter binding 
     """
@@ -397,7 +400,7 @@ class TestCase10(TestBase):
     
 
 
-class TestParameterSweep1(TestBase):
+class TestParameterSweep1(BaseTestClass, unittest.TestCase):
     
 
     def createDefinition(self):
@@ -444,9 +447,9 @@ class TestParameterSweep1(TestBase):
     pass
 
     
-class TestParameterSweep2(TestBase):
+class TestParameterSweep2(BaseTestClass, unittest.TestCase):
 
-    BASE_DIR = os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
     OUTPUT_DIR = os.path.sep + 'tmp'
     
     INPUT_FILES = ['text1', 'text2']
@@ -467,7 +470,7 @@ class TestParameterSweep2(TestBase):
         return os.path.exists(file)
     
     def setUp(self):
-        TestBase.setUp(self)
+        BaseTestClass.setUp(self)
 
         # ensure that the script and the text files exist
         # remove the $BASE_DIR/count* files
@@ -491,7 +494,7 @@ class TestParameterSweep2(TestBase):
 
     def tearDown(self):
 
-        TestBase.tearDown(self)
+        BaseTestClass.tearDown(self)
         
         self.removeFiles()
         return
@@ -565,7 +568,7 @@ class TestParameterSweep2(TestBase):
 
         
     def assertPreExecute(self):
-        TestBase.assertPreExecute(self)
+        BaseTestClass.assertPreExecute(self)
         
         # assert that the files do not exist
         for inputFile in self.inputFiles:
@@ -579,7 +582,7 @@ class TestParameterSweep2(TestBase):
 
 
     def assertPostExecute(self):
-        TestBase.assertPostExecute(self)
+        BaseTestClass.assertPostExecute(self)
 
         # assert that the files exist
         for outputFile in self.outputFiles:
@@ -593,9 +596,9 @@ class TestParameterSweep2(TestBase):
     pass
 
 
-class TestParameterSweep3(TestBase):
+class TestParameterSweep3(BaseTestClass, unittest.TestCase):
     
-    BASE_DIR = os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
     OUTPUT_DIR = os.path.sep + 'tmp'
     
     INPUT_FILES = ['count1', 'count2']
@@ -613,7 +616,7 @@ class TestParameterSweep3(TestBase):
     
     
     def setUp(self):
-        TestBase.setUp(self)
+        BaseTestClass.setUp(self)
 
         # ensure that the script and the text files exist
         # remove the $BASE_DIR/count* files
@@ -636,7 +639,7 @@ class TestParameterSweep3(TestBase):
     
     def tearDown(self):
         
-        TestBase.tearDown(self)
+        BaseTestClass.tearDown(self)
         self.removeFiles()
         return
     
@@ -694,7 +697,7 @@ class TestParameterSweep3(TestBase):
 
     def assertPreExecute(self):
 
-        TestBase.assertPreExecute(self)
+        BaseTestClass.assertPreExecute(self)
 
         for inputFile in self.inputFiles:
             assert self.fileExists(inputFile), 'expected inputFile %s to exist' % inputFile
@@ -709,7 +712,7 @@ class TestParameterSweep3(TestBase):
 
 
     def assertPostExecute(self):
-        TestBase.assertPostExecute(self)
+        BaseTestClass.assertPostExecute(self)
 
         # assert that the files exist
         for outputFile in self.outputFiles:
@@ -726,12 +729,12 @@ class TestParameterSweep3(TestBase):
     pass
 
 
-class TestParameterSweep4(TestBase):
+class TestParameterSweep4(BaseTestClass, unittest.TestCase):
     """
     tests combining a mapper with a reducer
     """
     
-    BASE_DIR = os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
     TEST_DIR = os.path.sep + 'tmp'
     
     INPUT_FILES = ['text1', 'text2']
@@ -751,7 +754,7 @@ class TestParameterSweep4(TestBase):
     
     def setUp(self):
 
-        TestBase.setUp(self)
+        BaseTestClass.setUp(self)
 
         # ensure that the script and the text files exist
         # remove the $BASE_DIR/count* files
@@ -779,7 +782,7 @@ class TestParameterSweep4(TestBase):
     
     def tearDown(self):
 
-        TestBase.tearDown(self)
+        BaseTestClass.tearDown(self)
         self.removeFiles()
         return
     
@@ -872,7 +875,7 @@ class TestParameterSweep4(TestBase):
 
 
     def assertPostExecute(self):
-        TestBase.assertPostExecute(self)
+        BaseTestClass.assertPostExecute(self)
         
         # assert that the files exist
         for outputFile in self.outputFiles+self.intermediateFiles:
@@ -889,9 +892,9 @@ class TestParameterSweep4(TestBase):
     pass
 
 
-class TestLoop1(TestBase):
+class TestLoop1(BaseTestClass, unittest.TestCase):
     
-    BASE_DIR = os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
 
     FILE_PREFIX = os.path.sep + os.path.join('tmp', 'loop')
     INDEX_INITIAL = 0
@@ -911,7 +914,7 @@ class TestLoop1(TestBase):
     
     def setUp(self):
 
-        TestBase.setUp(self)
+        BaseTestClass.setUp(self)
         
         # ensure that INITIAL_FILE exists
         shutil.copyfile(os.path.join(TestLoop1.BASE_DIR, 'text1'), 
@@ -923,7 +926,7 @@ class TestLoop1(TestBase):
     def tearDown(self):
 
         self.removeFiles()
-        TestBase.tearDown(self)
+        BaseTestClass.tearDown(self)
         return
       
     def removeFiles(self):
@@ -979,7 +982,7 @@ class TestLoop1(TestBase):
     
 
     def assertPostExecute(self):
-        TestBase.assertPostExecute(self)
+        BaseTestClass.assertPostExecute(self)
         
         for index in range(TestLoop1.INDEX_INITIAL+1,
                            TestLoop1.INDEX_FINAL+1):
@@ -992,9 +995,9 @@ class TestLoop1(TestBase):
     pass
 
 
-class TestBranch1(TestBase):
+class TestBranch1(BaseTestClass, unittest.TestCase):
     
-    BASE_DIR = os.path.join(POMSET_ROOT, 'resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
     
     FILE_PREFIX = os.path.sep + os.path.join('tmp', 'branch')
     INDEX_INITIAL = 0
@@ -1014,7 +1017,7 @@ class TestBranch1(TestBase):
     
     def setUp(self):
 
-        TestBase.setUp(self)
+        BaseTestClass.setUp(self)
         
         # ensure that INITIAL_FILE exists
         shutil.copyfile(os.path.join(TestBranch1.BASE_DIR, 'text1'), 
@@ -1027,7 +1030,7 @@ class TestBranch1(TestBase):
     def tearDown(self):
 
         self.removeFiles()
-        TestBase.tearDown(self)
+        BaseTestClass.tearDown(self)
         return
 
     def removeFiles(self):
@@ -1092,7 +1095,7 @@ class TestBranch1(TestBase):
 
 
     def assertPostExecute(self):
-        TestBase.assertPostExecute(self)
+        BaseTestClass.assertPostExecute(self)
         
         
         return

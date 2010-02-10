@@ -7,9 +7,9 @@ import unittest
 import logging
 import uuid
 
-import util
-util.setPythonPath()
-POMSET_ROOT = util.getPomsetRoot()
+#import util
+#util.setPythonPath()
+#POMSET_ROOT = util.getPomsetRoot()
 
 
 import currypy
@@ -22,7 +22,6 @@ import pomsets.definition as DefinitionModule
 import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 
-import test.definition as TestDefinitionModule
 
 class TestParameterOrder(unittest.TestCase):
     
@@ -411,7 +410,7 @@ class TestParameterArgument(unittest.TestCase):
 
 
 def main():
-    util.configLogging()
+    utils.configLogging()
 
     suite = unittest.TestSuite()
     
