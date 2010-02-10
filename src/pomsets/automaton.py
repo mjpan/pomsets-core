@@ -167,13 +167,11 @@ class Automaton(ResourceModule.Struct):
         
         return
 
+
     def executeCommand(self, command):
         self.commandManager().do(command)
         return
 
-    def postEvent(self, event):
-        # do nothing
-        return
 
     def getPostExecuteCallbackFor(self, task):
         import pomsets.task as TaskModule
