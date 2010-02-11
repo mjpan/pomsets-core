@@ -4,9 +4,9 @@
             "service API": "euca2ools", 
             "service name": "Eucalyptus", 
             "values": {
-                "default image id": "emi-AD9013E6", 
-                "identity file": "/Users/mjpan/ec2/euca/key.private", 
-                "user key pair": "33:0e:c3:e8:32:55:d8:67:c8:0c:d9:e7:11:34:9e:af:1d:34:bc:b0"
+                "default image id": "emi-39901601",
+                "identity file": "/Users/mjpan/pomsets/euca/ssh/neo.private", 
+                "user key pair": "74:5b:db:64:46:af:fa:b7:78:08:ad:1e:e6:a6:d2:51"
             }
         }
     ], 

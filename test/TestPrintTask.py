@@ -205,8 +205,8 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
         return self.env
 
     def assertPostExecute(self):
-        expected = """%s/resources/testdata/TestExecute/wordcount.py resources/testdata/TestExecute/text1 /tmp/count1\n%s/resources/testdata/TestExecute/wordcount.py resources/testdata/TestExecute/text2 /tmp/count2
-""" % (os.getcwd(), os.getcwd())
+        expected = """%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2
+""" % tuple([os.getcwd()]*4)
 
         actual = self.env.outputStream().getvalue()
         self.assertEquals(expected, actual)
@@ -227,9 +227,9 @@ class TestParameterSweep3(BaseModule.TestParameterSweep3):
         return self.env
 
     def assertPostExecute(self):
-        expected = """%s/resources/testdata/TestExecute/wordcount_reduce.py -input resources/testdata/TestExecute/count1 resources/testdata/TestExecute/count2 -output /tmp/count_reduce
-""" %  os.getcwd()
-        
+        expected = """%s/resources/testdata/TestExecute/wordcount_reduce.py -input %s/resources/testdata/TestExecute/count1 %s/resources/testdata/TestExecute/count2 -output /tmp/count_reduce
+""" %  tuple([os.getcwd()]*3)
+
         actual = self.env.outputStream().getvalue()
         self.assertEquals(expected, actual)
         return
@@ -251,8 +251,8 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
         return self.env
     
     def assertPostExecute(self):
-        expected = """%s/resources/testdata/TestExecute/wordcount.py resources/testdata/TestExecute/text1 /tmp/count1\n%s/resources/testdata/TestExecute/wordcount.py resources/testdata/TestExecute/text2 /tmp/count2\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input /tmp/count1 /tmp/count2 -output /tmp/count_reduce
-"""  % (os.getcwd(), os.getcwd(), os.getcwd())
+        expected = """%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input /tmp/count1 /tmp/count2 -output /tmp/count_reduce
+"""  % tuple([os.getcwd()]*5)
 
         actual = self.env.outputStream().getvalue()
         self.assertEquals(expected, actual)

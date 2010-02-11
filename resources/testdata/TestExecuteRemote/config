@@ -3,9 +3,9 @@
     "hadoop configurations": [], 
     "remote execute credentials": [
         {
-            "hostname": "cerritosi.local", 
-            "keyfile": "/Users/mjpan/.ssh/id_rsa", 
-            "user": "mjpan"
-        }
+            "hostname": "192.168.21.140",
+            "keyfile": "/Users/mjpan/pomsets/euca/ssh/neo.private", 
+            "user":"root"
+        },
     ]
 }

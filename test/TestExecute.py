@@ -449,7 +449,7 @@ class TestParameterSweep1(BaseTestClass, unittest.TestCase):
     
 class TestParameterSweep2(BaseTestClass, unittest.TestCase):
 
-    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join(os.getcwd(), 'resources', 'testdata', 'TestExecute')
     OUTPUT_DIR = os.path.sep + 'tmp'
     
     INPUT_FILES = ['text1', 'text2']
@@ -598,7 +598,7 @@ class TestParameterSweep2(BaseTestClass, unittest.TestCase):
 
 class TestParameterSweep3(BaseTestClass, unittest.TestCase):
     
-    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join(os.getcwd(), 'resources', 'testdata', 'TestExecute')
     OUTPUT_DIR = os.path.sep + 'tmp'
     
     INPUT_FILES = ['count1', 'count2']
@@ -734,7 +734,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
     tests combining a mapper with a reducer
     """
     
-    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join(os.getcwd(), 'resources', 'testdata', 'TestExecute')
     TEST_DIR = os.path.sep + 'tmp'
     
     INPUT_FILES = ['text1', 'text2']
@@ -894,7 +894,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
 
 class TestLoop1(BaseTestClass, unittest.TestCase):
     
-    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join(os.getcwd(), 'resources', 'testdata', 'TestExecute')
 
     FILE_PREFIX = os.path.sep + os.path.join('tmp', 'loop')
     INDEX_INITIAL = 0
@@ -997,7 +997,7 @@ class TestLoop1(BaseTestClass, unittest.TestCase):
 
 class TestBranch1(BaseTestClass, unittest.TestCase):
     
-    BASE_DIR = os.path.join('resources', 'testdata', 'TestExecute')
+    BASE_DIR = os.path.join(os.getcwd(), 'resources', 'testdata', 'TestExecute')
     
     FILE_PREFIX = os.path.sep + os.path.join('tmp', 'branch')
     INDEX_INITIAL = 0

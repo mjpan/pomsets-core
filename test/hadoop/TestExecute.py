@@ -45,16 +45,16 @@ import test.util as UtilsModule
 #    return os.path.join(os.getenv('HADOOP_HOME'), 'bin', 'hadoop')
 
 
-class TestHadoopBase(object):
+class TestHadoopBase(BaseModule.BaseTestClass):
     """
     Verifies that we can execute Hadoop nodes
     """
     
     def setUp(self):
 
-        BaseModule.BaseTestClass.setUp(self)
+        self.assertTrue(os.path.exists(HadoopModule.getExecutablePath()))
 
-        self.assertTrue(self.fileExists(HadoopModule.getExecutablePath()))
+        BaseModule.BaseTestClass.setUp(self)
 
         # TODO:
         # will need to place test data into HDFS
@@ -110,7 +110,15 @@ class TestHadoop1(TestHadoopBase, unittest.TestCase):
     
     DIR_OUTPUT = 'TestHadoop1-output'
 
-    
+    def setUp(self):
+        TestHadoopBase.setUp(self)
+        return
+
+    def tearDown(self):
+        TestHadoopBase.tearDown(self)
+        return
+
+
     def createTask(self, definition):
         task = TaskModule.AtomicTask()
         task.definition(definition)
@@ -162,6 +170,14 @@ class TestHadoopStreaming1(TestHadoopBase, unittest.TestCase):
 
     DIR_OUTPUT = 'TestHadoopStreaming1-output'
     
+    def setUp(self):
+        TestHadoopBase.setUp(self)
+        return
+
+    def tearDown(self):
+        TestHadoopBase.tearDown(self)
+        return
+
     def createTask(self, definition):
         task = TaskModule.AtomicTask()
         task.definition(definition)

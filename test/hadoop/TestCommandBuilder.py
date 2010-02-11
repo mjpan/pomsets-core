@@ -35,7 +35,7 @@ import test.hadoop.definition as TestDefinitionModule
 import test.util as UtilsModule
 
 
-class TestHadoop(unittest.TestCase):
+class TestBuildCommand(unittest.TestCase):
 
     def setUp(self):
         return

@@ -27,52 +27,59 @@ import pomsets.task as TaskModule
 import TestExecute as BaseModule
 
 
+class Credentials(object):
+    def loadCredentials(self):
 
-def loadCredentials():
+        configFilePath = os.path.join(
+            os.getcwd(), 'resources', 'testdata', 'TestExecuteRemote', 'config')
 
-    configFilePath = os.path.join(
-        'resources', 'testdata', 'TestExecuteRemote', 'config')
+        with open(configFilePath) as f:
 
-    with open(configFilePath) as f:
+            config = ConfigModule.load(f)
 
-        config = ConfigModule.load(f)
+            remoteExecuteCredentials = config['remote execute credentials']
+            assert len(remoteExecuteCredentials), 'expected to find remote execute credentials'
 
-        remoteExecuteCredentials = config['remote execute credentials']
-        assert len(remoteExecuteCredentials), 'expected to find remote execute credentials'
+            return remoteExecuteCredentials
 
-        return remoteExecuteCredentials
-
-    raise NotImplemented(
-        'could not read credentials from config file %s' % configFilePath)
+        raise NotImplemented(
+            'could not read credentials from config file %s' % configFilePath)
 
 
-def getShell():
+    def getShell(self):
 
-    shell = ShellModule.SecureShell()
-    # set the hostname, user, and keyfile
+        shell = ShellModule.SecureShell()
+        # set the hostname, user, and keyfile
 
-    credentials = loadCredentials()
+        credentials = self.loadCredentials()
 
-    credential = credentials[0]
+        credential = credentials[0]
 
-    hostname = credential['hostname']
-    user = credential['user']
-    keyfile = credential['keyfile']
+        hostname = credential['hostname']
+        user = credential['user']
+        keyfile = credential['keyfile']
 
-    shell.hostname(hostname)
-    shell.user(user)
-    shell.keyfile(keyfile)
+        shell.hostname(hostname)
+        shell.user(user)
+        shell.keyfile(keyfile)
 
-    return shell
+        return shell
 
+    # ENC class Credentials
+    pass
 
 class TestConnection(unittest.TestCase):
     """
     """
 
+    def getCredentialClass(self):
+        return Credentials
+
     def testConnect(self):
 
-        shell = getShell()
+        cClass = self.getCredentialClass()
+        c = cClass()
+        shell = c.getShell()
 
         shell.establishConnection()
 
@@ -91,13 +98,19 @@ class TestCase1(BaseModule.TestCase1):
     execute of atomic function
     """
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
         BaseModule.TestCase1.setUp(self)
 
         # TODO:
         # use boto to start up an aws VM
 
-        self.shell = getShell()
+        cClass = self.getCredentialClass()
+        c = cClass()
+
+        self.shell = c.getShell()
         self.shell.establishConnection()
         return
 
@@ -118,13 +131,16 @@ class TestCase2(BaseModule.TestCase2):
     execute of atomic function
     """
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
         BaseModule.TestCase2.setUp(self)
 
-        # TODO:
-        # use boto to start up an aws VM
+        cClass = self.getCredentialClass()
+        c = cClass()
 
-        self.shell = getShell()
+        self.shell = c.getShell()
         self.shell.establishConnection()
         return
 
@@ -147,13 +163,16 @@ class TestCase4(BaseModule.TestCase4):
     execute of composite function
     """
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
         BaseModule.TestCase4.setUp(self)
 
-        # TODO:
-        # use boto to start up an aws VM
+        cClass = self.getCredentialClass()
+        c = cClass()
 
-        self.shell = getShell()
+        self.shell = c.getShell()
         self.shell.establishConnection()
         return
 
@@ -176,13 +195,16 @@ class TestCase8(BaseModule.TestCase8):
     execute of composite function
     """
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
         BaseModule.TestCase8.setUp(self)
 
-        # TODO:
-        # use boto to start up an aws VM
+        cClass = self.getCredentialClass()
+        c = cClass()
 
-        self.shell = getShell()
+        self.shell = c.getShell()
         self.shell.establishConnection()
         return
 
@@ -203,13 +225,16 @@ class TestCase9(BaseModule.TestCase9):
     execute of composite function
     """
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
         BaseModule.TestCase9.setUp(self)
 
-        # TODO:
-        # use boto to start up an aws VM
+        cClass = self.getCredentialClass()
+        c = cClass()
 
-        self.shell = getShell()
+        self.shell = c.getShell()
         self.shell.establishConnection()
         return
 
@@ -230,13 +255,16 @@ class TestCase10(BaseModule.TestCase10):
     execution fails due to incomplete parameter binding 
     """
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
         BaseModule.TestCase10.setUp(self)
 
-        # TODO:
-        # use boto to start up an aws VM
+        cClass = self.getCredentialClass()
+        c = cClass()
 
-        self.shell = getShell()
+        self.shell = c.getShell()
         self.shell.establishConnection()
         return
 
@@ -255,13 +283,16 @@ class TestCase10(BaseModule.TestCase10):
 
 class TestParameterSweep1(BaseModule.TestParameterSweep1):
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
         BaseModule.TestParameterSweep1.setUp(self)
 
-        # TODO:
-        # use boto to start up an aws VM
+        cClass = self.getCredentialClass()
+        c = cClass()
 
-        self.shell = getShell()
+        self.shell = c.getShell()
         self.shell.establishConnection()
         return
 
@@ -296,12 +327,15 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
         return True
 
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
 
-        # TODO:
-        # use boto to start up an aws VM
+        cClass = self.getCredentialClass()
+        c = cClass()
 
-        self.shell = getShell()
+        self.shell = c.getShell()
         self.shell.establishConnection()
 
         self.fs = self.shell.getFS()	
@@ -384,12 +418,15 @@ class TestParameterSweep3(BaseModule.TestParameterSweep3):
         return True
 
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
 
-        # TODO:
-        # use boto to start up an aws VM
+        cClass = self.getCredentialClass()
+        c = cClass()
 
-        self.shell = getShell()
+        self.shell = c.getShell()
         self.shell.establishConnection()
 
         self.fs = self.shell.getFS()
@@ -472,9 +509,15 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
             return False
         return True
 
+    def getCredentialClass(self):
+        return Credentials
+
     def setUp(self):
 
-        self.shell = getShell()
+        cClass = self.getCredentialClass()
+        c = cClass()
+
+        self.shell = c.getShell()
         self.shell.establishConnection()
 
         self.fs = self.shell.getFS()

@@ -702,24 +702,6 @@ def assertGraphAutomorphism(expected, actual,
         x for x in determineGraphAutomorphismDifferences(
             expected, actual, headNodeFunction, isContainer=isContainer, extractContainer=extractContainer)
     ]
-    print "asserting differences >> %s" % differences
-
-    def nameCmp(x,y):
-        return cmp(str(x), str(y))
-
-    expectedNodes = expected.nodes()
-    expectedNodes.sort(cmp=nameCmp)
-    expectedEdges = expected.edges()
-    expectedEdges.sort(cmp=nameCmp)
-    actualNodes = actual.nodes()
-    actualNodes.sort(cmp=nameCmp)
-    actualEdges = actual.edges()
-    actualEdges.sort(cmp=nameCmp)
-    
-    print "expected nodes >> %s" % expectedNodes
-    print "actual nodes >> %s" % actualNodes
-    print "expected.edges >> %s" % expectedEdges
-    print "actual.nodes >> %s" % actualEdges
 
     assert len(differences) is 0
     return True
