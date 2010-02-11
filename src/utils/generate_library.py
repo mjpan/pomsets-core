@@ -4,6 +4,7 @@ import uuid
 
 sys.path.insert(0, os.getenv('POMSETS_HOME'))
 
+import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 import pomsets.library as LibraryModule
 import pomsets.parameter as ParameterModule
@@ -37,16 +38,16 @@ def generateDefaultLoader(outputDir):
     definitionsToLoad = []
 
     defToLoadDef = generateBootstrapper()
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
-    
+
     definitionsToLoad.append(defToLoadDef)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
     # wcDefinitionPath = 'wordcount.pomset'
     wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, wcDefinitionPath), wcDefinition)
     definitionsToLoad.append(wcDefinition)
     
@@ -54,7 +55,7 @@ def generateDefaultLoader(outputDir):
     # wcrDefinitionPath = 'wordcount_reduce.pomset'
     wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
     definitionsToLoad.append(wcrDefinition)
     
@@ -62,7 +63,7 @@ def generateDefaultLoader(outputDir):
     map(library.addDefinition, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     
     return
@@ -72,7 +73,7 @@ def generateLoaderWithFailure1(outputDir):
     definitionsToLoad = []
 
     defToLoadDef = generateBootstrapper()
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
     
     definitionsToLoad.append(defToLoadDef)
@@ -84,7 +85,7 @@ def generateLoaderWithFailure1(outputDir):
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
     # to ensure that the loading fi
-    #LibraryModule.pickleDefinition(
+    #ContextModule.pickleDefinition(
     #    os.path.join(outputDir, wcDefinitionPath), wcDefinition)
     definitionsToLoad.append(wcDefinition)
     
@@ -92,7 +93,7 @@ def generateLoaderWithFailure1(outputDir):
     map(library.addDefinition, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     
     return
@@ -104,7 +105,7 @@ def generateLoaderWithFailure2(outputDir):
     definitionsToLoad = []
 
     defToLoadDef = generateBootstrapper()
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
     
     definitionsToLoad.append(defToLoadDef)
@@ -116,7 +117,7 @@ def generateLoaderWithFailure2(outputDir):
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
     # to ensure that the loading fi
-    #LibraryModule.pickleDefinition(
+    #ContextModule.pickleDefinition(
     #    os.path.join(outputDir, wcDefinitionPath), wcDefinition)
     definitionsToLoad.append(wcDefinition)
     
@@ -125,7 +126,7 @@ def generateLoaderWithFailure2(outputDir):
     # wcrDefinitionPath = 'wordcount_reduce.pomset'
     wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
     definitionsToLoad.append(wcrDefinition)
     
@@ -133,7 +134,7 @@ def generateLoaderWithFailure2(outputDir):
     map(library.addDefinition, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     
     return

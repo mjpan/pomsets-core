@@ -3,6 +3,7 @@ import sys
 
 sys.path.insert(0, os.getenv('POMSETS_HOME'))
 
+import pomsts.context as ContextModule
 import pomsets.library as LibraryModule
 
 import utils
@@ -21,18 +22,18 @@ def main(argv=None):
     outputDir = argv[1]
     
     baseDefinition = DefinitionModule.createPomsetContainingParameterSweep()
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'mr_wordcount.pomset'), baseDefinition)
     DefinitionModule.bindParameterSweepDefinitionParameters(baseDefinition)
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'mr_wordcount_staging.pomset'), baseDefinition)
 
     
     baseDefinition = DefinitionModule.createPomsetContainingLoopDefinition()
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loop_wordcount.pomset'), baseDefinition)
     DefinitionModule.bindLoopDefinitionParameters(baseDefinition)
-    LibraryModule.pickleDefinition(
+    ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loop_wordcount_staging.pomset'), baseDefinition)
 
     

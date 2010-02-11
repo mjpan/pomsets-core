@@ -10,3 +10,4 @@ class NodeNotExistError(PomsetError):
 
 class InvalidValueError(PomsetError):
     pass
+

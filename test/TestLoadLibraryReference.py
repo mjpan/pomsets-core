@@ -22,6 +22,7 @@ import cloudpool.shell as ShellModule
 import pomsets.automaton as AutomatonModule
 
 import pomsets.command as TaskCommandModule
+import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
@@ -81,6 +82,7 @@ class BaseTestClass(unittest.TestCase):
 
     def initializeLibrary(self):
         library = DefinitionLibraryModule.Library()
+        library.shouldMarkAsLibraryDefinition(True)
         libraryDir = self.getLibraryDir()
         library.bootstrapLoaderDefinitionsDir(libraryDir)
 
@@ -223,6 +225,7 @@ class TestBootstrapLoaderPomset(BaseTestClass):
             os.sep.join(['', 'tmp', 'foo.pomset']),
             compositeDefinition
         )
+        library.updateWithLibraryDefinitions(definition)
         
         definitionToReference = library.getDefinition(filter)
         assert definition.nodes()[0].definitionToReference() is definitionToReference
@@ -368,8 +371,9 @@ class TestLoadAcrossSessions(BaseTestClass):
         # TODO:
         # implement something that will re-generate
         # the pomset for the test
-        definition = DefinitionLibraryModule.loadDefinitionFromFullFilePath(
-            os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'foo.pomset'))
+        pomsetContext = ContextModule.loadPomset(
+            path=os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'foo.pomset'))
+        definition = pomsetContext.pomset()
 
         
         # at this point, the definitions are different
@@ -383,9 +387,6 @@ class TestLoadAcrossSessions(BaseTestClass):
         # update the references
         library.updateWithLibraryDefinitions(definition)
         
-        print "actual >> %s" % definition.nodes()[0].definitionToReference().id()
-        print "expected >> %s" % libraryDefinition.id()
-
         # now, the definitions should be the same
         assert definition.nodes()[0].definitionToReference() is libraryDefinition
         

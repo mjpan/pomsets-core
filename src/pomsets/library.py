@@ -11,6 +11,7 @@ import cloudpool.task as TaskModule
 import pypatterns.filter as FilterModule
 import pypatterns.relational as RelationalModule
 
+import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 import pomsets.resource as ResourceModule
 
@@ -19,6 +20,7 @@ ID_LOADLIBRARYDEFINITION = 'load library definition::bb028375-bbd5-43ec-b6c3-495
 ID_BOOTSTRAPLOADER = 'library bootstrap loader::751fe366-1448-4db3-9db4-944075de7a5b'
 
 
+"""
 def loadDefinitionFromFullFilePath(path):
     definition = None
     
@@ -30,8 +32,10 @@ def loadDefinitionFromFullFilePath(path):
         raise Exception('failed on loading pickle')
 
     return definition
+"""
 
 
+"""
 def pickleDefinition(path, definition):
 
     try:
@@ -49,14 +53,14 @@ def pickleDefinition(path, definition):
         pass
 
     return
-
+"""
 
 
 class CommandBuilder(TaskModule.CommandBuilder):
 
     def buildCommand(self, task):
         workRequest = task.workRequest()
-        command = 'library.loadDefinitionFromRelativePath("%s")' % task.getParameterBinding('pomset url')
+        command = 'library.loadFromRelativePath("%s")' % task.getParameterBinding('pomset url')
         
         return command
     
@@ -117,7 +121,8 @@ class Library(ResourceModule.Struct):
         'hasLoadedDefinitions', 
         'definitionTable',
         'bootstrapLoaderDefinitionsDir',
-        'bootstrapLoaderDefinitions'
+        'bootstrapLoaderDefinitions',
+        'shouldMarkAsLibraryDefinition'
     ]
     
     def __init__(self):
@@ -125,10 +130,9 @@ class Library(ResourceModule.Struct):
         self.hasLoadedDefinitions(False)
         self.bootstrapLoaderDefinitions({})
         
-        # self.definitions({})
         table = RelationalModule.createTable(
             'definitions', 
-            ['definition', 'id'])
+            ['definition', 'id', 'context'])
         self.definitionTable(table)
 
         return
@@ -155,9 +159,7 @@ class Library(ResourceModule.Struct):
             
             matchingDefinitions = RelationalModule.Table.reduceRetrieve(
                 self.definitionTable(), filter, ['definition'], [])
-            # if libraryDefinitionId in libraryDefinitions:
-            #    referenceDefinition.definitionToReference(
-            #        libraryDefinitions[libraryDefinitionId])
+
             if len(matchingDefinitions) is not 0:
                 referenceDefinition.definitionToReference(
                     matchingDefinitions[0])
@@ -171,17 +173,20 @@ class Library(ResourceModule.Struct):
         
         return
 
-    def loadDefinitionFromRelativePath(self, relativePath):
-        fullPath = os.path.join(self.bootstrapLoaderDefinitionsDir(), relativePath)
-        return self.loadDefinitionFromFullFilePath(fullPath)
+
+    def loadFromRelativePath(self, relativePath):
+        fullPath = os.path.join(
+            self.bootstrapLoaderDefinitionsDir(), relativePath)
+
+        return self.loadFromFullFilePath(fullPath)
     
 
-    def loadDefinitionFromFullFilePath(self, fullPath):
-        definition = loadDefinitionFromFullFilePath(fullPath)
-        definition.isLibraryDefinition(True)
-        self.addDefinition(definition)
-        self.updateWithLibraryDefinitions(self, definition)
-        return definition
+    def loadFromFullFilePath(self, fullPath):
+        context = ContextModule.loadPomset(path=fullPath)
+
+        self.addPomsetContext(context)
+
+        return context
     
     
     def loadBootstrapLoaderDefinitions(self):
@@ -201,11 +206,12 @@ class Library(ResourceModule.Struct):
             if not os.path.exists(fullPath):
                 raise NotImplementedError('need to handle when bootstrap loader file %s does not exist')
             
-            definition = self.loadDefinitionFromFullFilePath(fullPath)
+            pomsetContext = self.loadFromFullFilePath(fullPath)
             pass
         return
 
 
+    """
     def addDefinition(self, definition):
         definitionId = definition.id()
         if definitionId in [ID_LOADLIBRARYDEFINITION,
@@ -224,7 +230,35 @@ class Library(ResourceModule.Struct):
         row.setColumn('definition', definition)
 
         return
-    
+    """
+
+    def addPomsetContext(self, context):
+
+        definition = context.pomset()
+        definitionId = definition.id()
+        if definitionId in [ID_LOADLIBRARYDEFINITION,
+                            ID_BOOTSTRAPLOADER]:
+            logging.debug("adding definition %s to bootstrap id %s" %
+                          (definition, definitionId))
+
+            self.bootstrapLoaderDefinitions()[definitionId] = definition
+            pass
+
+        logging.debug("adding definition %s with id %s to library" % 
+                      (definition, definitionId))
+
+        if self.shouldMarkAsLibraryDefinition():
+            definition.isLibraryDefinition(True)
+        self.updateWithLibraryDefinitions(self, definition)
+
+        row = self.definitionTable().addRow()
+        row.setColumn('id', definitionId)
+        row.setColumn('definition', definition)
+        row.setColumn('context', context)
+        return
+
+
+
     def hasDefinition(self, filter):
         matchingDefinitions = RelationalModule.Table.reduceRetrieve(
             self.definitionTable(), filter, ['definition'], [])

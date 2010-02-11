@@ -7,6 +7,7 @@ import unittest
 import logging
 
 import pomsets.command as TaskCommandModule
+import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
@@ -22,11 +23,13 @@ def pickleAndReloadDefinition(path, definition):
     filesToDelete = []
     try:
 
-        DefinitionLibraryModule.pickleDefinition(path, definition)
+        ContextModule.pickleDefinition(path, definition)
 
         filesToDelete.append(path)
 
-        DefinitionLibraryModule.loadDefinitionFromFullFilePath(path)
+        pomsetContext = ContextModule.loadPomset(path)
+        definition = pomsetContext.pomset()
+
     except Exception, e:
         logging.error("errored with msg >> %s" % e)
         pass

@@ -4,7 +4,8 @@ setup(
     name='pomsets-core',
     version='0.1.0',
     packages=find_packages(
-        'src',exclude=["*.test", "*.test.*", "test.*", "test"]),
+        'src',exclude=["*.test", "*.test.*", "test.*", "test",
+                       "*.utils", "*.utils.*", "utils.*", "utils",]),
     package_dir={'':'src'},
 
     test_suite="test",
