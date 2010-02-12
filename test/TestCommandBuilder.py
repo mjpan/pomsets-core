@@ -7,11 +7,6 @@ import unittest
 import logging
 import uuid
 
-#import util
-#util.setPythonPath()
-#POMSET_ROOT = util.getPomsetRoot()
-
-
 import currypy
 
 import pomsets.automaton as AutomatonModule

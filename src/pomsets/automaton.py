@@ -5,7 +5,12 @@ import resource as ResourceModule
 
 import pomsets.error as ErrorModule
 
+import threadpool as ThreadpoolModule
+
 class Automaton(ResourceModule.Struct):
+    """
+    Automaton keeps track of execution related data
+    """
 
     ATTRIBUTES = [
         'executeEnvironment',
@@ -198,6 +203,78 @@ class Automaton(ResourceModule.Struct):
 
     def getExecuteTaskFunction(self, task):
         return Automaton.doTask
+
+
+    def generateRequest(self, task=None, requestKwds=None):
+
+        if task is None:
+            raise NotImplementedError('task cannot be None')
+
+        if requestKwds is None:
+            raise NotImplementedError('requestKwds cannot be None')
+
+        # TODO:
+        # this code currently duplicated in 3 places, 
+        # should consolidate into a single function
+        # * in CompositeTask, when it instantiates a new work request
+        # * in TestExecute
+        # * here
+        callback = self.getPostExecuteCallbackFor(task)
+        exc_callback = self.getErrorCallbackFor(task)
+        executeTaskFunction = self.getExecuteTaskFunction(task)
+
+        requestKwds['task'] = task
+        request = ThreadpoolModule.WorkRequest(
+            executeTaskFunction,
+            args = [],
+            kwds = requestKwds,
+            callback = callback,
+            exc_callback = exc_callback
+        )
+
+        return request
+
+
+    def executePomset(self, pomset=None, requestKwds=None):
+
+        # create a new task
+        # we assume that the pomset is a composite definition
+        import pomsets.task as TaskModule
+        compositeTask = TaskModule.CompositeTask()
+
+        compositeTask.initializeTasksTable()
+        compositeTask.definition(pomset)
+
+        taskGenerator = TaskModule.NestTaskGenerator()
+        compositeTask.taskGenerator(taskGenerator)
+
+        # generate the request
+        request = self.generateRequest(task=compositeTask,
+                                       requestKwds=requestKwds)
+
+        # check if any threads have been started
+        try:
+            threadpool = self.getThreadPoolUsingRequest(request)
+            """
+            should be moved to the cloud automaton's getThreadPoolUsingRequest
+            if threadpool.isEmpty():
+                raise ExecuteErrorModule.ExecutionError(
+                    'need to start thread before execution')
+            """
+
+
+            # now set the thread pool in the request
+            request.kwds['thread pool'] = threadpool
+
+            compositeTask.workRequest(request)
+
+            self.enqueueRequest(request)
+        except ValueError, e:
+            logging.error(e)
+            raise ExecuteErrorModule.ExecutionError(e)
+
+        return compositeTask
+
     
     #end class Automaton
     pass
