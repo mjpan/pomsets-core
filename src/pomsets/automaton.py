@@ -248,6 +248,8 @@ class Automaton(ResourceModule.Struct):
         taskGenerator = TaskModule.NestTaskGenerator()
         compositeTask.taskGenerator(taskGenerator)
 
+        compositeTask.automaton(self)
+        
         # generate the request
         request = self.generateRequest(task=compositeTask,
                                        requestKwds=requestKwds)

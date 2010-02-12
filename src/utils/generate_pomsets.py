@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, os.getenv('POMSETS_HOME'))
 
-import pomsts.context as ContextModule
+import pomsets.context as ContextModule
 import pomsets.library as LibraryModule
 
 import utils

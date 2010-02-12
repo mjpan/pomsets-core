@@ -236,10 +236,12 @@ def createPomsetContainingParameterSweep():
     mapperNode.isParameterSweep('input file', True)
     mapperNode.isParameterSweep('output file', True)
     mapperNode.addParameterSweepGroup(['input file', 'output file'])
+    mapperNode.isCritical(True)
     mapperNode.name('mapper')
 
     reducerNode = compositeDefinition.createNode(id='reducer')
     reducerNode.definitionToReference(DEFINITION_WORDCOUNT_REDUCE)
+    reducerNode.isCritical(True)
     reducerNode.name('reducer')
 
     blackboardParameter = \

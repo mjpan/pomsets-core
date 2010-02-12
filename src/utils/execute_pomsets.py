@@ -1,18 +1,36 @@
 import sys
 sys.path.insert(0, '/Users/mjpan/pomsets/pomsets.20100105/pomsets/src')
 
+import cloudpool.shell as ShellModule
+
+import pypatterns.command as CommandPatternModule
+
 import pomsets.automaton as AutomatonModule
+import pomsets.command as TaskCommandModule	
 import pomsets.context as ContextModule
 
 import threadpool
 
 def generateRequestKwds():
     kwds = {
-        'executeEnvironment':None,
-        'commandBuilderMap':None
+        'execute environment':createExecuteEnvironment(),
+        'command builder map':createCommandBuilderMap()
         }
     return kwds
 
+def createCommandBuilderMap():
+    commandBuilder = TaskCommandModule.CommandBuilder(
+        TaskCommandModule.buildCommandFunction_commandlineArgs
+    )
+    commandBuilderMap = {
+        'shell process':commandBuilder,
+    }
+    return commandBuilderMap
+    
+
+def createExecuteEnvironment():
+    return ShellModule.LocalShell()
+    
 
 def main(args):
 
@@ -34,11 +52,12 @@ def main(args):
 
     automaton = AutomatonModule.Automaton()
     automaton.setThreadPool(None, threadpool.ThreadPool(1))
+    automaton.commandManager(CommandPatternModule.CommandManager())
     
     requestKwds = generateRequestKwds()
 
     compositeTask = automaton.executePomset(
-        pomset=None, requestKwds=requestKwds)
+        pomset=pomset, requestKwds=requestKwds)
 
     # here we can output various info
     # including execution errors
