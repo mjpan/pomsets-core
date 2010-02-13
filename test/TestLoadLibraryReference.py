@@ -7,20 +7,17 @@ import unittest
 import logging
 import shutil
 
-#import util
-#util.setPythonPath()
-#POMSET_ROOT = util.getPomsetRoot()
-
 
 import currypy
+
 import pypatterns.command as CommandPatternModule
 import pypatterns.filter as FilterModule
 import pypatterns.relational as RelationalModule
 
+import cloudpool as CloudModule
 import cloudpool.shell as ShellModule
 
 import pomsets.automaton as AutomatonModule
-
 import pomsets.command as TaskCommandModule
 import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
@@ -29,7 +26,6 @@ import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 
 import utils.definition as TestDefinitionModule
-
 
 
 def runBootstrapLoader(automaton, library, isCritical=False):
@@ -140,7 +136,7 @@ class TestBootstrapLoaderPomset(BaseTestClass):
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
-        automaton.setThreadPool(None, threadpool.ThreadPool(1))
+        automaton.setThreadPool(None, CloudModule.Pool(1))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
         return
@@ -245,7 +241,7 @@ class TestRecoverFromLoadFailure1(BaseTestClass):
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
-        automaton.setThreadPool(None, threadpool.ThreadPool(1))
+        automaton.setThreadPool(None, CloudModule.Pool(1))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
         return
@@ -273,8 +269,6 @@ class TestRecoverFromLoadFailure1(BaseTestClass):
 
         self.assertEqual(2, loadedDefinitionTable.rowCount())
 
-        # assert not request.exception
-
         return
 
 
@@ -290,7 +284,7 @@ class TestRecoverFromLoadFailure2(BaseTestClass):
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
-        automaton.setThreadPool(None, threadpool.ThreadPool(1))
+        automaton.setThreadPool(None, CloudModule.Pool(1))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
         return
@@ -344,7 +338,7 @@ class TestLoadAcrossSessions(BaseTestClass):
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
-        automaton.setThreadPool(None, threadpool.ThreadPool(1))
+        automaton.setThreadPool(None, CloudModule.Pool(1))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
         return

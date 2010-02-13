@@ -23,7 +23,7 @@ def generateBootstrapper():
     # need a command builder to call the loadPomset function
     # need a python eval environment to execute the output of commandbuilder
     parameter = ParameterModule.DataParameter(
-        id='pomset url', definition=defToLoadDef, optional=False, active=True,
+        id='pomset url', optional=False, active=True,
         portDirection=ParameterModule.PORT_DIRECTION_INPUT)
     ParameterModule.setAttributes(parameter, {})
     defToLoadDef.addParameter(parameter)

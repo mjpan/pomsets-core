@@ -7,14 +7,10 @@ import unittest
 import logging
 import shutil
 
-#import utils
-#utils.setPythonPath()
-#POMSET_ROOT = utils.getPomsetRoot()
-
 import currypy
 import pypatterns.command as CommandPatternModule
 
-import cloudpool
+import cloudpool as CloudModule
 import cloudpool.shell as ShellModule
 
 import pomsets.automaton as AutomatonModule
@@ -62,7 +58,7 @@ class BaseTestClass(object):
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
-        automaton.setThreadPool(None, threadpool.ThreadPool(1))
+        automaton.setThreadPool(None, CloudModule.Pool(1))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
         return
@@ -230,7 +226,7 @@ class TestCase4(BaseTestClass, unittest.TestCase):
 
         compositeDefinition = DefinitionModule.getNewNestDefinition()
         parameter = ParameterModule.DataParameter(
-            id='item to echo', definition=compositeDefinition,
+            id='item to echo', 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         compositeDefinition.addParameter(parameter)
         
@@ -274,7 +270,7 @@ class TestCase8(BaseTestClass, unittest.TestCase):
 
         compositeDefinition = DefinitionModule.getNewNestDefinition()
         parameter = ParameterModule.DataParameter(
-            id='item to echo', definition=compositeDefinition,
+            id='item to echo', 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         compositeDefinition.addParameter(parameter)
         
@@ -315,7 +311,7 @@ class TestCase9(BaseTestClass, unittest.TestCase):
 
         compositeDefinition = DefinitionModule.getNewNestDefinition()
         parameter = ParameterModule.DataParameter(
-            id='item to echo', definition=compositeDefinition,
+            id='item to echo', 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         compositeDefinition.addParameter(parameter)
 
@@ -367,7 +363,7 @@ class TestCase10(BaseTestClass, unittest.TestCase):
 
         compositeDefinition = DefinitionModule.getNewNestDefinition()
         parameter = ParameterModule.DataParameter(
-            id='item to echo', definition=compositeDefinition,
+            id='item to echo', 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         compositeDefinition.addParameter(parameter)
         
@@ -413,7 +409,7 @@ class TestParameterSweep1(BaseTestClass, unittest.TestCase):
 
         
         parameter = ParameterModule.DataParameter(
-            id='item to echo', definition=compositeDefinition,
+            id='item to echo', 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         parameter.setAttribute(ParameterModule.PORT_ATTRIBUTE_PARAMETERSWEEP, True)
         compositeDefinition.addParameter(parameter)
@@ -530,7 +526,7 @@ class TestParameterSweep2(BaseTestClass, unittest.TestCase):
         }
         for parameterId, attributes in parameterGroup.iteritems():
             parameter = ParameterModule.DataParameter(
-                id=parameterId, definition=compositeDefinition,
+                id=parameterId, 
                 portDirection=ParameterModule.PORT_DIRECTION_INPUT)
             for attributeKey, attributeValue in attributes.iteritems():
                 parameter.setAttribute(attributeKey, attributeValue)
@@ -665,7 +661,7 @@ class TestParameterSweep3(BaseTestClass, unittest.TestCase):
         parameterIds = ['input files', 'output file']
         for parameterId  in parameterIds:
             parameter = ParameterModule.DataParameter(
-                id=parameterId, definition=compositeDefinition,
+                id=parameterId, 
                 portDirection=ParameterModule.PORT_DIRECTION_INPUT)
             compositeDefinition.addParameter(parameter)
         
@@ -813,7 +809,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
 
         inputParameter = \
             ParameterModule.DataParameter(
-                id='input file', definition=compositeDefinition,
+                id='input file', 
                 portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         inputParameter.setAttribute(
             ParameterModule.PORT_ATTRIBUTE_PARAMETERSWEEP, True)
@@ -825,7 +821,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
         
         outputParameter = \
             ParameterModule.DataParameter(
-                id='output file', definition=compositeDefinition,
+                id='output file', 
                 portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         compositeDefinition.addParameter(outputParameter)
         compositeDefinition.connectParameters(
@@ -834,7 +830,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
         )
         
         blackboardParameter = \
-            ParameterModule.BlackboardParameter('intermediate file', compositeDefinition)
+            ParameterModule.BlackboardParameter('intermediate file')
         compositeDefinition.addParameter(blackboardParameter)
         compositeDefinition.connectParameters(
             compositeDefinition, 'intermediate file',

@@ -17,6 +17,7 @@ import pypatterns.command as CommandPatternModule
 import pomsets.automaton as AutomatonModule
 import pypatterns.filter as FilterModule
 
+import cloudpool as CloudModule
 import cloudpool.environment as ExecuteEnvironmentModule
 
 import pomsets.command as TaskCommandModule
@@ -33,7 +34,7 @@ class PrintObject(object):
     
     def __init__(self):
         automaton = AutomatonModule.Automaton()
-        automaton.setThreadPool(0, threadpool.ThreadPool(1))
+        automaton.setThreadPool(0, CloudModule.Pool(1))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
         return
@@ -104,8 +105,6 @@ class PrintObject(object):
 
         task.automaton(self.automaton)
 
-        #self.automaton.threadpool().putRequest(request)
-        #self.automaton.threadpool().wait()
         pool.putRequest(request)
         pool.wait()
 

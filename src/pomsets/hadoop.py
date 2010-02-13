@@ -2,6 +2,7 @@ import logging
 import os
 
 
+import pomsets.builder as BuilderModule
 import pomsets.command as CommandModule
 import pomsets.definition as DefinitionModule
 
@@ -58,3 +59,43 @@ class PipesExecutable(CommandModule.Executable):
     # END class PipesExecutable
     pass
 
+
+
+class Builder(BuilderModule.Builder):
+
+
+    def createExecutableObject(self):
+        executableObject = JarExecutable()
+        return executableObject
+
+
+    def createNewAtomicPomset(self, *args, **kwds):
+
+        if kwds.get('executableObject', None) is None:
+            kwds['executableObject'] = self.createExecutableObject()
+            pass
+
+        # this should call BuilderModule.Builder.createNewAtomicPomset
+        # but then replace the executable object
+
+        raise NotImplemented("%s.createNewAtomicPomset" % self.__class__)
+
+
+    def createNewPipesPomset(self):
+
+        # this should call BuilderModule.Builder.createNewAtomicPomset
+        # but then replace the executable object
+
+        raise NotImplemented("%s.createNewPipesPomset" % self.__class__)
+
+    def createNewStreamingPomset(self):
+
+        # this should call BuilderModule.Builder.createNewAtomicPomset
+        # but then replace the executable object
+
+        raise NotImplemented("%s.createNewStreamingPomset" % self.__class__)
+
+
+
+    # END class Builder
+    pass

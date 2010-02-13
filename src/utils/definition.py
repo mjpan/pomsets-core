@@ -245,7 +245,7 @@ def createPomsetContainingParameterSweep():
     reducerNode.name('reducer')
 
     blackboardParameter = \
-        ParameterModule.BlackboardParameter('intermediate file', compositeDefinition)
+        ParameterModule.BlackboardParameter('intermediate file')
     compositeDefinition.addParameter(blackboardParameter)
     compositeDefinition.connectParameters(
         compositeDefinition, 'intermediate file',

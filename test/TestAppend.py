@@ -45,17 +45,17 @@ def createLinguisticDefinition():
     definition.functionToExecute(appendTerm)
     
     parameter = ParameterModule.DataParameter(
-        id='input sentence', definition=definition,
+        id='input sentence', 
         portDirection=ParameterModule.PORT_DIRECTION_INPUT)
     definition.addParameter(parameter)
     
     parameter = ParameterModule.DataParameter(
-        id='terms to append', definition=definition,
+        id='terms to append', 
         portDirection=ParameterModule.PORT_DIRECTION_INPUT)
     definition.addParameter(parameter)
     
     parameter = ParameterModule.DataParameter(
-        id='output sentence', definition=definition,
+        id='output sentence', 
         portDirection=ParameterModule.PORT_DIRECTION_OUTPUT)
     definition.addParameter(parameter)
     
@@ -124,7 +124,7 @@ class TestCase2(BaseModule.BaseTestClass):
         
         for parameterName, parameterClass, portDirection in parameterInfo:
             parameter = parameterClass(
-                id=parameterName, definition=compositeDefinition,
+                id=parameterName, 
                 portDirection=portDirection)
             compositeDefinition.addParameter(parameter)
             pass
@@ -199,7 +199,7 @@ class TestCase3(BaseModule.BaseTestClass):
             ('synsem data', ParameterModule.BlackboardParameter, None)]
         for parameterName, parameterClass, portDirection in parameterInfo:
             parameter = parameterClass(
-                id=parameterName, definition=compositeDefinition,
+                id=parameterName, 
                 portDirection=portDirection)
             compositeDefinition.addParameter(parameter)
             pass
@@ -288,7 +288,7 @@ class TestCase4(BaseModule.BaseTestClass):
             ('synsem data', ParameterModule.BlackboardParameter, None)]
         for parameterName, parameterClass, portDirection in parameterInfo:
             parameter = parameterClass(
-                id=parameterName, definition=compositeDefinition,
+                id=parameterName, 
                 portDirection=portDirection)
             compositeDefinition.addParameter(parameter)
             pass

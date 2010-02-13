@@ -75,7 +75,7 @@ class TestParameterArgument(unittest.TestCase):
         # create the parameter
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterName, definition=None,
+            id=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         parameterAttributes = {
                 ParameterModule.PORT_ATTRIBUTE_COMMANDLINE:True,
@@ -103,7 +103,7 @@ class TestParameterArgument(unittest.TestCase):
         # create the parameter
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterName, definition=None,
+            id=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         prefixFlag = ['-input']
         parameterAttributes = {
@@ -137,7 +137,7 @@ class TestParameterArgument(unittest.TestCase):
         # create the parameter
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterName, definition=None,
+            id=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
 
         trueValue = ['-foo']
@@ -178,7 +178,7 @@ class TestParameterArgument(unittest.TestCase):
         parameterId = uuid.uuid4().hex
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterId, name=parameterName, definition=None,
+            id=parameterId, name=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
 
         trueValue = ['-foo']
@@ -220,7 +220,7 @@ class TestParameterArgument(unittest.TestCase):
         # create the parameter
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterName, definition=None,
+            id=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
 
         prefixFlag = ['-foo']
@@ -263,7 +263,7 @@ class TestParameterArgument(unittest.TestCase):
         # create the parameter
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterName, definition=None,
+            id=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
 
         prefixFlag = ['-foo']
@@ -305,7 +305,7 @@ class TestParameterArgument(unittest.TestCase):
         # create the parameter
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterName, definition=None,
+            id=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         parameterAttributes = {
                 ParameterModule.PORT_ATTRIBUTE_COMMANDLINE:True,
@@ -334,7 +334,7 @@ class TestParameterArgument(unittest.TestCase):
         # create the parameter
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterName, definition=None,
+            id=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         prefixFlag = ['-input']
         parameterAttributes = {
@@ -367,7 +367,7 @@ class TestParameterArgument(unittest.TestCase):
         # create the parameter
         parameterName = 'test'
         parameter = ParameterModule.DataParameter(
-            id=parameterName, definition=None,
+            id=parameterName, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         prefixFlag = ['-input']
         parameterAttributes = {

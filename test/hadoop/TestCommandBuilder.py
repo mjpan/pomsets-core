@@ -6,15 +6,6 @@ import threadpool
 import unittest
 import logging
 
-
-# TODO:
-# figure out how to use the code in test.util
-# to configure the environment correctly
-# APP_ROOT = os.getenv('APP_ROOT')
-
-#POMSET_ROOT = "%s/pomsets/src" % APP_ROOT
-#sys.path.insert(0, POMSET_ROOT)
-
 if not os.getenv('HADOOP_HOME'):
     os.environ['HADOOP_HOME'] = '/hadoop'
 
@@ -55,13 +46,9 @@ class TestBuildCommand(unittest.TestCase):
         task.setParameterBinding('input file', ['hadoopInput'])
         task.setParameterBinding('output file', ['hadoopOutput'])
         
-        #commandBuilder = HadoopModule.JarCommandBuilder(
-        #    buildCommandFunction=TaskCommandModule.buildCommandFunction_commandlineArgsOnly
-        #)
         commandBuilder = TaskCommandModule.CommandBuilder(
             TaskCommandModule.buildCommandFunction_commandlineArgs
         )
-        
         
         command = commandBuilder.buildCommand(task)
         self.assertEquals(
@@ -123,9 +110,6 @@ class TestBuildCommand(unittest.TestCase):
         commandBuilder = TaskCommandModule.CommandBuilder(
             TaskCommandModule.buildCommandFunction_commandlineArgs
         )
-        #commandBuilder = HadoopModule.PipesCommandBuilder(
-        #    buildCommandFunction=TaskCommandModule.buildCommandFunction_commandlineArgsOnly
-        #)
         
         command = commandBuilder.buildCommand(task)
         self.assertEquals(

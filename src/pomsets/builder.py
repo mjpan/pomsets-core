@@ -1,6 +1,7 @@
 import logging
 import uuid
 
+import pomsets.command as TaskCommandModule
 import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 import pomsets.parameter as ParameterModule
@@ -8,7 +9,110 @@ import pomsets.parameter as ParameterModule
 class Builder(object):
 
 
-    def createNewPomset(self):
+    def addPomsetParameter(self, pomset, parameterName, attributes):
+
+        # the direction has to be specified
+        # almost everything else has a 
+        direction = attributes['direction']
+
+        isOptional = attributes.get('optional', False)
+        isActive = attributes.get('active', True)
+        isCommandline = attributes.get('commandline', True)
+        isFile = attributes.get('file', False)
+        isList = attributes.get('list', False)
+        isEnum = attributes.get('enum', False)
+
+        if isCommandline:
+            prefixFlag = attributes.get('prefix flag', [])
+            distributePrefixFlag = attributes.get(
+                'distribute prefix flag', False)
+            
+            enumMap = attributes.get('enum map', {})
+
+            commandlineOptions = {
+                ParameterModule.COMMANDLINE_PREFIX_FLAG:prefixFlag,
+                ParameterModule.COMMANDLINE_PREFIX_FLAG_DISTRIBUTE:distributePrefixFlag,
+                ParameterModule.COMMANDLINE_ENUM_MAP:enumMap
+                }
+            pass
+
+        isInputFile = (direction == ParameterModule.PORT_DIRECTION_INPUT and 
+                       isFile)
+
+        isSideEffect = (direction == ParameterModule.PORT_DIRECTION_OUTPUT and
+                        isFile)
+        if isSideEffect:
+            # we have to do this because the output is the file
+            # but the name of the file is actually the input
+            direction = ParameterModule.PORT_DIRECTION_INPUT
+
+        parameterAttributes = {
+            ParameterModule.PORT_ATTRIBUTE_COMMANDLINE:isCommandline,
+            ParameterModule.PORT_ATTRIBUTE_ISINPUTFILE:isInputFile,
+            ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT:isSideEffect,
+            ParameterModule.PORT_ATTRIBUTE_ISLIST:isList,
+            ParameterModule.PORT_ATTRIBUTE_COMMANDLINE_OPTIONS:commandlineOptions
+            }
+
+        parameter = ParameterModule.DataParameter(
+            id=parameterName, 
+            optional=isOptional, active=isActive,
+            portDirection=direction)
+        
+        ParameterModule.setAttributes(parameter, parameterAttributes)
+
+        pomset.addParameter(parameter)
+
+        return parameter
+
+
+    def addParameterOrdering(self, pomset, sourceParameterName, targetParameterName):
+        parameterOrderings = pomset.parameterOrderingTable()
+        row = parameterOrderings.addRow()
+        row.setColumn('source', sourceParameterName)
+        row.setColumn('target', targetParameterName)
+        return
+
+
+    def createExecutableObject(self, path, staticArgs=None):
+        executableObject = TaskCommandModule.Executable()
+        executableObject.stageable(False)
+        executableObject.path(path)
+        if staticArgs is None:
+            staticArgs = []
+        executableObject.staticArgs(staticArgs)
+        return executableObject
+
+
+    def createNewAtomicPomset(self, name=None, 
+                              executableObject=None,
+                              staticArgs=None, *args, **kwds):
+
+        newAtomicPomset = DefinitionModule.AtomicDefinition(*args, **kwds)
+        if name is None:
+            name = 'pomset %s' % uuid.uuid4().hex[:3]
+        newAtomicPomset.name(name)
+
+        newAtomicPomset.functionToExecute(
+            DefinitionModule.executeTaskInEnvironment)
+
+        newAtomicPomset.executable(executableObject)
+
+        # create the parameter orderings
+        parameterOrderings = DefinitionModule.createParameterOrderingTable()
+        newAtomicPomset.parameterOrderingTable(parameterOrderings)
+
+        newAtomicPomset.commandBuilderType('shell process')
+
+        newPomsetContext = ContextModule.Context()
+        newPomsetContext.pomset(newAtomicPomset)
+        
+        return newPomsetContext
+
+
+
+
+    def createNewNestPomset(self, name=None):
         """
         """
         #TODO: this should construct a command to create the new pomset
@@ -17,7 +121,10 @@ class Builder(object):
         #      create an event to update the GUI
 
         newPomset = DefinitionModule.getNewNestDefinition()
-        newPomset.name('pomset %s' % uuid.uuid4().hex[:3])
+
+        if name is None:
+            name = 'pomset %s' % uuid.uuid4().hex[:3]
+        newPomset.name(name)
         
         newPomsetContext = ContextModule.Context()
         newPomsetContext.pomset(newPomset)
@@ -94,16 +201,22 @@ class Builder(object):
             print "cannot connect ports of different types"
             return False
 
-        if not targetParameter.portDirection() == ParameterModule.PORT_DIRECTION_INPUT:
+        # the target parameter cannot be an input
+        # nor an output file
+        if not targetParameter.portDirection() == ParameterModule.PORT_DIRECTION_INPUT or \
+                targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
             logging.debug("parameter %s is not an input" % targetParameterId)
             print "parameter %s is not an input" % targetParameterId
             return False
         
+        # the source parameter cannot be an output (file or not)
         if not sourceParameter.portDirection() == ParameterModule.PORT_DIRECTION_OUTPUT and \
            not sourceParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
             logging.debug("parameter %s is not an output" % sourceParameterId)
             print "parameter %s is not an output" % sourceParameterId
             return False
+
+        
 
         return True
 
@@ -141,7 +254,7 @@ class Builder(object):
             bbParameterId = '%s-%s' % (sourceParameterId,
                                          targetParameterId)
             bbParameter = ParameterModule.BlackboardParameter(
-                bbParameterId, pomset)
+                bbParameterId)
             pomset.addParameter(bbParameter)
     
             # create a parameter connection (source->blackboard)
@@ -167,3 +280,7 @@ class Builder(object):
             ]
 
         return path
+
+    # END class Builder
+    pass
+

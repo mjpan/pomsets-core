@@ -50,7 +50,7 @@ class Parameter(ResourceModule.Struct):
     ]
 
     def __init__(self, id=None, name=None,
-                 definition=None, possibleValues=None, defaultValue=None):
+                 possibleValues=None, defaultValue=None):
 
         if id is None:
             id = ResourceModule.Resource.ID_GENERATOR()
@@ -183,8 +183,8 @@ class BlackboardParameter(ExposedParameter):
 
     ATTRIBUTES = ExposedParameter.ATTRIBUTES + []
 
-    def __init__(self, id=None, definition=None, **kwds):
-        ExposedParameter.__init__(self, id=id, definition=definition,
+    def __init__(self, id=None, **kwds):
+        ExposedParameter.__init__(self, id=id, 
                                   portDirection=PORT_DIRECTION_INTERNAL,
                                   portType=PORT_TYPE_BLACKBOARD)
         return
@@ -224,8 +224,8 @@ class InputTemporalParameter(PortParameter):
 
     ATTRIBUTES = PortParameter.ATTRIBUTES + []
 
-    def __init__(self, id=None, definition=None):
-        PortParameter.__init__(self, id=id, definition=definition, 
+    def __init__(self, id=None):
+        PortParameter.__init__(self, id=id, 
                                portDirection=PORT_DIRECTION_INPUT,
                                portType=PORT_TYPE_TEMPORAL,
                                optional=True,
@@ -243,8 +243,8 @@ class OutputTemporalParameter(PortParameter):
 
     ATTRIBUTES = PortParameter.ATTRIBUTES + []
 
-    def __init__(self, id=None, definition=None):
-        PortParameter.__init__(self, id=id, definition=definition, 
+    def __init__(self, id=None):
+        PortParameter.__init__(self, id=id, 
                                portType=PORT_TYPE_TEMPORAL,
                                portDirection=PORT_DIRECTION_OUTPUT,
                                optional=True,

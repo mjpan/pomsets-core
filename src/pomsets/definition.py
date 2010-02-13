@@ -51,7 +51,8 @@ class Definition(ResourceModule.Struct):
         'isLibraryDefinition',
         'url',
         'description',
-        'name'
+        'name',
+        'parameterOrderingTable',
     ]
 
     SYMBOL_INPUT = 'input'
@@ -76,7 +77,7 @@ class Definition(ResourceModule.Struct):
     
     
     def addParameter(self, parameter, id=None):
-        
+
         row = self.parametersTable().addRow()
 
         # TODO:
@@ -111,10 +112,10 @@ class Definition(ResourceModule.Struct):
         self.parametersTable(table)
         
         inputParameter = ParameterModule.InputTemporalParameter(
-            Definition.SYMBOL_INPUT_TEMPORAL, self)
+            Definition.SYMBOL_INPUT_TEMPORAL)
         
         outputParameter = ParameterModule.OutputTemporalParameter(
-            Definition.SYMBOL_OUTPUT_TEMPORAL, self)
+            Definition.SYMBOL_OUTPUT_TEMPORAL)
         
         self.addParameter(inputParameter)
         self.addParameter(outputParameter)
@@ -451,27 +452,27 @@ class LoopDefinition(CompositeDefinition):
         CompositeDefinition.__init__(self)
         
         parameter = ParameterModule.DataParameter(
-            id=LoopDefinition.PARAMETER_INITIAL_STATE, definition=self,
+            id=LoopDefinition.PARAMETER_INITIAL_STATE, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         self.addParameter(parameter)
         
         parameter = ParameterModule.DataParameter(
-            id=LoopDefinition.PARAMETER_CONTINUE_CONDITION, definition=self,
+            id=LoopDefinition.PARAMETER_CONTINUE_CONDITION, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         self.addParameter(parameter)
         
         parameter = ParameterModule.DataParameter(
-            id=LoopDefinition.PARAMETER_STATE_TRANSITION, definition=self,
+            id=LoopDefinition.PARAMETER_STATE_TRANSITION, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         self.addParameter(parameter)
 
         parameter = ParameterModule.DataParameter(
-            id=LoopDefinition.PARAMETER_STATE_CONFIGURATION, definition=self,
+            id=LoopDefinition.PARAMETER_STATE_CONFIGURATION, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         self.addParameter(parameter)
         
         parameter = ParameterModule.BlackboardParameter(
-            LoopDefinition.PARAMETER_STATE, self)
+            LoopDefinition.PARAMETER_STATE)
         self.addParameter(parameter)
         
         self.connectParameters(
@@ -497,17 +498,17 @@ class BranchDefinition(CompositeDefinition):
         CompositeDefinition.__init__(self)
         
         parameter = ParameterModule.DataParameter(
-            id=BranchDefinition.PARAMETER_CONDITION_STATE, definition=self,
+            id=BranchDefinition.PARAMETER_CONDITION_STATE, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         self.addParameter(parameter)
 
         parameter = ParameterModule.DataParameter(
-            id=BranchDefinition.PARAMETER_CONDITION_FUNCTION, definition=self,
+            id=BranchDefinition.PARAMETER_CONDITION_FUNCTION, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         self.addParameter(parameter)
 
         parameter = ParameterModule.DataParameter(
-            id=BranchDefinition.PARAMETER_CONDITION_MAP, definition=self,
+            id=BranchDefinition.PARAMETER_CONDITION_MAP, 
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         self.addParameter(parameter)
 
@@ -522,8 +523,6 @@ class AtomicDefinition(Definition):
     ATTRIBUTES = Definition.ATTRIBUTES + [
         'executable',
         'functionToExecute',
-        'parameterOrderingTable',
-        # 'executeEnvironmentType'
         'commandBuilderType'
     ]
     
@@ -558,13 +557,13 @@ def createPythonEvalDefinition():
     definition.commandBuilderType('python eval')
     
     parameter = ParameterModule.DataParameter(
-        id='command', definition=definition, optional=False, active=True,
+        id='command', optional=False, active=True,
         portDirection=ParameterModule.PORT_DIRECTION_INPUT)
     ParameterModule.setAttributes(parameter, {})
     definition.addParameter(parameter)
     
     parameter = ParameterModule.DataParameter(
-        id='eval result', definition=definition, optional=False, active=True,
+        id='eval result', optional=False, active=True,
         portDirection=ParameterModule.PORT_DIRECTION_OUTPUT)
     ParameterModule.setAttributes(parameter, {})
     definition.addParameter(parameter)
@@ -613,7 +612,7 @@ def createShellProcessDefinition(inputParameters=None,
         isActive = True
 
         parameter = ParameterModule.DataParameter(
-            id=inputParameterName, definition=definition, 
+            id=inputParameterName, 
             optional=isOptional, active=isActive,
             portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         

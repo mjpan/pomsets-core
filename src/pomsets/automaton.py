@@ -40,7 +40,8 @@ class Automaton(ResourceModule.Struct):
             #strio = StringIO.StringIO()
             # traceback.print_stack(file=strio)
             # kwds['exception stack trace'] = strio.getvalue()
-            kwds['exception stack trace'] = \
+            taskWorkRequest = task.workRequest()
+            taskWorkRequest.kwds['exception stack trace'] = \
                 repr(traceback.format_exception(exceptionType, exceptionValue,
                                                 exceptionTraceback))
 
@@ -235,23 +236,24 @@ class Automaton(ResourceModule.Struct):
         return request
 
 
-    def executePomset(self, pomset=None, requestKwds=None):
+    def executePomset(self, task=None, pomset=None, requestKwds=None):
 
         # create a new task
         # we assume that the pomset is a composite definition
         import pomsets.task as TaskModule
-        compositeTask = TaskModule.CompositeTask()
+        if task is None:
+            task = TaskModule.CompositeTask()
 
-        compositeTask.initializeTasksTable()
-        compositeTask.definition(pomset)
+        task.initializeTasksTable()
+        task.definition(pomset)
 
         taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
+        task.taskGenerator(taskGenerator)
 
-        compositeTask.automaton(self)
+        task.automaton(self)
         
         # generate the request
-        request = self.generateRequest(task=compositeTask,
+        request = self.generateRequest(task=task,
                                        requestKwds=requestKwds)
 
         # check if any threads have been started
@@ -268,14 +270,14 @@ class Automaton(ResourceModule.Struct):
             # now set the thread pool in the request
             request.kwds['thread pool'] = threadpool
 
-            compositeTask.workRequest(request)
+            task.workRequest(request)
 
             self.enqueueRequest(request)
         except ValueError, e:
             logging.error(e)
             raise ExecuteErrorModule.ExecutionError(e)
 
-        return compositeTask
+        return task
 
     
     #end class Automaton
