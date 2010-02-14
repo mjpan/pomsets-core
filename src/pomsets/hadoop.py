@@ -13,6 +13,8 @@ def getHomeLocation():
 def getExecutablePath():
     return os.path.join(getHomeLocation(), 'bin', 'hadoop')
 
+def getStreamingJar():
+    return os.path.join(getHomeLocation(), 'streaming.jar')
 
 class JarExecutable(CommandModule.Executable):
 
@@ -64,37 +66,34 @@ class PipesExecutable(CommandModule.Executable):
 class Builder(BuilderModule.Builder):
 
 
-    def createExecutableObject(self):
-        executableObject = JarExecutable()
-        return executableObject
+    def createExecutableObject(self, jarFile, jarClass):
+        executable = JarExecutable()
+        executable.stageable(False)
+        executable.path([getExecutablePath()])
+        executable.jarFile([jarFile])
+        executable.jarClass([jarClass])
+
+        return executable
 
 
-    def createNewAtomicPomset(self, *args, **kwds):
+    def createStreamingExecutableObject(self):
 
-        if kwds.get('executableObject', None) is None:
-            kwds['executableObject'] = self.createExecutableObject()
-            pass
+        executable = JarExecutable()
+        executable.stageable(False)
+        executable.path([getExecutablePath()])
+        executable.jarFile([getStreamingJar()])
+        executable.jarClass([])
 
-        # this should call BuilderModule.Builder.createNewAtomicPomset
-        # but then replace the executable object
-
-        raise NotImplemented("%s.createNewAtomicPomset" % self.__class__)
+        return executable
 
 
-    def createNewPipesPomset(self):
-
-        # this should call BuilderModule.Builder.createNewAtomicPomset
-        # but then replace the executable object
-
-        raise NotImplemented("%s.createNewPipesPomset" % self.__class__)
-
-    def createNewStreamingPomset(self):
-
-        # this should call BuilderModule.Builder.createNewAtomicPomset
-        # but then replace the executable object
-
-        raise NotImplemented("%s.createNewStreamingPomset" % self.__class__)
-
+    def createPipesExecutableObject(self, path, staticArgs=None):
+        command = [path]
+        executable = PipesExecutable()
+        executable.stageable(False)
+        executable.path([getExecutablePath()])
+        executable.pipesFile(command)
+        return executable
 
 
     # END class Builder

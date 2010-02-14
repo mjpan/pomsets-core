@@ -41,6 +41,9 @@ class Automaton(ResourceModule.Struct):
             # traceback.print_stack(file=strio)
             # kwds['exception stack trace'] = strio.getvalue()
             taskWorkRequest = task.workRequest()
+
+            taskWorkRequest.kwds['exception type'] = str(exceptionType)
+            taskWorkRequest.kwds['exception value'] = str(exceptionValue)
             taskWorkRequest.kwds['exception stack trace'] = \
                 repr(traceback.format_exception(exceptionType, exceptionValue,
                                                 exceptionTraceback))

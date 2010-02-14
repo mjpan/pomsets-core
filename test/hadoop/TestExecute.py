@@ -16,7 +16,7 @@ import shutil
 #sys.path.insert(0, POMSET_ROOT)
 
 if not os.getenv('HADOOP_HOME'):
-    os.environ['HADOOP_HOME'] = '/hadoop'
+    os.environ['HADOOP_HOME'] = os.path.sep.join(['', 'hadoop'])
 
 
 import currypy

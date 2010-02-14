@@ -66,6 +66,19 @@ def createExecuteEnvironment():
     return ShellModule.LocalShell()
     
 
+def getErroredChildTasks(task):
+
+    for childTask in task.getChildTasks():
+        if not childTask.workRequest().exception:
+            continue
+        if isinstance(childTask, TaskModule.CompositeTask):
+            for x in getErroredChildTasks(childTask):
+                yield x
+            continue
+        yield childTask
+    raise StopIteration
+
+
 def main(args):
 
     # TODO:
@@ -104,11 +117,24 @@ def main(args):
         #    exceptionStackTrace = workRequest.kwds.get('exception stack trace')
         #    print exceptionStackTrace
 
-        # if errored, then need to figure out which children actually erroed
-        # and the 
-        print "errored"
-        pass
+            
+        erroredTasks = [x for x in getErroredChildTasks(compositeTask)]
 
+
+        print "%s errored tasks" % len(erroredTasks)
+        for erroredTask in erroredTasks:
+            taskInfo = erroredTask.workRequest().kwds
+            print "task: %s" % erroredTask.definition().name()
+            if taskInfo.get('executed command', None):
+                # this is only available only if the command was actually executed
+                print "\tcommand: %s" % taskInfo.get('executed command')
+            if taskInfo.get('exception type', None):
+                # this should always be available
+                print ' '.join([taskInfo.get('exception type', None),
+                                taskInfo.get('exception value', None)])
+
+            pass
+        pass
     
     return
 
