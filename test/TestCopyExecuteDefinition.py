@@ -23,7 +23,7 @@ import cloudpool.environment as ExecuteEnvironmentModule
 import pomsets.command as TaskCommandModule
 import pomsets.task as TaskModule
 
-import utils.definition as GeneratePomsetsModule
+import pomsets.test_utils as GeneratePomsetsModule
 
 
 import TestExecute as TestExecuteModule

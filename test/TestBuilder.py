@@ -13,7 +13,7 @@ import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 import pomsets.parameter as ParameterModule
 
-import utils.definition as TestDefinitionModule
+import pomsets.test_utils as TestDefinitionModule
 
 class TestBuilder(unittest.TestCase):
 

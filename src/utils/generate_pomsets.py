@@ -7,7 +7,7 @@ import pomsets.context as ContextModule
 import pomsets.library as LibraryModule
 
 import utils
-import utils.definition as DefinitionModule
+import pomsets.test_utils as DefinitionModule
 
 
 def main(argv=None):

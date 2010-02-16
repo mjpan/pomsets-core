@@ -38,7 +38,7 @@ import pomsets.hadoop as HadoopModule
 
 import definition as GeneratePomsetsModule
 import test.TestExecute as BaseModule
-import test.util as UtilsModule
+# import test.util as UtilsModule
 
 
 #def getHadoopExecutable():
@@ -231,7 +231,7 @@ class TestHadoopStreaming1(TestHadoopBase, unittest.TestCase):
 
 def main():
     
-    UtilsModule.configLogging()
+    # UtilsModule.configLogging()
 
     suite = unittest.TestSuite()
 

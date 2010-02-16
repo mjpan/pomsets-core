@@ -22,7 +22,7 @@ import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 
-import utils.definition as GeneratePomsetsModule
+import pomsets.test_utils as GeneratePomsetsModule
 
 
 

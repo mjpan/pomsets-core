@@ -10,7 +10,7 @@ import pomsets.library as LibraryModule
 import pomsets.parameter as ParameterModule
 
 import utils
-import utils.definition as DefinitionTestModule
+import pomsets.test_utils as DefinitionTestModule
 
 
 

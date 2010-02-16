@@ -25,7 +25,7 @@ import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 
-import utils.definition as TestDefinitionModule
+import pomsets.test_utils as TestDefinitionModule
 
 
 def runBootstrapLoader(automaton, library, isCritical=False):

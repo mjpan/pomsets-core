@@ -14,6 +14,8 @@ setup(
         'currypy>=0.1.0',
         'pypatterns>=0.1.0',
         'Reaction>=0.2',
+        'threadpool>=1.2.7',
+        'simplejson>=2.0.9'
         ],
 
     # metadata for upload to PyPI

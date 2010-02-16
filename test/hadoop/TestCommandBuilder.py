@@ -23,7 +23,7 @@ import pomsets.task as TaskModule
 import pomsets.hadoop as HadoopModule
 
 import test.hadoop.definition as TestDefinitionModule
-import test.util as UtilsModule
+# import test.util as UtilsModule
 
 
 class TestBuildCommand(unittest.TestCase):
@@ -130,7 +130,7 @@ class TestBuildCommand(unittest.TestCase):
 
 
 def main():
-    UtilsModule.configLogging()
+    # UtilsModule.configLogging()
 
     suite = unittest.TestSuite()
     
