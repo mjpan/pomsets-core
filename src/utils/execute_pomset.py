@@ -130,8 +130,8 @@ def main(args):
                 print "\tcommand: %s" % taskInfo.get('executed command')
             if taskInfo.get('exception type', None):
                 # this should always be available
-                print ' '.join([taskInfo.get('exception type', None),
-                                taskInfo.get('exception value', None)])
+                print '\t' + ' '.join([taskInfo.get('exception type', None),
+                                       taskInfo.get('exception value', None)])
 
             pass
         pass

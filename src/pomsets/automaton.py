@@ -45,8 +45,8 @@ class Automaton(ResourceModule.Struct):
             taskWorkRequest.kwds['exception type'] = str(exceptionType)
             taskWorkRequest.kwds['exception value'] = str(exceptionValue)
             taskWorkRequest.kwds['exception stack trace'] = \
-                repr(traceback.format_exception(exceptionType, exceptionValue,
-                                                exceptionTraceback))
+                traceback.format_exception(exceptionType, exceptionValue,
+                                           exceptionTraceback)
 
 
             raise

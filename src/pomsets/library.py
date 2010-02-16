@@ -144,8 +144,6 @@ class Library(ResourceModule.Struct):
         if not isinstance(definition, DefinitionModule.CompositeDefinition):
             return
         
-        # libraryDefinitions = self.definitions()
-        
         for referenceDefinition in definition.nodes():
             if not referenceDefinition.referencesLibraryDefinition():
                 continue
