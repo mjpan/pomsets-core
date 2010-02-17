@@ -381,6 +381,7 @@ class ParameterConnection(GraphModule.Edge):
         self.targetParameter(targetParameter)
         return
 
+
     def source(self):
         return (self.sourceNode(), self.sourceParameter())
 

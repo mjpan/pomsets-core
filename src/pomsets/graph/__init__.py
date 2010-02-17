@@ -358,17 +358,19 @@ class Graph (Node):
         self.nodes().append(node)
         pass
 
-    def removeNode(self, node):
+    def removeNode(self, node, shouldRemoveEdges=True):
         if not node.graph() is self:
             raise ErrorModule.InvalidValueError(
                 "cannot remove node when node is not in this graph")
-        # remove all edges that going to this node as well
-        # need to cache because the underlying c++ iterator
-        # gets screwed up if we attempt to remove
-        edgesToRemove = [edge for edge in node.getEdges()]
-        for edge in edgesToRemove:
-            logging.debug("remove node %s remove edge %s" % (node, edge))
-            self.removeEdge(edge)
+
+        if shouldRemoveEdges:
+            # remove all edges that going to this node as well
+            # need to cache because the underlying c++ iterator
+            # gets screwed up if we attempt to remove
+            edgesToRemove = [edge for edge in node.getEdges()]
+            for edge in edgesToRemove:
+                logging.debug("remove node %s remove edge %s" % (node, edge))
+                self.removeEdge(edge)
 
         node.graph(None)
         self.nodes().remove(node)

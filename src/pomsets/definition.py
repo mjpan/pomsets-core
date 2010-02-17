@@ -177,7 +177,8 @@ class CompositeDefinition(GraphModule.Graph, Definition,
     ATTRIBUTES = GraphModule.Graph.ATTRIBUTES + \
                Definition.ATTRIBUTES + \
                ParameterBindingsHolder.ATTRIBUTES + \
-               ['definitions', 'parameterConnectionsTable']
+               ['definitions', 'parameterConnectionsTable',
+                'parameterConnectionPathTable']
 
     
     def __init__(self):
@@ -191,6 +192,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         self.definitions(set([]))
         
         self.initializeParameterConnections()
+        self.initializeParameterConnectionPaths()
         return
     
     def __eq__(self, other):
@@ -291,8 +293,16 @@ class CompositeDefinition(GraphModule.Graph, Definition,
             targetParameter = row[3]
             copySourceNode = memo[sourceNode]
             copyTargetNode = memo[targetNode]
-            result.connectParameters(copySourceNode, sourceParameter,
-                                     copyTargetNode, targetParameter)
+            connection = result.connectParameters(
+                copySourceNode, sourceParameter,
+                copyTargetNode, targetParameter
+                )
+            result.addParameterConnectionPath(
+                copySourceNode, sourceParameter,
+                copyTargetNode, targetParameter,
+                tuple([connection])
+                )
+
             pass
             
         # copy over the parameter bindings
@@ -305,7 +315,18 @@ class CompositeDefinition(GraphModule.Graph, Definition,
     
     def getClassForCreateEdge(self):
         return ParameterModule.ParameterConnection
-    
+
+
+    def initializeParameterConnectionPaths(self):
+        table = RelationalModule.createTable(
+            'parameter connection path',
+            ['source node', 'source parameter', 
+             'target node', 'target parameter',
+             'path', 'additional parameters']
+        )
+        self.parameterConnectionPathTable(table)
+        return
+
     def initializeParameterConnections(self):
         table = RelationalModule.createTable(
             'parameter connections',
@@ -316,6 +337,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         self.parameterConnectionsTable(table)
         return
     
+
     def addDefinition(self, definition):
         self.definitions().add(definition)
         return
@@ -330,8 +352,28 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         if definition in self.definitions():
             self.definitions().remove(definition)
         return
+
+    def removeNode(self, node):
+
+        # we need to remove the edges here
+        # instead of defaulting to grpah
+        # because what's presented as an data edge to the user
+        # is actually two parameter connections
+        # though temporal connections are just a single connection
+
+        # remove just the node, 
+        # since we've removed the edges
+        GraphModule.Graph.removeNode(shouldRemoveEdges=False)
+
+        return
     
-    def addNewNode(self, definitionToReference, predecessors, successors):
+    def addNewNode(self, definitionToReference, 
+                   predecessors=None, successors=None):
+
+        if predecessors is None:
+            predecessors = []
+        if successors is None:
+            successors = []
 
         # add definitionToReference of definitions that
         # this definition references
@@ -344,16 +386,26 @@ class CompositeDefinition(GraphModule.Graph, Definition,
 
         # add temporal connections
         for predecessor in predecessors:
-            self.connectParameters(
+            connection = self.connectParameters(
                 predecessor, 'temporal output',
                 node, 'temporal input'
             )
+            self.addParameterConnectionPath(
+                predecessor, 'temporal output',
+                node, 'temporal input',
+                tuple([connection])
+                )
             pass
         for successor in successors:
-            self.connectParameters(
+            connection = self.connectParameters(
                 node, 'temporal output',
                 successor, 'temporal input'
             )
+            self.addParameterConnectionPath(
+                node, 'temporal output',
+                successor, 'temporal input',
+                tuple([connection])
+                )
             pass
 
         return node
@@ -363,20 +415,84 @@ class CompositeDefinition(GraphModule.Graph, Definition,
                           sourceNode, sourceParameter, 
                           targetNode, targetParameter):
         
+        edge = self.createEdge([sourceNode, targetNode])
+        # this sets the references for parameter connections
+        edge.setReferences(sourceNode, sourceParameter,
+                           targetNode, targetParameter)
+
         row = self.parameterConnectionsTable().addRow()
-        
         row.setColumn('source node', sourceNode)
         row.setColumn('source parameter', sourceParameter)
         row.setColumn('target node', targetNode)
         row.setColumn('target parameter', targetParameter)
-
-        edge = self.createEdge([sourceNode, targetNode])
-        edge.setReferences(sourceNode, sourceParameter,
-                           targetNode, targetParameter)
         row.setColumn('parameter connection', edge)
         
         return edge
-    
+
+
+    def addParameterConnectionPath(self, 
+                                   sourceNode, sourceParameter,
+                                   targetNode, targetParameter, path,
+                                   additionalParameters=None):
+
+        if additionalParameters is None:
+            additionalParameters = tuple([])
+
+        row = self.parameterConnectionPathTable().addRow()
+
+        row.setColumn('source node', sourceNode)
+        row.setColumn('source parameter', sourceParameter)
+        row.setColumn('target node', targetNode)
+        row.setColumn('target parameter', targetParameter)
+        row.setColumn('path', path)
+        row.setColumn('additional parameters', additionalParameters)
+
+        return
+
+
+
+    def constructParameterConnectionFilter(self, 
+                                           sourceNode, sourceParameterId,
+                                           targetNode, targetParameterId):
+        filter = FilterModule.constructAndFilter()
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'source node',
+                FilterModule.IdentityFilter(sourceNode)
+                )
+            )
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'source parameter',
+                FilterModule.EquivalenceFilter(sourceParameterId)
+                )
+            )
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'target node',
+                FilterModule.IdentityFilter(targetNode)
+                )
+            )
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'target parameter',
+                FilterModule.EquivalenceFilter(targetParameterId)
+                )
+            )
+        return filter
+
+
+    def removeParameterConnection(self, connection):
+        filter = self.constructParameterConnectionFilter(
+            connection.sourceNode(),
+            connection.sourceParameter(),
+            connection.targetNode(),
+            connection.targetParameter())
+        self.parameterConnectionsTable().removeRows(filter)
+        self.removeEdge(connection)
+        return
+
+
 
     def getIdForParameterReference(self, node, parameterId):
         if node is self:
@@ -475,10 +591,15 @@ class LoopDefinition(CompositeDefinition):
             LoopDefinition.PARAMETER_STATE)
         self.addParameter(parameter)
         
-        self.connectParameters(
+        connection = self.connectParameters(
             self, LoopDefinition.PARAMETER_INITIAL_STATE,
             self, LoopDefinition.PARAMETER_STATE
         )
+        self.addParameterConnectionPath(
+            self, LoopDefinition.PARAMETER_INITIAL_STATE,
+            self, LoopDefinition.PARAMETER_STATE,
+            tuple([connection])
+            )
         
         return
     

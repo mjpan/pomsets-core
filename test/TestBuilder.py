@@ -7,6 +7,9 @@ import unittest
 import logging
 import uuid
 
+import pypatterns.filter as FilterModule
+import pypatterns.relational as RelationalModule
+
 import pomsets.builder as BuilderModule
 import pomsets.command as TaskCommandModule
 import pomsets.context as ContextModule
@@ -297,69 +300,81 @@ class TestBuilder(unittest.TestCase):
         # ensure that cannon connect a parameter to itself
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'input file',
                 node1, 'input file'))
 
         # ensure false if the paraemter does not exist
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'input',
                 node2, 'output file'))
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'input file',
                 node2, 'output'))
 
         # ensure cannot connect parameters if they are of the same direction
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'input file',
                 node2, 'input files'))
 
         # ensure that we cannot connect if not the same time
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'temporal input',
                 node2, 'input files'))
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'input file',
                 node2, 'temporal input'))
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'temporal input',
                 node2, 'output file'))
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'output file',
                 node2, 'temporal input'))
 
         # ensure that the target parameter needs to be of direction input
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'output file',
                 node2, 'output file'))
         
         # ensure that source parameter needs to be of direction output
         self.assertFalse(
             self.builder.canConnect(
+                pomset,
                 node1, 'input file',
                 node2, 'input files'))
         
         # now ensure we can connect the following
         self.assertTrue(
             self.builder.canConnect(
+                pomset,
                 node1, 'output file',
                 node2, 'input files'))
         self.assertTrue(
             self.builder.canConnect(
+                pomset,
                 node1, 'temporal output',
                 node2, 'temporal input'))
 
         return
 
 
-    def testConnect(self):
+    def testConnectDataParameters(self):
 
         pomsetContext = self.builder.createNewNestPomset()
         pomset = pomsetContext.pomset()
@@ -367,21 +382,164 @@ class TestBuilder(unittest.TestCase):
         mapDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT
         reduceDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT_REDUCE
 
-        node1 = self.builder.createNewNode(
+        sourceNode = self.builder.createNewNode(
             pomset, definitionToReference=mapDefinition)
-        node2 = self.builder.createNewNode(
+        targetNode = self.builder.createNewNode(
             pomset, definitionToReference=reduceDefinition)
 
-        # ensure that cannon connect a parameter to itself
-        self.builder.connect(
+        sourceParameterId = 'output file'
+        targetParameterId = 'input files'
+        bbParameterName = '%s.%s-%s.%s' % (sourceNode.name(),
+                                           sourceParameterId,
+                                           targetNode.name(),
+                                           targetParameterId)
+        self.assertFalse(pomset.hasParameter(bbParameterName))
+
+        # connect the data parameters
+        path = self.builder.connect(
             pomset,
-            node1, 'output file',
-            node2, 'input files')
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+
+        # assert the parameter connection path
+        self.assertEquals(len(path), 7)
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+        rows = [x for x in 
+            pomset.parameterConnectionPathTable().retrieve(
+                filter, ['path', 'additional parameters'])]
+        self.assertEquals(len(rows), 1)
+        row = rows[0]
+        self.assertEquals(tuple([path[2],path[4]]),
+                          row[0])
+        self.assertEquals(tuple([path[3]]), row[1])
+
+        # assert two additional entries in parameter connections
+        connections = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionsTable(),
+            filter, ['parameter connection'])
+        self.assertEquals(0, len(connections))
+
+        # verify that each of the individual connections
+        # are in the table
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            pomset, bbParameterName)
+        connections = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionsTable(),
+            filter, ['parameter connection'])
+        self.assertEquals(1, len(connections))
+        filter = pomset.constructParameterConnectionFilter(
+            pomset, bbParameterName,
+            targetNode, targetParameterId)
+        connections = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionsTable(),
+            filter, ['parameter connection'])
+        self.assertEquals(1, len(connections))
         
-        self.builder.connect(
+        # assert an additional internal blackboard parameter
+        self.assertTrue(pomset.hasParameter(bbParameterName))
+
+
+
+        self.builder.disconnect(pomset,
+                                sourceNode, sourceParameterId,
+                                targetNode, targetParameterId)
+
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+        rows = [x for x in 
+            pomset.parameterConnectionPathTable().retrieve(
+                filter, ['path', 'additional parameters'])]
+        self.assertEquals(len(rows), 0)
+
+        # verify that each of the individual connections
+        # are in the table
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            pomset, bbParameterName)
+        connections = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionsTable(),
+            filter, ['parameter connection'])
+        self.assertEquals(0, len(connections))
+        filter = pomset.constructParameterConnectionFilter(
+            pomset, bbParameterName,
+            targetNode, targetParameterId)
+        connections = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionsTable(),
+            filter, ['parameter connection'])
+        self.assertEquals(0, len(connections))
+
+
+        self.assertFalse(pomset.hasParameter(bbParameterName))
+        return
+
+
+    def testConnectTemporalParameters(self):
+
+        pomsetContext = self.builder.createNewNestPomset()
+        pomset = pomsetContext.pomset()
+        
+        mapDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT
+        reduceDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT_REDUCE
+
+        sourceNode = self.builder.createNewNode(
+            pomset, definitionToReference=mapDefinition)
+        targetNode = self.builder.createNewNode(
+            pomset, definitionToReference=reduceDefinition)
+
+        sourceParameterId = 'temporal output'
+        targetParameterId = 'temporal input'
+        parameters = pomset.getParametersByFilter(FilterModule.TRUE_FILTER)
+        numParameters = len(parameters)
+        path = self.builder.connect(
             pomset,
-            node1, 'temporal output',
-            node2, 'temporal input')
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+
+        # assert parameter connection path
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+        rows = [x for x in 
+            pomset.parameterConnectionPathTable().retrieve(
+                filter, ['path', 'additional parameters'])]
+        self.assertEquals(len(rows), 1)
+        row = rows[0]
+        self.assertEquals(1, len(row[0]))
+        self.assertTrue(path[2] is row[0][0])
+        self.assertEquals(0, len(row[1]))
+
+        # assert no additional parameters
+        parameters = pomset.getParametersByFilter(FilterModule.TRUE_FILTER)
+        self.assertEquals(numParameters, len(parameters))
+        # assert the parameter connection
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+        connections = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionsTable(),
+            filter, ['parameter connection'])
+        self.assertEquals(1, len(connections))
+
+
+        self.builder.disconnect(
+            pomset,
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+        parameters = pomset.getParametersByFilter(FilterModule.TRUE_FILTER)
+        self.assertEquals(numParameters, len(parameters))
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+        connections = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionsTable(),
+            filter, ['parameter connection'])
+        self.assertEquals(0, len(connections))
+        
+
         return
             
 

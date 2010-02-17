@@ -1,6 +1,8 @@
 import logging
 import uuid
 
+import pypatterns.relational as RelationalModule
+
 import pomsets.command as TaskCommandModule
 import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
@@ -164,6 +166,7 @@ class Builder(object):
 
 
     def canConnect(self, 
+                   pomset,
                    sourceNode, sourceParameterId,
                    targetNode, targetParameterId):
         """
@@ -173,7 +176,6 @@ class Builder(object):
 
         # cannot connect to itself
         if sourceNode == targetNode and sourceParameterId==targetParameterId:
-            print "cannot connect parameter to itself"
             logging.debug("cannot connect parameter to itself")
             return False
 
@@ -185,7 +187,6 @@ class Builder(object):
         except Exception, e:
             # if the parameter does not exist
             # then there's no way to connect
-            print 'cannot connect non-existent parameters'
             logging.debug('cannot connect non-existent parameters')
             return False
         
@@ -198,7 +199,6 @@ class Builder(object):
 
         if not sourceParameter.portType() == targetParameter.portType():
             logging.debug("cannot connect ports of different types")
-            print "cannot connect ports of different types"
             return False
 
         # the target parameter cannot be an input
@@ -206,17 +206,25 @@ class Builder(object):
         if not targetParameter.portDirection() == ParameterModule.PORT_DIRECTION_INPUT or \
                 targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
             logging.debug("parameter %s is not an input" % targetParameterId)
-            print "parameter %s is not an input" % targetParameterId
             return False
         
         # the source parameter cannot be an output (file or not)
         if not sourceParameter.portDirection() == ParameterModule.PORT_DIRECTION_OUTPUT and \
            not sourceParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
             logging.debug("parameter %s is not an output" % sourceParameterId)
-            print "parameter %s is not an output" % sourceParameterId
             return False
 
-        
+
+        # cannot connect if a path already exists
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+        paths = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionPathTable(),
+            filter, ['path'], [])
+        if len(paths) is not 0:
+            return False
+
 
         return True
 
@@ -240,6 +248,12 @@ class Builder(object):
                 sourceNode, sourceParameterId,
                 targetNode, targetParameterId
             )
+            pomset.addParameterConnectionPath(
+                sourceNode, sourceParameterId,
+                targetNode, targetParameterId,
+                tuple([connection])
+                )
+
             path = [
                 sourceNode,
                 sourceParameterId,
@@ -251,8 +265,10 @@ class Builder(object):
         else:
     
             # create a blackboard parameter
-            bbParameterId = '%s-%s' % (sourceParameterId,
-                                         targetParameterId)
+            bbParameterId = '%s.%s-%s.%s' % (sourceNode.name(),
+                                             sourceParameterId,
+                                             targetNode.name(),
+                                             targetParameterId)
             bbParameter = ParameterModule.BlackboardParameter(
                 bbParameterId)
             pomset.addParameter(bbParameter)
@@ -268,7 +284,14 @@ class Builder(object):
                 pomset, bbParameterId,
                 targetNode, targetParameterId
             )
-    
+
+            pomset.addParameterConnectionPath(
+                sourceNode, sourceParameterId,
+                targetNode, targetParameterId,
+                tuple([sourceParameterConnection, targetParameterConnection]),
+                tuple([bbParameterId])
+                )
+
             path = [
                 sourceNode,
                 sourceParameterId,
@@ -280,6 +303,43 @@ class Builder(object):
             ]
 
         return path
+
+
+
+
+    def disconnect(self, pomset,
+                   sourceNode, sourceParameterId,
+                   targetNode, targetParameterId):
+        """
+        looks for the connection path
+        then removes the individual atomic connections
+        """
+
+        filter = pomset.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+
+        paths = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionPathTable(),
+            filter, ['path'], [])
+
+        for connections, additionalParameterIds in pomset.parameterConnectionPathTable().retrieve(filter=filter, columns=['path', 'additional parameters']):
+
+            map(pomset.removeParameterConnection, list(connections))
+            parameters = [pomset.getParameter(x) 
+                          for x in additionalParameterIds]
+            map(pomset.removeParameter, parameters)
+            pass
+        pomset.parameterConnectionPathTable().removeRows(filter)
+
+        # now to see if there are any raw parameter connection
+        connections = RelationalModule.Table.reduceRetrieve(
+            pomset.parameterConnectionsTable(),
+            filter, ['parameter connection'], [])
+        map(pomset.removeParameterConnection, connections)
+        
+        return
+
 
     # END class Builder
     pass
