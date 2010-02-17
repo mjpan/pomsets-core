@@ -194,6 +194,8 @@ class Builder(object):
             self.disconnect(pomset, *rowValues)
             pass
 
+        pomset.removeNode(node)
+
         return
 
 

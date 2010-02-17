@@ -363,7 +363,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
 
         # remove just the node, 
         # since we've removed the edges
-        GraphModule.Graph.removeNode(shouldRemoveEdges=False)
+        GraphModule.Graph.removeNode(self, node, shouldRemoveEdges=False)
 
         return
     
@@ -809,6 +809,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
 
         pass
 
+    """
     def __eq__(self, other):
         differences = [x for x in self.getDifferencesWith(other)]
         return len(differences) is 0
@@ -837,7 +838,11 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
             yield 'parameter staging map'
         
         return
-    
+    """
+    def __eq__(self, other):
+        return self is other
+
+
     def __copy__(self):
         result = ReferenceDefinition(id=self.id())
         

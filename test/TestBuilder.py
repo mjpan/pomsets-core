@@ -562,6 +562,8 @@ class TestBuilder(unittest.TestCase):
         targetTemporalNode = self.builder.createNewNode(
             pomset, definitionToReference=reduceDefinition)
 
+        self.assertTrue(5, len(pomset.nodes()))
+
         path = self.builder.connect(
             pomset,
             sourceDataNode, 'output file',
@@ -584,6 +586,8 @@ class TestBuilder(unittest.TestCase):
         
         self.assertEquals(0, pomset.parameterConnectionPathTable().rowCount())
         self.assertEquals(0, pomset.parameterConnectionsTable().rowCount())
+
+        self.assertFalse(nodeToRemove in pomset.nodes())
 
         return
 
