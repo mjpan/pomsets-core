@@ -2,6 +2,7 @@ import logging
 import uuid
 
 import pypatterns.relational as RelationalModule
+import pypatterns.filter as FilterModule
 
 import pomsets.command as TaskCommandModule
 import pomsets.context as ContextModule
@@ -163,6 +164,37 @@ class Builder(object):
 
         return node
 
+
+    def removeNode(self, pomset, node, maintainTransitivity=False):
+        if maintainTransitivity:
+            raise NotImplementedError
+
+        # first remove all the incoming and outgoing connections
+        filter = FilterModule.constructOrFilter()
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'source node',
+                FilterModule.IdentityFilter(node)
+                )
+            )
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'target node',
+                FilterModule.IdentityFilter(node)
+                )
+            )
+        
+        columns = ['source node', 'source parameter',
+                   'target node', 'target parameter']
+        rowValueList = [x for x in 
+                pomset.parameterConnectionPathTable().retrieve(
+                filter=filter, columns=columns)]
+
+        for rowValues in rowValueList:
+            self.disconnect(pomset, *rowValues)
+            pass
+
+        return
 
 
     def canConnect(self, 

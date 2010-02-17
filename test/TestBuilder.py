@@ -541,6 +541,52 @@ class TestBuilder(unittest.TestCase):
         
 
         return
+
+
+    def testRemoveNode(self):
+
+        pomsetContext = self.builder.createNewNestPomset()
+        pomset = pomsetContext.pomset()
+        
+        mapDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT
+        reduceDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT_REDUCE
+
+        sourceDataNode = self.builder.createNewNode(
+            pomset, definitionToReference=mapDefinition)
+        sourceTemporalNode = self.builder.createNewNode(
+            pomset, definitionToReference=mapDefinition)
+        nodeToRemove = self.builder.createNewNode(
+            pomset, definitionToReference=mapDefinition)
+        targetDataNode = self.builder.createNewNode(
+            pomset, definitionToReference=reduceDefinition)
+        targetTemporalNode = self.builder.createNewNode(
+            pomset, definitionToReference=reduceDefinition)
+
+        path = self.builder.connect(
+            pomset,
+            sourceDataNode, 'output file',
+            nodeToRemove, 'input file')
+        path = self.builder.connect(
+            pomset,
+            nodeToRemove, 'output file',
+            targetDataNode, 'input files')
+        path = self.builder.connect(
+            pomset,
+            sourceTemporalNode, 'temporal output',
+            nodeToRemove, 'temporal input')
+        path = self.builder.connect(
+            pomset,
+            nodeToRemove, 'temporal output',
+            targetTemporalNode, 'temporal input')
+
+
+        self.builder.removeNode(pomset, nodeToRemove)
+        
+        self.assertEquals(0, pomset.parameterConnectionPathTable().rowCount())
+        self.assertEquals(0, pomset.parameterConnectionsTable().rowCount())
+
+        return
+
             
 
     # END class TestBuilder
