@@ -191,6 +191,24 @@ class CompositeTask(Task):
         )
         return filter
  
+
+    def getErroredChildTasks(task, recursive=True):
+
+        filter = RelationalModule.ColumnValueFilter(
+            'task',
+            FilterModule.ObjectKeyMatchesFilter(
+                keyFunction = lambda x: x.workRequest().exception,
+                filter = FilterModule.IdentityFilter(True)
+                )
+            )
+        for childTask in task.getChildTasks(filter=filter):
+            if recursive and isinstance(childTask, CompositeTask):
+                for x in childTask.getErroredChildTasks():
+                    yield x
+                continue
+            yield childTask
+        raise StopIteration
+
     
     def getChildTasks(self, filter=None):
         if filter is None:

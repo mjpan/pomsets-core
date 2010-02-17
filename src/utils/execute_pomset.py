@@ -66,17 +66,6 @@ def createExecuteEnvironment():
     return ShellModule.LocalShell()
     
 
-def getErroredChildTasks(task):
-
-    for childTask in task.getChildTasks():
-        if not childTask.workRequest().exception:
-            continue
-        if isinstance(childTask, TaskModule.CompositeTask):
-            for x in getErroredChildTasks(childTask):
-                yield x
-            continue
-        yield childTask
-    raise StopIteration
 
 
 def main(args):
@@ -118,7 +107,7 @@ def main(args):
         #    print exceptionStackTrace
 
             
-        erroredTasks = [x for x in getErroredChildTasks(compositeTask)]
+        erroredTasks = [x for x in compositeTask.getErroredChildTasks()]
 
 
         print "%s errored tasks" % len(erroredTasks)

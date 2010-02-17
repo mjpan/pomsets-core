@@ -131,7 +131,13 @@ class BaseTestClass(object):
         return
 
     def assertPostExecute(self):
-        assert not self.request.exception
+        task = self.request.kwds['task']
+        if isinstance(task, TaskModule.CompositeTask):
+            childTasks = task.getErroredChildTasks()
+            assert not self.request.exception, childTasks[0].workRequest().kwds['exception stack trace']
+        else:
+            assert not self.request.exception
+
         return
 
     def testExecute1(self):

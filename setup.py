@@ -7,7 +7,6 @@ setup(
         'src',exclude=["*.test", "*.test.*", "test.*", "test",
                        "*.utils", "*.utils.*", "utils.*", "utils",]),
     package_dir={'':'src'},
-
     test_suite="test",
     install_requires = [
         'cloudpool>=0.1.0',

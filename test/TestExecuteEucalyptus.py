@@ -51,8 +51,6 @@ class Credentials(object):
 
     def getShell(self):
 
-        assert os.getenv('EC2_ACCESS_KEY') is not None, 'EC2_ACCESS_KEY must be set'
-
         shell = ShellModule.SecureShell()
         # set the hostname, user, and keyfile
 
@@ -63,10 +61,19 @@ class Credentials(object):
 
         userKeyPair = values['user key pair']
         keyfile = values['identity file']
+        accessKey = values['access key']
+        secretKey = values['secret key']
+        url = values['url']
         user = 'root'
 
         # now to determine the host to run the test
         euca = Euca2ool()
+
+        # set the values for euca2ools
+        euca.ec2_url = url
+        euca.ec2_user_access_key = accessKey
+        euca.ec2_user_secret_key = secretKey
+
         euca_conn = euca.make_connection()
         reservations = euca_conn.get_all_instances([])
 
