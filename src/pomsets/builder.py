@@ -1,3 +1,4 @@
+import copy
 import logging
 import uuid
 
@@ -142,8 +143,16 @@ class Builder(object):
         # create a node that references the same definition
         # copy edges if necessary
         # copy parameter bindings if necessary
+        nodeCopy = copy.copy(node)
+        pomset.addNode(nodeCopy)
 
-        raise NotImplementedError
+        if shouldCopyEdges:
+            raise NotImplementedError('need to implement shouldCopyEdges')
+
+        if shouldCopyParameterBindings:
+            raise NotImplementedError('need to implement shouldCopyParameterBindings')
+
+        return nodeCopy
 
 
     def createNewNode(self, pomset, name=None,

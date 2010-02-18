@@ -846,13 +846,12 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
     def __copy__(self):
         result = ReferenceDefinition(id=self.id())
         
-        result.graph(self.graph())
         result.definitionToReference(self.resource())
         
         result.parameterBindings(self.parameterBindings())
         result.parameterSweeps(self.parameterSweeps())
         result.parameterSweepGroups(self.parameterSweepGroups())
-        result.guiOptions(self.guiOptions())
+        result.guiOptions(copy.copy(self.guiOptions()))
         result.parameterStagingMap(self.parameterStagingMap())
         
         return result
