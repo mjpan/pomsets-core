@@ -52,6 +52,8 @@ class Parameter(ResourceModule.Struct):
     def __init__(self, id=None, name=None,
                  possibleValues=None, defaultValue=None):
 
+        ResourceModule.Struct.__init__(self)
+
         if id is None:
             id = ResourceModule.Resource.ID_GENERATOR()
         self.id(id)

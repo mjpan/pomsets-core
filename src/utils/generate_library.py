@@ -40,8 +40,9 @@ def generateDefaultLoader(outputDir):
     defToLoadDef = generateBootstrapper()
     ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
-
-    definitionsToLoad.append(defToLoadDef)
+    context = ContextModule.Context()
+    context.pomset(defToLoadDef)
+    definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
     # wcDefinitionPath = 'wordcount.pomset'
@@ -49,7 +50,9 @@ def generateDefaultLoader(outputDir):
     wcDefinition.url(wcDefinitionPath)
     ContextModule.pickleDefinition(
         os.path.join(outputDir, wcDefinitionPath), wcDefinition)
-    definitionsToLoad.append(wcDefinition)
+    context = ContextModule.Context()
+    context.pomset(wcDefinition)
+    definitionsToLoad.append(context)
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
     # wcrDefinitionPath = 'wordcount_reduce.pomset'
@@ -57,10 +60,12 @@ def generateDefaultLoader(outputDir):
     wcrDefinition.url(wcrDefinitionPath)
     ContextModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
-    definitionsToLoad.append(wcrDefinition)
+    context = ContextModule.Context()
+    context.pomset(wcrDefinition)
+    definitionsToLoad.append(context)
     
     library = LibraryModule.Library()
-    map(library.addDefinition, definitionsToLoad)
+    map(library.addPomsetContext, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
     ContextModule.pickleDefinition(
@@ -75,8 +80,9 @@ def generateLoaderWithFailure1(outputDir):
     defToLoadDef = generateBootstrapper()
     ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
-    
-    definitionsToLoad.append(defToLoadDef)
+    context = ContextModule.Context()
+    context.pomset(defToLoadDef)
+    definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
     # wcDefinition.id(ID_WORDCOUNT)
@@ -87,10 +93,12 @@ def generateLoaderWithFailure1(outputDir):
     # to ensure that the loading fi
     #ContextModule.pickleDefinition(
     #    os.path.join(outputDir, wcDefinitionPath), wcDefinition)
-    definitionsToLoad.append(wcDefinition)
+    context = ContextModule.Context()
+    context.pomset(wcDefinition)
+    definitionsToLoad.append(context)
     
     library = LibraryModule.Library()
-    map(library.addDefinition, definitionsToLoad)
+    map(library.addPomsetContext, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
     ContextModule.pickleDefinition(
@@ -107,8 +115,9 @@ def generateLoaderWithFailure2(outputDir):
     defToLoadDef = generateBootstrapper()
     ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
-    
-    definitionsToLoad.append(defToLoadDef)
+    context = ContextModule.Context()
+    context.pomset(defToLoadDef)
+    definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
     # wcDefinition.id(ID_WORDCOUNT)
@@ -119,7 +128,9 @@ def generateLoaderWithFailure2(outputDir):
     # to ensure that the loading fi
     #ContextModule.pickleDefinition(
     #    os.path.join(outputDir, wcDefinitionPath), wcDefinition)
-    definitionsToLoad.append(wcDefinition)
+    context = ContextModule.Context()
+    context.pomset(wcDefinition)
+    definitionsToLoad.append(context)
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
     # wcrDefinition.id(ID_WORDCOUNT_REDUCE)
@@ -128,10 +139,12 @@ def generateLoaderWithFailure2(outputDir):
     wcrDefinition.url(wcrDefinitionPath)
     ContextModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
-    definitionsToLoad.append(wcrDefinition)
+    context = ContextModule.Context()
+    context.pomset(wcrDefinition)
+    definitionsToLoad.append(context)
     
     library = LibraryModule.Library()
-    map(library.addDefinition, definitionsToLoad)
+    map(library.addPomsetContext, definitionsToLoad)
 
     defToLoadDefs = library.generateBootstrapLoaderPomset()
     ContextModule.pickleDefinition(

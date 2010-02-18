@@ -86,6 +86,7 @@ class LibraryLoader(EnvironmentModule.Environment, ResourceModule.Struct):
 
         command = commandBuilder.buildCommand(task)
 
+        logging.debug("attempt to run %s" % command)
         library = self.library()
         evalResult = eval(command)
 

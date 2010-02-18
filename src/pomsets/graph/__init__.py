@@ -18,6 +18,7 @@ class GraphObject (ResourceModule.ResourceReference, ResourceModule.Struct):
 
     def __init__(self, id=None, graph=None):
         ResourceModule.ResourceReference.__init__(self, id=id)
+        ResourceModule.Struct.__init__(self)
         self.graph(graph)
         pass
 

@@ -12,27 +12,26 @@ def generateId():
         yield "%s" % id
 
 
-class Struct(object):
 
-    def __getattr__(self, name):
-        if name in self.__class__.ATTRIBUTES:
-            #return currypy.Curry(self.attribute, attributeName="_%s"%name)
-            return currypy.Curry(
-                Struct.attribute, self, 
-                attributeName="_%s"%name)
-        try:
-            return self.__dict__[name]
-        except KeyError, e:	    # key is not found locally
-            raise AttributeError(e)
+class Property(object):
 
-    def __setattr__(self, name, value):
-        if name in self.__class__.ATTRIBUTES:
-            return Struct.attribute(self, attributeName="_%s" % name, value=value)
-        self.__dict__[name] = value
-
-    def resetAttribute(self, attributeName):
-        setattr(self, attributeName, None)
+    def __init__(self):
+        self._value = None
         return
+
+    def __call__(self, value=None):
+        """
+        this is a generic function that allows 
+        """
+        if value is not None:
+            self._value = value
+        return self._value
+
+    # END class Property
+    pass
+
+
+class Struct(object):
 
     @staticmethod
     def attribute(object, value=None, attributeName=None):
@@ -48,6 +47,42 @@ class Struct(object):
             setattr(object, attributeName, None)
         # finally, return the value of the attribute
         return getattr(object, attributeName)
+
+
+    def __init__(self):
+        for ATTRIBUTE in self.__class__.ATTRIBUTES:
+            #setattr(self, ATTRIBUTE,
+            #        currypy.Curry(Struct.attribute, self,
+            #            attributeName='_'+ATTRIBUTE)
+            #        )
+            if hasattr(self, ATTRIBUTE):
+                continue
+            setattr(self, ATTRIBUTE, Property())
+        return
+
+    """
+    def __getattr__(self, name):
+        if name in self.__class__.ATTRIBUTES:
+            #return currypy.Curry(self.attribute, attributeName="_%s"%name)
+            return currypy.Curry(
+                Struct.attribute, self, 
+                attributeName="_%s" % name)
+        try:
+            return self.__dict__[name]
+        except KeyError, e:	    # key is not found locally
+            raise AttributeError(e)
+
+    def __setattr__(self, name, value):
+        if name in self.__class__.ATTRIBUTES:
+            return Struct.attribute(
+                self, attributeName="_%s" % name, value=value)
+        self.__dict__[name] = value
+    """
+
+    def resetAttribute(self, attributeName):
+        setattr(self, attributeName, None)
+        return
+
 
     # END class Struct
     pass

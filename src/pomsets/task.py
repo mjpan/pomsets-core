@@ -66,7 +66,7 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
             "task %s checking if self.definition() %s has parameter bindings" %
             (self, self.definition()))
 
-        if hasattr(self.definition(), '_parameterBindings'):
+        if hasattr(self.definition(), 'parameterBindings'):
             logging.debug("pulling parameter bindings from self.definition()")
 
             for key, value in self.definition().parameterBindings().iteritems():

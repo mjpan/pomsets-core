@@ -193,7 +193,8 @@ class TestReferenceDefinition(unittest.TestCase):
         
         self.definitionToCopy = definition
         return
-    
+
+
     def testCopyMapper(self):
         
         nodeToCopy = [x for x in self.definitionToCopy.nodes()
@@ -201,17 +202,25 @@ class TestReferenceDefinition(unittest.TestCase):
         
         copiedNode = copy.copy(nodeToCopy)
 
-        assert nodeToCopy == copiedNode
+        # assert nodeToCopy == copiedNode
+        differences = [x for x in nodeToCopy.getDifferencesWith(copiedNode)]
+        self.assertEquals(['self has 1 outgoing edges, other has 0'], 
+                          differences)
         
         return
-    
+
+
     def testCopyReducer(self):
         nodeToCopy = [x for x in self.definitionToCopy.nodes()
                       if x.id() == 'reducer'][0]
         
         copiedNode = copy.copy(nodeToCopy)
 
-        assert nodeToCopy == copiedNode
+        # assert nodeToCopy == copiedNode
+        differences = [x for x in nodeToCopy.getDifferencesWith(copiedNode)]
+        self.assertEquals(['self has 1 incoming edges, other has 0'],
+                          differences)
+
         
         return
         

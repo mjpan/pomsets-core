@@ -846,6 +846,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
     def __copy__(self):
         result = ReferenceDefinition(id=self.id())
         
+        result.graph(self.graph())
         result.definitionToReference(self.resource())
         
         result.parameterBindings(self.parameterBindings())
@@ -977,8 +978,6 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
     def referencesLibraryDefinition(self):
         definition = self.definitionToReference()
         if definition is None:
-            return False
-        if not hasattr(definition, '_isLibraryDefinition'):
             return False
         return definition.isLibraryDefinition()
     

@@ -135,10 +135,19 @@ class Builder(object):
         return newPomsetContext
 
 
+    def copyNode(self, pomset, node, name=None, 
+                 shouldCopyEdges=False,
+                 shouldCopyParameterBindings=False):
+
+        # create a node that references the same definition
+        # copy edges if necessary
+        # copy parameter bindings if necessary
+
+        raise NotImplementedError
+
+
     def createNewNode(self, pomset, name=None,
                       definitionToReference=None):
-        """
-        """
 
         #TODO: this should construct a command to create the new node
         #      and execute the command (or send an event to execute the command)
@@ -160,7 +169,6 @@ class Builder(object):
         # TODO:
         # see if it's possible to not have to run this line
         node.executable = definitionToReference.executable
-
 
         return node
 
