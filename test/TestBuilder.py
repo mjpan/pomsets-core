@@ -285,7 +285,7 @@ class TestBuilder(unittest.TestCase):
         return
 
 
-    def testCanConnect(self):
+    def testCanConnect1(self):
         pomsetContext = self.builder.createNewNestPomset()
         pomset = pomsetContext.pomset()
         
@@ -323,7 +323,7 @@ class TestBuilder(unittest.TestCase):
                 node1, 'input file',
                 node2, 'input files'))
 
-        # ensure that we cannot connect if not the same time
+        # ensure that we cannot connect if not the same type
         self.assertFalse(
             self.builder.canConnect(
                 pomset,
@@ -358,7 +358,7 @@ class TestBuilder(unittest.TestCase):
                 pomset,
                 node1, 'input file',
                 node2, 'input files'))
-        
+
         # now ensure we can connect the following
         self.assertTrue(
             self.builder.canConnect(
@@ -373,6 +373,61 @@ class TestBuilder(unittest.TestCase):
 
         return
 
+    def testCanConnect2(self):
+        pomsetContext = self.builder.createNewNestPomset()
+        pomset = pomsetContext.pomset()
+        
+        mapDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT
+        reduceDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT_REDUCE
+
+        node1 = self.builder.createNewNode(
+            pomset, definitionToReference=mapDefinition)
+        node2 = self.builder.createNewNode(
+            pomset, definitionToReference=reduceDefinition)
+
+        # cannot connect if connection is temporal and already exists
+        self.assertTrue(
+            self.builder.canConnect(
+                pomset,
+                node1, 'temporal output',
+                node2, 'temporal input'))
+        self.builder.connect(
+            pomset,
+            node1, 'temporal output',
+            node2, 'temporal input')
+        self.assertFalse(
+            self.builder.canConnect(
+                pomset,
+                node1, 'temporal output',
+                node2, 'temporal input'))
+
+        # cannot connect if connection is data and already exists
+        self.assertTrue(
+            self.builder.canConnect(
+                pomset,
+                node1, 'output file',
+                node2, 'input files'))
+        self.builder.connect(
+            pomset,
+            node1, 'output file',
+            node2, 'input files')
+        self.assertFalse(
+            self.builder.canConnect(
+                pomset,
+                node1, 'output file',
+                node2, 'input files'))
+        
+        # cannot connect if target parameter is data
+        # and already connected to something else
+        node3 = self.builder.createNewNode(
+            pomset, definitionToReference=mapDefinition)
+        self.assertFalse(
+            self.builder.canConnect(
+                pomset,
+                node3, 'output file',
+                node2, 'input files'))
+
+        return
 
     def testConnectDataParameters(self):
 

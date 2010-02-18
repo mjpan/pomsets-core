@@ -276,6 +276,27 @@ class Builder(object):
         if len(paths) is not 0:
             return False
 
+        # cannot connect if data and already connected to something else
+        if targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISINPUTFILE):
+            filter = FilterModule.constructAndFilter()
+            filter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'target node',
+                    FilterModule.IdentityFilter(targetNode)
+                    )
+                )
+            filter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'target parameter',
+                    FilterModule.EquivalenceFilter(targetParameterId)
+                    )
+                )
+            paths = RelationalModule.Table.reduceRetrieve(
+                pomset.parameterConnectionPathTable(),
+                filter, ['path'], [])
+            if len(paths) is not 0:
+                return False
+            pass
 
         return True
 
