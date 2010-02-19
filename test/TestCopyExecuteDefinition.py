@@ -6,8 +6,8 @@ import logging
 
 import StringIO
 
-import utils
-utils.setPythonPath()
+#import utils
+#utils.setPythonPath()
 
 
 import threadpool
@@ -24,9 +24,6 @@ import pomsets.command as TaskCommandModule
 import pomsets.task as TaskModule
 
 import pomsets.test_utils as GeneratePomsetsModule
-
-
-import TestExecute as TestExecuteModule
 
 
 
@@ -202,6 +199,9 @@ class TestReferenceDefinition(unittest.TestCase):
         
         copiedNode = copy.copy(nodeToCopy)
 
+        self.assertTrue(copiedNode.graph() is None)
+        copiedNode.graph(nodeToCopy.graph())
+
         # assert nodeToCopy == copiedNode
         differences = [x for x in nodeToCopy.getDifferencesWith(copiedNode)]
         self.assertEquals(['self has 1 outgoing edges, other has 0'], 
@@ -216,6 +216,9 @@ class TestReferenceDefinition(unittest.TestCase):
         
         copiedNode = copy.copy(nodeToCopy)
 
+        self.assertTrue(copiedNode.graph() is None)
+        copiedNode.graph(nodeToCopy.graph())
+
         # assert nodeToCopy == copiedNode
         differences = [x for x in nodeToCopy.getDifferencesWith(copiedNode)]
         self.assertEquals(['self has 1 incoming edges, other has 0'],
@@ -229,7 +232,7 @@ class TestReferenceDefinition(unittest.TestCase):
 
 
 def main():
-    utils.configLogging()
+    # utils.configLogging()
 
     suite = unittest.TestSuite()
     

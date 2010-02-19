@@ -2,18 +2,16 @@ from setuptools import setup, find_packages
 
 setup(
     name='pomsets-core',
-    version='0.1.0',
+    version='1.0.0',
     packages=find_packages(
         'src',exclude=["*.test", "*.test.*", "test.*", "test",
                        "*.utils", "*.utils.*", "utils.*", "utils",]),
     package_dir={'':'src'},
     test_suite="test",
     install_requires = [
-        'cloudpool>=0.1.1',
-        'currypy>=0.1.0',
+        'cloudpool>=0.1.2',
         'pypatterns>=0.1.0',
         'Reaction>=0.2',
-        'threadpool>=1.2.7',
         'simplejson>=2.0.9'
         ],
 

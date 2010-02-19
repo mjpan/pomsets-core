@@ -3,7 +3,7 @@
     "hadoop configurations": [], 
     "remote execute credentials": [
         {
-            "hostname": "192.168.21.140",
+            "hostname": "192.168.21.109",
             "keyfile": "/Users/mjpan/pomsets/euca/ssh/neo.private", 
             "user":"root"
         }
