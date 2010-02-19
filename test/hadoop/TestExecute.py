@@ -45,6 +45,9 @@ import test.TestExecute as BaseModule
 #    return os.path.join(os.getenv('HADOOP_HOME'), 'bin', 'hadoop')
 
 
+if not os.getenv('HADOOP_HOME'):
+    os.environ['HADOOP_HOME'] = os.path.sep.join(['', 'hadoop'])
+
 class TestHadoopBase(BaseModule.BaseTestClass):
     """
     Verifies that we can execute Hadoop nodes

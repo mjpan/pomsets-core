@@ -1,0 +1,12 @@
+{
+    "cloud controller credentials": [],
+    "hadoop configurations": [
+        {
+            "home": "/hadoop", 
+            "hostname": "localhost", 
+            "streaming jar": "contrib/streaming/hadoop-0.20.1-streaming.jar", 
+            "streaming jar is relative to home": true
+        }
+    ], 
+    "remote execute credentials": []
+}

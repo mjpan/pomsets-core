@@ -9,7 +9,7 @@ setup(
     package_dir={'':'src'},
     test_suite="test",
     install_requires = [
-        'cloudpool>=0.1.0',
+        'cloudpool>=0.1.1',
         'currypy>=0.1.0',
         'pypatterns>=0.1.0',
         'Reaction>=0.2',

@@ -6,9 +6,6 @@ import threadpool
 import unittest
 import logging
 
-if not os.getenv('HADOOP_HOME'):
-    os.environ['HADOOP_HOME'] = '/hadoop'
-
 import currypy
 
 
@@ -23,20 +20,25 @@ import pomsets.task as TaskModule
 import pomsets.hadoop as HadoopModule
 
 import test.hadoop.definition as TestDefinitionModule
-# import test.util as UtilsModule
+
+
+if not os.getenv('HADOOP_HOME'):
+    os.environ['HADOOP_HOME'] = os.path.sep.join(['', 'hadoop'])
+
 
 
 class TestBuildCommand(unittest.TestCase):
 
+
     def setUp(self):
         return
+
     
     def tearDown(self):
         return
     
     
     def testBasic(self):
-
         
         definition = TestDefinitionModule.createHadoopWordcountDefinition()
         
@@ -53,9 +55,10 @@ class TestBuildCommand(unittest.TestCase):
         command = commandBuilder.buildCommand(task)
         self.assertEquals(
             command,
-            ['%s/bin/hadoop' % os.getenv('HADOOP_HOME'),
+            [os.path.join(TestDefinitionModule.getHomeLocation(),
+                          'bin', 'hadoop'),
              'jar', 
-             os.getenv('HADOOP_JAR_EXAMPLES'),
+             TestDefinitionModule.getExamplesJar(),
              'wordcount',
              'hadoopInput', 'hadoopOutput']
         )
@@ -81,9 +84,10 @@ class TestBuildCommand(unittest.TestCase):
         
         command = commandBuilder.buildCommand(task)
         self.assertEquals(
-            ['%s/bin/hadoop' % os.getenv('HADOOP_HOME'),
+            [os.path.join(TestDefinitionModule.getHomeLocation(),
+                          'bin', 'hadoop'),
              'jar', 
-             os.getenv('HADOOP_JAR_STREAMING'),
+             TestDefinitionModule.getStreamingJar(),
              '-input', 'hadoopInput', 
              '-output', 'hadoopOutput',
              '-mapper', 'myMapper',

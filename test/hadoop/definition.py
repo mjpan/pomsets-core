@@ -6,6 +6,21 @@ import pomsets.parameter as ParameterModule
 
 import pomsets.hadoop as HadoopModule
 
+def getHomeLocation():
+    return os.getenv('HADOOP_HOME', 
+                     os.path.sep.join(['', 'hadoop']))
+
+def getExamplesJar():
+    return os.getenv(
+        'HADOOP_JAR_EXAMPLES',
+        os.path.join(getHomeLocation(), 'hadoop-0.20.1-examples.jar'))
+
+def getStreamingJar():
+    return os.getenv(
+        'HADOOP_JAR_STREAMING',
+        os.path.join(getHomeLocation(), 
+                     os.path.sep.join(['contrib', 'streaming', 'streaming.jar'])))
+
 
 def createHadoopWordcountDefinition():
     parameterOrdering = DefinitionModule.createParameterOrderingTable()
@@ -18,7 +33,7 @@ def createHadoopWordcountDefinition():
     executable = HadoopModule.JarExecutable()
     executable.stageable(False)
     executable.path([HadoopModule.getExecutablePath()])
-    executable.jarFile([os.getenv('HADOOP_JAR_EXAMPLES')])
+    executable.jarFile([getExamplesJar()])
     executable.jarClass(['wordcount'])
     
     definition = DefinitionModule.createShellProcessDefinition(
@@ -54,11 +69,10 @@ def createHadoopStreamingDefinition():
     
     # TODO:
     # need to be able to customize this for each host
-    command = [os.getenv('HADOOP_JAR_STREAMING')]
     executable = HadoopModule.JarExecutable()
     executable.stageable(False)
     executable.path([HadoopModule.getExecutablePath()])
-    executable.jarFile([os.getenv('HADOOP_JAR_STREAMING')])
+    executable.jarFile([getStreamingJar()])
     executable.jarClass([])
     
     
