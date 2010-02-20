@@ -1,6 +1,5 @@
 import logging
 import sys
-sys.path.insert(0, '/Users/mjpan/pomsets/pomsets.20100105/pomsets/src')
 
 import cloudpool as CloudModule
 import cloudpool.shell as ShellModule
@@ -12,8 +11,6 @@ import pomsets.command as TaskCommandModule
 import pomsets.context as ContextModule
 import pomsets.error as ErrorModule
 import pomsets.task as TaskModule
-
-
 
 
 def configLogging():
@@ -102,13 +99,8 @@ def main(args):
         # here we can output various info
         # including execution errors
         workRequest = compositeTask.workRequest()
-        #if workRequest.kwds.get('exception stack trace', None) is not None:
-        #    exceptionStackTrace = workRequest.kwds.get('exception stack trace')
-        #    print exceptionStackTrace
-
             
         erroredTasks = [x for x in compositeTask.getErroredChildTasks()]
-
 
         print "%s errored tasks" % len(erroredTasks)
         for erroredTask in erroredTasks:
