@@ -8,6 +8,9 @@ setup(
                        "*.utils", "*.utils.*", "utils.*", "utils",]),
     package_dir={'':'src'},
     test_suite="test",
+    tests_require=[
+        "euca2ools>=1.1"
+        ],
     install_requires = [
         'cloudpool>=0.1.2',
         'pypatterns>=0.1.0',

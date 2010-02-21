@@ -646,7 +646,81 @@ class TestBuilder(unittest.TestCase):
 
         return
 
-            
+
+    def testParameterBinding1(self):
+        pomsetContext = self.builder.createNewNestPomset()
+        pomset = pomsetContext.pomset()
+        
+        mapDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT
+
+        node = self.builder.createNewNode(
+            pomset, definitionToReference=mapDefinition)
+
+        # no connection means parameters are modified directly
+        parameterId = 'input file'
+        boundValue = ['foo']
+        self.builder.bindParameterValue(node, parameterId,
+                                        boundValue)
+
+        self.assertEquals(boundValue,
+                          node.getParameterBinding(parameterId))
+
+        # no connection means parameters are modified directly
+        parameterId = 'output file'
+        boundValue = ['bar']
+        self.builder.bindParameterValue(node, parameterId,
+                                        boundValue)
+        self.assertEquals(boundValue,
+                          node.getParameterBinding(parameterId))
+        return
+
+
+
+    def testParameterBinding2(self):
+
+        pomsetContext = self.builder.createNewNestPomset()
+        pomset = pomsetContext.pomset()
+        
+        mapDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT
+        reduceDefinition = TestDefinitionModule.DEFINITION_WORDCOUNT_REDUCE
+
+        sourceNode = self.builder.createNewNode(
+            pomset, definitionToReference=mapDefinition)
+        targetNode = self.builder.createNewNode(
+            pomset, definitionToReference=reduceDefinition)
+
+        sourceParameterId = 'output file'
+        targetParameterId = 'input files'
+
+        # connect the data parameters
+        path = self.builder.connect(
+            pomset,
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+
+        # setting the binding on an output file
+        # modifies that parameter directly
+        boundValue = ['foo']
+        self.builder.bindParameterValue(sourceNode, sourceParameterId,
+                                        boundValue)
+        self.assertEquals(boundValue,
+                          sourceNode.getParameterBinding(sourceParameterId))
+
+
+        # setting the binding on an input file
+        # modifies that the incoming blackboard parameter
+        boundValue = ['bar']
+        self.builder.bindParameterValue(targetNode, targetParameterId,
+                                        boundValue)
+        bbParameterName = '%s.%s-%s.%s' % (sourceNode.name(),
+                                           sourceParameterId,
+                                           targetNode.name(),
+                                           targetParameterId)
+        self.assertEquals(boundValue,
+                          pomset.getParameterBinding(bbParameterName))
+        self.assertFalse(targetNode.hasParameterBinding(targetParameterId))
+
+        return
 
     # END class TestBuilder
     pass

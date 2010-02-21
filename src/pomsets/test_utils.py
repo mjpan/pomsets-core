@@ -43,16 +43,16 @@ def pickleAndReloadDefinition(path, definition):
     return definition
 
 
-def createWordCountDefinition():
+def createWordCountDefinition(dir=None):
     
     parameterOrdering = DefinitionModule.createParameterOrderingTable()
     row = parameterOrdering.addRow()
     row.setColumn('source', 'input file')
     row.setColumn('target', 'output file')
 
-    
-    command = os.getcwd().split(os.path.sep) + ['resources', 'testdata',
-               'TestExecute', 'wordcount.py']
+    if dir is None:
+        dir = os.getcwd().split(os.path.sep) + ['resources', 'testdata', 'TestExecute']
+    command = dir + ['wordcount.py']
     executable = TaskCommandModule.Executable()
     executable.stageable(True)
     executable.path(command)
@@ -82,15 +82,17 @@ def createWordCountDefinition():
 DEFINITION_WORDCOUNT = createWordCountDefinition()
 
 
-def createWordCountReduceDefinition():
+def createWordCountReduceDefinition(dir=None):
     
     parameterOrdering = DefinitionModule.createParameterOrderingTable()
     row = parameterOrdering.addRow()
     row.setColumn('source', 'input files')
     row.setColumn('target', 'output file')
     
-    command = os.getcwd().split(os.path.sep) + ['resources', 'testdata',
-               'TestExecute', 'wordcount_reduce.py']
+    if dir is None:
+        dir =  os.getcwd().split(os.path.sep) + ['resources', 'testdata',
+                                                 'TestExecute']
+    command = dir+['wordcount_reduce.py']
     executable = TaskCommandModule.Executable()
     executable.stageable(True)
     executable.path(command)
@@ -280,16 +282,16 @@ def bindParameterSweepDefinitionParameters(definition):
     (dataNode, parameterToEdit) = \
      mapperNode.getParameterToEdit('input file')
     dataNode.setParameterBinding(parameterToEdit.id(),
-                                 ['/tmp/text1', '/tmp/text2'])
+                                 ['/tmp/pomsets/text1', '/tmp/pomsets/text2'])
 
     (dataNode, parameterToEdit) = \
      mapperNode.getParameterToEdit('output file')
 
     dataNode.setParameterBinding(parameterToEdit.id(),
-                                 ['/tmp/count1', '/tmp/count2'])
+                                 ['/tmp/pomsets/count1', '/tmp/pomsets/count2'])
     (dataNode, parameterToEdit) = \
      reducerNode.getParameterToEdit('output file')
-    dataNode.setParameterBinding(parameterToEdit.id(), ['/tmp/count_all'])
+    dataNode.setParameterBinding(parameterToEdit.id(), ['/tmp/pomsets/count_all'])
     
     # write out to a different location
     mapperNode.parameterStagingRequired('input file', True)

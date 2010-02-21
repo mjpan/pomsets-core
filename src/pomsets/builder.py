@@ -13,6 +13,13 @@ import pomsets.parameter as ParameterModule
 class Builder(object):
 
 
+    def bindParameterValue(self, node, parameterId, value):
+        (nodeToEdit, parameterToEdit) = \
+            node.getParameterToEdit(parameterId)
+        nodeToEdit.setParameterBinding(parameterToEdit.id(), value)
+        return
+
+
     def addPomsetParameter(self, pomset, parameterName, attributes):
 
         # the direction has to be specified

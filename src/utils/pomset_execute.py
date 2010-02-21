@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import logging
 import sys
 
@@ -24,17 +26,6 @@ def configLogging():
                         datefmt='%a, %d %b %Y %H:%M:%S',
                         filename='/tmp/execute_pomset.log',
                         filemode='w')
-
-    # define a handler to write to stderr
-    # console = logging.StreamHandler()
-    # set the level of this to verbosity of severity 'warning'
-    # console.setLevel(logging.WARNING)
-    # set a format which is simpler for console use
-    # formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-    # tell the handler to use this format
-    # console.setFormatter(formatter)
-    # add the handler to the root logger
-    # logging.getLogger('').addHandler(console)
 
     # end def configureLogging
     pass

@@ -4,27 +4,15 @@ import os
 import sys
 import unittest
 
-#import util
-
 import StringIO
-
-#APP_ROOT = os.getenv('APP_ROOT')
-
-#sys.path.insert(0, '%s/pypatterns/src' % APP_ROOT)
-#sys.path.insert(0, '%s/currypy/src' % APP_ROOT)
-#sys.path.insert(0, '%s/cloudpool/src' % APP_ROOT)
 
 import currypy
 
-
-#sys.path.insert(0,"%s/pomsets/src" % APP_ROOT)
 import pypatterns.filter as FilterModule
 
 import cloudpool.environment as ExecuteEnvironmentModule
 
 import TestExecute as BaseModule
-
-#POMSET_ROOT = util.getPomsetRoot()
 
 class TestCase1(BaseModule.TestCase1):
     """

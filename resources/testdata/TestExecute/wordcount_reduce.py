@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-###!/Library/Frameworks/Python.framework/Versions/Current/bin/python
-
 from __future__ import with_statement
 
 import sys
