@@ -165,6 +165,13 @@ class Automaton(ResourceModule.Struct):
         
         threadpool = self.getThreadPoolUsingRequest(request)
 
+        if threadpool.isEmpty():
+            raise ErrorModule.ExecutionError(
+                'need to start thread before execution')
+
+        # now set the thread pool in the request
+        request.kwds['thread pool'] = threadpool
+
         threadpool.putRequest(request)
         
         if shouldWait:
@@ -236,6 +243,8 @@ class Automaton(ResourceModule.Struct):
             exc_callback = exc_callback
         )
 
+        task.workRequest(request)
+
         return request
 
 
@@ -261,19 +270,13 @@ class Automaton(ResourceModule.Struct):
 
         # check if any threads have been started
         try:
-            threadpool = self.getThreadPoolUsingRequest(request)
             """
+            threadpool = self.getThreadPoolUsingRequest(request)
             should be moved to the cloud automaton's getThreadPoolUsingRequest
             if threadpool.isEmpty():
                 raise ExecuteErrorModule.ExecutionError(
                     'need to start thread before execution')
             """
-
-
-            # now set the thread pool in the request
-            request.kwds['thread pool'] = threadpool
-
-            task.workRequest(request)
 
             self.enqueueRequest(request)
         except ValueError, e:

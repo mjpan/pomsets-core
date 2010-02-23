@@ -9,7 +9,6 @@ import pomsets.definition as DefinitionModule
 import pomsets.library as LibraryModule
 import pomsets.parameter as ParameterModule
 
-import utils
 import pomsets.test_utils as DefinitionTestModule
 
 
@@ -156,8 +155,6 @@ def generateLoaderWithFailure2(outputDir):
 
 def main(argv):
 
-    utils.configLogging()
-    
     if argv is None:
         argv = []
 

@@ -18,6 +18,7 @@ import pypatterns.filter as FilterModule
 
 import pomsets.command as TaskCommandModule
 import pomsets.definition as DefinitionModule
+import pomsets.error as ErrorModule
 import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
@@ -58,13 +59,18 @@ class BaseTestClass(object):
 
     def setUp(self):
         automaton = AutomatonModule.Automaton()
-        automaton.setThreadPool(None, CloudModule.Pool(1))
+        automaton.setThreadPool(
+            None, 
+            CloudModule.Pool(self.getNumWorkersToInstantiate()))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
         return
 
     def tearDown(self):
         return
+
+    def getNumWorkersToInstantiate(self):
+        return 1
 
     def createCommandBuilderMap(self):
         commandBuilder = TaskCommandModule.CommandBuilder(
@@ -108,6 +114,7 @@ class BaseTestClass(object):
         requestContext = self.getRequestContext(
             task=task, executeEnvironment=executeEnvironment
         )
+
         request = threadpool.WorkRequest(
             executeTaskFunction,
             args = [],
@@ -115,6 +122,7 @@ class BaseTestClass(object):
             callback = successCallback,
             exc_callback = errorCallback
         )
+
         threadPool = automaton.getThreadPoolUsingRequest(request)
         request.kwds['thread pool'] = threadPool
         
@@ -1105,6 +1113,50 @@ class TestBranch1(BaseTestClass, unittest.TestCase):
     
     # END class TestBranch1
     pass
+
+
+class TestCase11(TestCase1):
+    """
+    execute of atomic function
+    """
+
+    def getNumWorkersToInstantiate(self):
+        return 0
+
+    
+    def executeTask(self, task, 
+                    executeEnvironment=None):
+
+        automaton = self.automaton
+        successCallback = automaton.getPostExecuteCallbackFor(task)
+        errorCallback = automaton.getErrorCallbackFor(task)
+        executeTaskFunction = automaton.getExecuteTaskFunction(task)
+        
+        requestContext = self.getRequestContext(
+            task=task, executeEnvironment=executeEnvironment
+        )
+        request = threadpool.WorkRequest(
+            executeTaskFunction,
+            args = [],
+            kwds = requestContext,
+            callback = successCallback,
+            exc_callback = errorCallback
+        )
+
+        try:
+            automaton.enqueueRequest(request)
+            assert False
+        except ErrorModule.ExecutionError, e:
+            self.assertEquals('need to start thread before execution',
+                              str(e))
+
+        return request
+
+
+
+    # END TestCase11
+    pass
+
 
 
 def main():
