@@ -17,6 +17,13 @@ def doTask(task, *args, **kwds):
     return task.do()
 
 
+class GuiOptionsHolder(ResourceModule.Struct):
+
+    ATTRIBUTES = ['guiOptions']
+
+    # END class GuiOptionsHolder
+    pass
+
 class ParameterBindingsHolder(ResourceModule.Struct):
 
     ATTRIBUTES = ['parameterBindings']
@@ -45,7 +52,7 @@ class ParameterBindingsHolder(ResourceModule.Struct):
 
 class Definition(ResourceModule.Struct):
     
-    ATTRIBUTES = [
+    ATTRIBUTES = GuiOptionsHolder.ATTRIBUTES + [
         'id',
         'parametersTable',
         'isLibraryDefinition',
@@ -778,10 +785,10 @@ DEFINITION_SSHPROCESS = createShellProcessDefinition(
 class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
     
     ATTRIBUTES = GraphModule.Node.ATTRIBUTES + \
-               ParameterBindingsHolder.ATTRIBUTES + [
+               ParameterBindingsHolder.ATTRIBUTES + \
+               GuiOptionsHolder.ATTRIBUTES + [
         'parameterSweeps',
         'parameterSweepGroups',
-        'guiOptions',
         'parameterStagingMap',
         'comment',
         'isCritical'
