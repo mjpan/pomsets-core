@@ -20,42 +20,6 @@ ID_LOADLIBRARYDEFINITION = 'load library definition::bb028375-bbd5-43ec-b6c3-495
 ID_BOOTSTRAPLOADER = 'library bootstrap loader::751fe366-1448-4db3-9db4-944075de7a5b'
 
 
-"""
-def loadDefinitionFromFullFilePath(path):
-    definition = None
-    
-    with open(path, 'r') as f:
-        definition = pickle.load(f)
-        pass
-
-    if definition is None:
-        raise Exception('failed on loading pickle')
-
-    return definition
-"""
-
-
-"""
-def pickleDefinition(path, definition):
-
-    try:
-        pickleCreated = False
-        with open(path, 'w') as f:
-            pickle.dump(definition, f)
-            pickleCreated = True
-            pass
-
-        if not pickleCreated:
-            raise Exception('failed on creating pickle')
-
-    except Exception, e:
-        logging.error("errored with msg >> %s" % e)
-        pass
-
-    return
-"""
-
-
 class CommandBuilder(TaskModule.CommandBuilder):
 
     def buildCommand(self, task):
@@ -340,7 +304,7 @@ class Library(ResourceModule.Struct):
 
         pomset = self.generateBootstrapLoaderPomset()
         
-        pickleDefinition(outputPath, pomset)
+        ContextModule.pickleDefinition(outputPath, pomset)
 
         return
 
