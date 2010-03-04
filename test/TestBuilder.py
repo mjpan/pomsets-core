@@ -58,6 +58,51 @@ class TestBuilder(unittest.TestCase):
         return
 
 
+    def testRemoveParameter1(self):
+        path = ['', 'bin', 'echo']
+        executableObject = self.builder.createExecutableObject(path)
+
+        pomsetContext = self.builder.createNewAtomicPomset(
+            executableObject=executableObject)
+        pomset = pomsetContext.pomset()
+
+        self.assertRaises(ValueError,
+                          self.builder.removePomsetParameter,
+                          pomset,
+                          DefinitionModule.Definition.SYMBOL_INPUT_TEMPORAL)
+
+        self.assertRaises(ValueError,
+                          self.builder.removePomsetParameter,
+                          pomset,
+                          DefinitionModule.Definition.SYMBOL_OUTPUT_TEMPORAL)
+        return
+
+
+    def testRemoveParameter2(self):
+        path = ['', 'bin', 'echo']
+        executableObject = self.builder.createExecutableObject(path)
+
+        pomsetContext = self.builder.createNewAtomicPomset(
+            executableObject=executableObject)
+        pomset = pomsetContext.pomset()
+
+        # test for regular input value
+        attributes = {
+            'direction':ParameterModule.PORT_DIRECTION_INPUT,
+            }
+        parameterName = 'input value'
+        parameter = self.builder.addPomsetParameter(
+            pomset, parameterName, attributes)
+
+        self.assertTrue(pomset.hasParameter(parameterName))
+        self.assertTrue(pomset.getParameter(parameterName) is parameter)
+
+        self.builder.removePomsetParameter(pomset, parameterName)
+        
+        self.assertFalse(pomset.hasParameter(parameterName))
+
+        return
+
     def testAddParameterToAtomicPomset1(self):
         """
         test for basic input value (non-file) parameter

@@ -19,7 +19,16 @@ class Builder(object):
         nodeToEdit.setParameterBinding(parameterToEdit.id(), value)
         return
 
+    def removePomsetParameter(self, pomset, parameterName):
 
+        if parameterName in [DefinitionModule.Definition.SYMBOL_INPUT_TEMPORAL,
+                             DefinitionModule.Definition.SYMBOL_OUTPUT_TEMPORAL]:
+            raise ValueError('cannot remove parameters defined by the system')
+
+        parameter = pomset.getParameter(parameterName)
+        pomset.removeParameter(parameter)
+        return
+        
     def addPomsetParameter(self, pomset, parameterName, attributes):
 
         # the direction has to be specified
