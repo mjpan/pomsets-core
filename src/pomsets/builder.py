@@ -69,7 +69,8 @@ class Builder(object):
             id=parameterName, 
             optional=isOptional, active=isActive,
             portDirection=direction)
-        
+        parameter.name(parameterName)
+
         ParameterModule.setAttributes(parameter, parameterAttributes)
 
         pomset.addParameter(parameter)
@@ -97,7 +98,7 @@ class Builder(object):
 
     def createNewAtomicPomset(self, name=None, 
                               executableObject=None,
-                              staticArgs=None, *args, **kwds):
+                              *args, **kwds):
 
         newAtomicPomset = DefinitionModule.AtomicDefinition(*args, **kwds)
         if name is None:

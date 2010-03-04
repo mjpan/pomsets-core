@@ -20,6 +20,26 @@ ID_LOADLIBRARYDEFINITION = 'load library definition::bb028375-bbd5-43ec-b6c3-495
 ID_BOOTSTRAPLOADER = 'library bootstrap loader::751fe366-1448-4db3-9db4-944075de7a5b'
 
 
+def getBootstrapLoaderPomsetsFilter():
+    # we need to filter out the bootstrap pomset loaders
+    # because it should not be loaded again
+    bootstrapLoaderFilter = FilterModule.constructOrFilter()
+    bootstrapLoaderFilter.addFilter(
+        RelationalModule.ColumnValueFilter(
+            'definition',
+            FilterModule.IdFilter(ID_LOADLIBRARYDEFINITION)
+        )
+    )
+    bootstrapLoaderFilter.addFilter(
+        RelationalModule.ColumnValueFilter(
+            'definition',
+            FilterModule.IdFilter(ID_BOOTSTRAPLOADER)
+        )
+    )
+    return bootstrapLoaderFilter
+
+
+
 class CommandBuilder(TaskModule.CommandBuilder):
 
     def buildCommand(self, task):
@@ -74,6 +94,7 @@ class Path(ResourceModule.Struct):
     
     # END class Path
     pass
+
 
 class Library(ResourceModule.Struct):
 
@@ -174,27 +195,6 @@ class Library(ResourceModule.Struct):
         return
 
 
-    """
-    def addDefinition(self, definition):
-        definitionId = definition.id()
-        if definitionId in [ID_LOADLIBRARYDEFINITION,
-                            ID_BOOTSTRAPLOADER]:
-            logging.debug("adding definition %s to bootstrap id %s" %
-                          (definition, definitionId))
-
-            self.bootstrapLoaderDefinitions()[definitionId] = definition
-            pass
-
-        logging.debug("adding definition %s with id %s to library" % 
-                      (definition, definitionId))
-
-        row = self.definitionTable().addRow()
-        row.setColumn('id', definitionId)
-        row.setColumn('definition', definition)
-
-        return
-    """
-
     def addPomsetContext(self, context):
 
         definition = context.pomset()
@@ -221,11 +221,11 @@ class Library(ResourceModule.Struct):
         return
 
 
-
     def hasDefinition(self, filter):
         matchingDefinitions = RelationalModule.Table.reduceRetrieve(
             self.definitionTable(), filter, ['definition'], [])
         return len(matchingDefinitions) is not 0
+
     
     def removeDefinition(self, filter):
         self.definitionTable().removeRows(filter)
@@ -257,23 +257,8 @@ class Library(ResourceModule.Struct):
 
         defToLoadDefs = DefinitionModule.getNewNestDefinition()
 
-        # we need to filter out the bootstrap pomset loaders
-        # because it should not be loaded again
-        bootstrapLoaderFilter = FilterModule.constructOrFilter()
-        bootstrapLoaderFilter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'definition',
-                FilterModule.IdFilter(ID_LOADLIBRARYDEFINITION)
-            )
-        )
-        bootstrapLoaderFilter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'definition',
-                FilterModule.IdFilter(ID_BOOTSTRAPLOADER)
-            )
-        )
         notBootstrapLoaderFilter = FilterModule.constructNotFilter()
-        notBootstrapLoaderFilter.addFilter(bootstrapLoaderFilter)
+        notBootstrapLoaderFilter.addFilter(getBootstrapLoaderPomsetsFilter())
         
         definitions = RelationalModule.Table.reduceRetrieve(
             self.definitionTable(), 
