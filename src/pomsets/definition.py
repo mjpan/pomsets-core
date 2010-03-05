@@ -272,7 +272,10 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         result = self.__class__()
         
         memo = {self:result}
-        
+
+        # copy the name
+        result.name(self.name())
+
         # copy over the parameters
         notTemporalFilter = FilterModule.constructNotFilter()
         notTemporalFilter.addFilter(
@@ -852,6 +855,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
 
     def __copy__(self):
         result = ReferenceDefinition(id=self.id())
+        result.name(self.name())
         
         result.definitionToReference(self.resource())
         

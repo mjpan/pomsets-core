@@ -18,7 +18,6 @@ import pomsets.automaton as AutomatonModule
 import pypatterns.filter as FilterModule
 
 import cloudpool as CloudModule
-import cloudpool.environment as ExecuteEnvironmentModule
 
 import pomsets.command as TaskCommandModule
 import pomsets.task as TaskModule
@@ -73,7 +72,7 @@ class PrintObject(object):
     
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
+        self.env = TaskCommandModule.PrintTaskCommand()
         self.env.outputStream(io)
         return self.env
 

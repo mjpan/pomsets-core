@@ -10,7 +10,7 @@ import currypy
 
 import pypatterns.filter as FilterModule
 
-import cloudpool.environment as ExecuteEnvironmentModule
+import pomsets.command as ExecuteEnvironmentModule
 
 import TestExecute as BaseModule
 

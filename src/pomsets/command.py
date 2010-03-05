@@ -3,6 +3,7 @@ import os
 import currypy
 
 import cloudpool.task as TaskModule
+import cloudpool.environment as ExecuteEnvironmentModule
 
 import pypatterns.filter as FilterModule
 import pypatterns.relational as RelationalModule
@@ -196,3 +197,56 @@ class Executable(ResourceModule.Struct):
     # END class Executable
     pass
 
+
+
+class PrintTaskCommand(ExecuteEnvironmentModule.Environment):
+    
+    DEFAULT_COMMANDBUILDER_TYPE = 'print task'
+    
+    def __init__(self):
+        return
+    
+    def outputStream(self, value=None):
+        if value is not None:
+            self._outputStream = value
+        if not hasattr(self, '_outputStream'):
+            self._outputStream = None
+        return self._outputStream
+
+    def prefix(self, value=None):
+        if value is not None:
+            self._prefix = value
+        if not hasattr(self, '_prefix'):
+            self._prefix = None
+        return self._prefix
+
+    def postfix(self, value=None):
+        if value is not None:
+            self._postfix = value
+        if not hasattr(self, '_postfix'):
+            self._postfix = None
+        return self._postfix
+
+    def execute(self, task, *args, **kargs):
+        
+        commandBuilder = self.getCommandBuilder(task)
+        
+        command = commandBuilder.buildCommand(task)
+
+        if self.prefix():
+            self.outputStream().write(self.prefix())
+
+        print "task >> %s" % task
+        print "task.definition >> %s" % task.definition()
+        print "task.definition id >> %s" % task.definition().id()
+        print "task.definition class >> %s" % task.definition().__class__
+        self.outputStream().write(task.definition().name() + '\n')
+        if self.outputStream():
+            self.outputStream().write(' '.join(command))
+        if self.postfix():
+            self.outputStream().write(self.postfix())
+        
+        return 0
+    
+    # END class PrintTaskCommand
+    pass
