@@ -161,6 +161,8 @@ class Resource(object):
     def description(self, description=None, locale=LOCALE_DEFAULT):
         if description is not None:
             self.__localizedDescriptionMap[locale] = description
+        if not locale in self.__localizedDescriptionMap:
+            self.__localizedDescriptionMap[locale] = u''
         return self.__localizedDescriptionMap[locale]
 
     # END class Resource
