@@ -793,7 +793,8 @@ class TaskGenerator(ResourceModule.Struct):
             definition = definition.definitionToReference()
             
         # create a filter where the source nodes are parentTask,
-        # the target node is parentTask, and the target parameter is of type blackboard
+        # the target node is parentTask,
+        # and the target parameter is of type blackboard
         theParameterConnectionFilter = FilterModule.constructAndFilter()
         theParameterConnectionFilter.addFilter(
             RelationalModule.ColumnValueFilter(
@@ -804,9 +805,10 @@ class TaskGenerator(ResourceModule.Struct):
         theParameterConnectionFilter.addFilter(
             RelationalModule.ColumnValueFilter(
                 'target node',
-                FilterModule.IdentityFilter(definition)
+                FilterModule.IdentityFilter(definition.graph())
             )
         )
+
         for parameterConnection in RelationalModule.Table.reduceRetrieve(
             definition.parameterConnectionsTable(),
             theParameterConnectionFilter,
@@ -919,83 +921,44 @@ class TaskGenerator(ResourceModule.Struct):
         if isinstance(parentTaskDefinition, DefinitionModule.ReferenceDefinition):
             parentTaskDefinition = parentTaskDefinition.definitionToReference()
             
-        # process the outgoing parameters of the child task
-        # theParentTaskParameterFilter finds the target parameters 
-        # that belong to the parent
-        theParentTaskParameterFilter = FilterModule.constructOrFilter()
-        for parentTaskParameter in parentTaskDefinition.getParametersByFilter(FilterModule.TRUE_FILTER):
-            theConnectionFilter = FilterModule.constructAndFilter()
-            theConnectionFilter.addFilter(
-                RelationalModule.ColumnValueFilter(
-                    'target parameter',
-                    FilterModule.EquivalenceFilter(parentTaskParameter.id())
-                )
-            )
-            theConnectionFilter.addFilter(
-                RelationalModule.ColumnValueFilter(
-                    'target node',
-                    FilterModule.IdentityFilter(parentTaskDefinition)
-                )
-            )
-            theParentTaskParameterFilter.addFilter(theConnectionFilter)
-            pass
 
-        # theChildParameterFilter will match the parameters of the child
-        # that are data outputs
-        theChildParameterFilter = FilterModule.constructAndFilter()
-        theChildParameterFilter.addFilter(
+        # parameter connection filter
+        filter = FilterModule.constructAndFilter()
+        filter.addFilter(
             RelationalModule.ColumnValueFilter(
-                'port direction',
-                FilterModule.EquivalenceFilter(ParameterModule.PORT_DIRECTION_OUTPUT)
+                'source node',
+                FilterModule.IdentityFilter(childTask.definition())
             )
         )
-        theChildParameterFilter.addFilter(
+        filter.addFilter(
             RelationalModule.ColumnValueFilter(
-                'port type',
-                FilterModule.EquivalenceFilter(ParameterModule.PORT_TYPE_DATA)
+                'target node',
+                FilterModule.IdentityFilter(parentTaskDefinition)
             )
         )
-        
-        childDefinition = childTask.definition().definitionToReference()
-        for childParameter in RelationalModule.Table.reduceRetrieve(
-            childDefinition.parametersTable(),
-            theChildParameterFilter,
-            ['parameter'],
-            []):
-            theConnectionFilter = FilterModule.constructAndFilter()
-            theConnectionFilter.addFilter(
-                RelationalModule.ColumnValueFilter(
-                    'source parameter',
-                    FilterModule.EquivalenceFilter(childParameter.id())
-                )
-            )
-            theConnectionFilter.addFilter(
-                RelationalModule.ColumnValueFilter(
-                    'source node',
-                    # here we need the node, not the label
-                    FilterModule.IdentityFilter(childTask.definition()) 
-                )
-            )
-            theConnectionFilter.addFilter(theParentTaskParameterFilter)
-            
-            # this has one more level of iteration than pullData
-            # because the output of a task
-            # can go to multiple locations
-            for connection in RelationalModule.Table.reduceRetrieve(
-                parentTaskDefinition.parameterConnectionsTable(),
-                theConnectionFilter,
-                ['parameter connection'],
-                []):
-                targetId = parentTaskDefinition.getIdForParameterReference(
-                    connection.targetNode(), connection.targetParameter())
-                
-                parentTask.setParameterBinding(
-                    targetId,
-                    childTask.getParameterBinding(childParameter.id())
-                )
-                pass
-            pass
-        
+
+        parameterConnections = RelationalModule.Table.reduceRetrieve(
+            parentTaskDefinition.parameterConnectionsTable(),
+            filter,
+            ['parameter connection'], [])
+        for sourceNode, sourceParameterId, targetNode, targetParameterId, parameterConnection in parentTaskDefinition.parameterConnectionsTable().retrieve(
+            filter, 
+            ['source node', 'source parameter', 'target node', 'target parameter', 'parameter connection']):
+
+            sourceParameter = sourceNode.getParameter(sourceParameterId)
+            sourceParameterType = sourceParameter.portType()
+            if not sourceParameterType == ParameterModule.PORT_TYPE_DATA:
+                continue
+            sourceParameterDirection = sourceParameter.portDirection()
+            if not (sourceParameterDirection == ParameterModule.PORT_DIRECTION_OUTPUT or 
+                    (sourceParameterDirection == ParameterModule.PORT_DIRECTION_INPUT and sourceParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT))):
+
+                continue
+
+            parentTask.setParameterBinding(
+                targetParameterId,
+                childTask.getParameterBinding(sourceParameterId))
+
         return
     
     

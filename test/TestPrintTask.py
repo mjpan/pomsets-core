@@ -27,7 +27,8 @@ class TestCase1(BaseModule.TestCase1):
         return self.env
 
     def assertPostExecute(self):
-        expected = """/bin/echo foo
+        expected = """echo
+/bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
         assert expected == actual, \
@@ -52,7 +53,8 @@ class TestCase2(BaseModule.TestCase2):
         return self.env
     
     def assertPostExecute(self):
-        expected = """/bin/echo "echoed testExecuteAtomicFunction2"
+        expected = """echo
+/bin/echo "echoed testExecuteAtomicFunction2"
 """
         actual = self.env.outputStream().getvalue()
         assert expected == actual, \
@@ -78,7 +80,8 @@ class TestCase4(BaseModule.TestCase4):
         return self.env
 
     def assertPostExecute(self):
-        expected = """/bin/echo foo
+        expected = """echo
+/bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
         assert expected == actual, \
@@ -103,8 +106,11 @@ class TestCase8(BaseModule.TestCase8):
         return self.env
 
     def assertPostExecute(self):
-        expected = """/bin/echo foo
+        expected = """echo 0
 /bin/echo foo
+echo 1
+/bin/echo foo
+echo 2
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
@@ -129,8 +135,11 @@ class TestCase9(BaseModule.TestCase9):
         return self.env
     
     def assertPostExecute(self):
-        expected = """/bin/echo foo
+        expected = """echo 0
 /bin/echo foo
+echo 1
+/bin/echo foo
+echo 2
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
@@ -170,7 +179,9 @@ class TestParameterSweep1(BaseModule.TestParameterSweep1):
         return self.env
 
     def assertPostExecute(self):
-        expected = """/bin/echo "echoed testExecuteParameterSweep1 : 1"
+        expected = """echo
+/bin/echo "echoed testExecuteParameterSweep1 : 1"
+echo
 /bin/echo "echoed testExecuteParameterSweep1 : 2"
 """
         actual = self.env.outputStream().getvalue()
@@ -193,7 +204,7 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
         return self.env
 
     def assertPostExecute(self):
-        expected = """%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2
+        expected = """mapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\nmapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2
 """ % tuple([os.getcwd()]*4)
 
         actual = self.env.outputStream().getvalue()
@@ -215,7 +226,7 @@ class TestParameterSweep3(BaseModule.TestParameterSweep3):
         return self.env
 
     def assertPostExecute(self):
-        expected = """%s/resources/testdata/TestExecute/wordcount_reduce.py -input %s/resources/testdata/TestExecute/count1 %s/resources/testdata/TestExecute/count2 -output /tmp/count_reduce
+        expected = """reducer\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input %s/resources/testdata/TestExecute/count1 %s/resources/testdata/TestExecute/count2 -output /tmp/count_reduce
 """ %  tuple([os.getcwd()]*3)
 
         actual = self.env.outputStream().getvalue()
@@ -239,7 +250,7 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
         return self.env
     
     def assertPostExecute(self):
-        expected = """%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input /tmp/count1 /tmp/count2 -output /tmp/count_reduce
+        expected = """mapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\nmapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2\nreducer\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input /tmp/count1 /tmp/count2 -output /tmp/count_reduce
 """  % tuple([os.getcwd()]*5)
 
         actual = self.env.outputStream().getvalue()

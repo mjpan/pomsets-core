@@ -44,6 +44,7 @@ def createEchoDefinition():
         parameterOrderings = None,
         executable = executable
     )
+    definition.name('echo')
     return definition
 
 DEFINITION_ECHO = createEchoDefinition()
@@ -246,7 +247,8 @@ class TestCase4(BaseTestClass, unittest.TestCase):
         
         node = compositeDefinition.createNode(id='node')
         node.definitionToReference(atomicDefinition)
-        
+        node.name('echo')
+
         compositeDefinition.connectParameters(
             compositeDefinition, 'item to echo',
             node, 'item to echo'
@@ -295,6 +297,7 @@ class TestCase8(BaseTestClass, unittest.TestCase):
                 compositeDefinition, 'item to echo',
                 node, 'item to echo'
             )
+            node.name('echo %s' % index)
 
         return compositeDefinition
 
@@ -337,6 +340,7 @@ class TestCase9(BaseTestClass, unittest.TestCase):
                 compositeDefinition, 'item to echo',
                 node, 'item to echo'
             )
+            node.name('echo %s' % index)
             nodes.append(node)
             pass
 
@@ -383,7 +387,8 @@ class TestCase10(BaseTestClass, unittest.TestCase):
         
         node = compositeDefinition.createNode(id='node')
         node.definitionToReference(atomicDefinition)
-        
+        node.name('echo')
+
         return compositeDefinition
 
 
@@ -420,7 +425,7 @@ class TestParameterSweep1(BaseTestClass, unittest.TestCase):
         compositeDefinition = DefinitionModule.getNewNestDefinition()
         node = compositeDefinition.createNode(id='node')
         node.definitionToReference(atomicDefinition)
-
+        node.name('echo')
         
         parameter = ParameterModule.DataParameter(
             id='item to echo', 

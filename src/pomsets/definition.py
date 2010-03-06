@@ -34,8 +34,10 @@ class ParameterBindingsHolder(ResourceModule.Struct):
         pass
 
     def setParameterBinding(self, key, value):
-        logging.debug('setting key "%s" to values "%s" to %s\'s parameter bindings' % 
-                      (key, value, self))       
+        logging.debug(
+            'setting key "%s" to values "%s" to %s\'s parameter bindings' % 
+            (key, value, self))       
+
         self.parameterBindings()[key] = value
     
     def getParameterBinding(self, key):
@@ -508,7 +510,6 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         if node is self:
             return parameterId
         return '%s.%s' % (node.id(), parameterId)
-
     
     
     def _getNotSelfParameterConnectionFilter(self):
@@ -922,6 +923,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         parameter = self.getParameter(parameterName)
 
         logging.debug('parameter is of type %s' % parameter.portType())
+
         if parameter.portType() == ParameterModule.PORT_TYPE_BLACKBOARD:
             return (self, parameter)
         if parameter.portType() == ParameterModule.PORT_TYPE_TEMPORAL:
@@ -938,6 +940,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         # so, if there is an incoming parameter connection
         # and the source of that parameter connection is a blackboard parameter
         # then that is the parameter to edit
+        """
         parameterConnectionFilter = FilterModule.constructAndFilter()
         parameterConnectionFilter.addFilter(
             RelationalModule.ColumnValueFilter(
@@ -969,6 +972,25 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
             if not sourceParameter.portType() ==  ParameterModule.PORT_TYPE_BLACKBOARD:
                 continue
             parameters.append((sourceNode, sourceParameter))
+        """
+        filter = FilterModule.constructAndFilter()
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'target node',
+                FilterModule.IdentityFilter(self)
+                )
+            )
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'target parameter',
+                FilterModule.EquivalenceFilter(parameterName)
+                )
+            )
+        
+        parameters = RelationalModule.Table.reduceRetrieve(
+            self.graph().parameterConnectionPathTable(),
+            filter,
+            ['additional parameters'], [])
 
 
         if len(parameters) is 0:
@@ -978,11 +1000,14 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         if len(parameters) is not 1:
             raise ValueError('expected only one incoming connection from a blackboard parameter, got %s' % len(parameters))
 
+        parameterId = parameters[0][0]
+        parameter = self.graph().getParameter(parameterId)
+
         logging.debug('returning %s as the parameter to edit for (%s,%s)' %
-                      (parameters[0], self, parameterName))
+                      (parameter, self, parameterName))
 
         # parameters is a list of tuples of (node, parameter)
-        return parameters[0]
+        return (self.graph(), parameter)
 
     
     def referencesLibraryDefinition(self):

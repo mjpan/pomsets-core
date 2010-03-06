@@ -353,6 +353,11 @@ class Builder(object):
             
         else:
     
+            # TODO:
+            # need to check whether the output parameter
+            # already as a blackboard parameter connected to it
+            # if so, will need to use that instead
+
             # create a blackboard parameter
             bbParameterId = '%s.%s-%s.%s' % (sourceNode.name(),
                                              sourceParameterId,
