@@ -36,10 +36,7 @@ class Automaton(ResourceModule.Struct):
             returnValue = task.do()
         except Exception, e:
             exceptionType, exceptionValue, exceptionTraceback = sys.exc_info()
-            #import StringIO
-            #strio = StringIO.StringIO()
-            # traceback.print_stack(file=strio)
-            # kwds['exception stack trace'] = strio.getvalue()
+
             taskWorkRequest = task.workRequest()
 
             taskWorkRequest.kwds['exception type'] = str(exceptionType)
@@ -51,7 +48,7 @@ class Automaton(ResourceModule.Struct):
 
             raise
         
-        return returnValue
+        return 
     
     @staticmethod
     def compositeTaskCompleteCallback(request, result):

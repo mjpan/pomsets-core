@@ -6,6 +6,7 @@ import threadpool
 import unittest
 import logging
 
+import pomsets.builder as BuilderModule
 import pomsets.command as TaskCommandModule
 import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
@@ -246,6 +247,7 @@ def createPomsetContainingParameterSweep():
     reducerNode.isCritical(True)
     reducerNode.name('reducer')
 
+    """
     blackboardParameter = \
         ParameterModule.BlackboardParameter('intermediate file')
     compositeDefinition.addParameter(blackboardParameter)
@@ -262,7 +264,20 @@ def createPomsetContainingParameterSweep():
         mapperNode, 'temporal output',
         reducerNode, 'temporal input',
     )
-    
+    """
+    builder = BuilderModule.Builder()
+    builder.connect(
+        compositeDefinition,
+        mapperNode, 'output file',
+        reducerNode, 'input files')
+    builder.connect(
+        compositeDefinition,
+        mapperNode, 'temporal output',
+        reducerNode, 'temporal input',
+        )
+
+    print "num paths >> %s" % compositeDefinition.parameterConnectionPathTable().rowCount()
+
     compositeDefinition.name('basic map-reduce')
     
     return compositeDefinition
