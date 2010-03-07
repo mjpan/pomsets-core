@@ -4,7 +4,7 @@
     "remote execute credentials": [
         {
             "hostname": "192.168.21.109",
-            "keyfile": "/Users/mjpan/pomsets/euca/ssh/neo.private", 
+            "keyfile": "/Users/mjpan/ec2/ssh/neo.private", 
             "user":"root"
         }
     ]

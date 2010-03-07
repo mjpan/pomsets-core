@@ -276,8 +276,6 @@ def createPomsetContainingParameterSweep():
         reducerNode, 'temporal input',
         )
 
-    print "num paths >> %s" % compositeDefinition.parameterConnectionPathTable().rowCount()
-
     compositeDefinition.name('basic map-reduce')
     
     return compositeDefinition
@@ -302,8 +300,11 @@ def bindParameterSweepDefinitionParameters(definition):
     (dataNode, parameterToEdit) = \
      mapperNode.getParameterToEdit('output file')
 
+    valuesToBind = ['/tmp/pomsets/count1', '/tmp/pomsets/count2']
     dataNode.setParameterBinding(parameterToEdit.id(),
-                                 ['/tmp/pomsets/count1', '/tmp/pomsets/count2'])
+                                 valuesToBind)
+
+
     (dataNode, parameterToEdit) = \
      reducerNode.getParameterToEdit('output file')
     dataNode.setParameterBinding(parameterToEdit.id(), ['/tmp/pomsets/count_all'])

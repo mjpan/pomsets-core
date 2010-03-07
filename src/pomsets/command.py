@@ -236,10 +236,6 @@ class PrintTaskCommand(ExecuteEnvironmentModule.Environment):
         if self.prefix():
             self.outputStream().write(self.prefix())
 
-        print "task >> %s" % task
-        print "task.definition >> %s" % task.definition()
-        print "task.definition id >> %s" % task.definition().id()
-        print "task.definition class >> %s" % task.definition().__class__
         self.outputStream().write(task.definition().name() + '\n')
         if self.outputStream():
             self.outputStream().write(' '.join(command))

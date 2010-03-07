@@ -5,7 +5,7 @@
             "service name": "Eucalyptus", 
             "values": {
                 "access key": "evCKzFhvtnPLK3aSvpYRtASpXBkQHRc7yLocQ",
-                "identity file": "/Users/mjpan/pomsets/euca/ssh/neo.private", 
+                "identity file": "/Users/mjpan/ec2/ssh/neo.private", 
                 "secret key": "ZJRGpU4geiizJaMBRnNQkI6GMlBfJLCSeI4Qw",
                 "url": "http://192.168.21.107:8773/services/Eucalyptus", 
                 "user key pair": "74:5b:db:64:46:af:fa:b7:78:08:ad:1e:e6:a6:d2:51"
