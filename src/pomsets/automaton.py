@@ -245,7 +245,8 @@ class Automaton(ResourceModule.Struct):
         return request
 
 
-    def executePomset(self, task=None, pomset=None, requestKwds=None):
+    def executePomset(self, task=None, pomset=None, requestKwds=None,
+                      shouldWait=True):
 
         # create a new task
         # we assume that the pomset is a composite definition
@@ -275,7 +276,7 @@ class Automaton(ResourceModule.Struct):
                     'need to start thread before execution')
             """
 
-            self.enqueueRequest(request)
+            self.enqueueRequest(request, shouldWait=shouldWait)
         except ValueError, e:
             logging.error(e)
             raise ExecuteErrorModule.ExecutionError(e)
