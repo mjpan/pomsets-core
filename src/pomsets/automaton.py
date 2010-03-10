@@ -268,14 +268,6 @@ class Automaton(ResourceModule.Struct):
 
         # check if any threads have been started
         try:
-            """
-            threadpool = self.getThreadPoolUsingRequest(request)
-            should be moved to the cloud automaton's getThreadPoolUsingRequest
-            if threadpool.isEmpty():
-                raise ExecuteErrorModule.ExecutionError(
-                    'need to start thread before execution')
-            """
-
             self.enqueueRequest(request, shouldWait=shouldWait)
         except ValueError, e:
             logging.error(e)

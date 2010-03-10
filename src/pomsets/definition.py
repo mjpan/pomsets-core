@@ -144,12 +144,17 @@ class Definition(ResourceModule.Struct):
         
         return parameters
 
-    def getParametersHavingId(self, id):
+
+    def getParameterIdFilter(self, id):
         filter = RelationalModule.ColumnValueFilter(
             'id',
             FilterModule.EquivalenceFilter(id)
         )
-        
+        return filter
+
+    def getParametersHavingId(self, id):
+        filter = self.getParameterIdFilter(id)
+
         parameters = RelationalModule.Table.reduceRetrieve(
             self.parametersTable(),
             filter,
@@ -172,6 +177,17 @@ class Definition(ResourceModule.Struct):
             raise NotImplementedError(
                 '%s has more than one parameter with id %s' % self.name(), id)
         return parameters[0]
+
+
+    def renameParameter(self, originalName, newName):
+        filter = self.getParameterIdFilter(originalName)
+        for row in self.parametersTable().retrieveForModification(filter):
+            row.setColumn('id', newName)
+            parameter = row.getColumn('parameter')
+            parameter.id(newName)
+            parameter.name(newName)
+            pass
+        return
 
     
     def isAtomic(self):
