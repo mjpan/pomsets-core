@@ -990,7 +990,6 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
             
         if sourceNode is None:
             logging.debug('no incoming blackboard parameters found')
-            print 'no incoming blackboard parameters found'
             return (self, parameter)
         
         parameter = sourceNode.getParameter(sourceParameterId)
