@@ -753,18 +753,25 @@ class TestBuilder(unittest.TestCase):
 
 
         # setting the binding on an input file
-        # modifies that the incoming blackboard parameter
+        # modifies that the outgoing file
         boundValue = ['bar']
         self.builder.bindParameterValue(targetNode, targetParameterId,
                                         boundValue)
+
+        self.assertTrue(sourceNode.hasParameterBinding(sourceParameterId))
+        self.assertEquals(boundValue,
+                          sourceNode.getParameterBinding(sourceParameterId))
+
+        # assert that there's no binding on the blackboard parameter yet
         bbParameterName = '%s.%s-%s.%s' % (sourceNode.name(),
                                            sourceParameterId,
                                            targetNode.name(),
                                            targetParameterId)
-        self.assertEquals(boundValue,
-                          pomset.getParameterBinding(bbParameterName))
-        self.assertFalse(targetNode.hasParameterBinding(targetParameterId))
-
+        self.assertTrue(pomset.hasParameter(bbParameterName))
+        self.assertRaises(KeyError, 
+                          pomset.getParameterBinding,
+                          bbParameterName)
+                          
         return
 
     # END class TestBuilder

@@ -549,19 +549,32 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         
     
     def getMinimalNodes(self):
-        theNotSelfFilter = self._getNotSelfParameterConnectionFilter()
-        edges = [x for x in theNotSelfFilter.wrap(self.edges())]
-        targetNodes = set([x.targetNode() for x in edges])
+        #theNotSelfFilter = self._getNotSelfParameterConnectionFilter()
+        #edges = [x for x in theNotSelfFilter.wrap(self.edges())]
+        #targetNodes = set([x.targetNode() for x in edges])
         allNodes = set(self.nodes())
-        
+
+        filter = FilterModule.TRUE_FILTER
+        targetNodes = set(RelationalModule.Table.reduceRetrieve(
+            self.parameterConnectionPathTable(),
+            filter,
+            ['target node'], []))
+            
         return allNodes.difference(targetNodes)
 
     def getMaximalNodes(self):
-        theNotSelfFilter = self._getNotSelfParameterConnectionFilter()
-        edges = [x for x in theNotSelfFilter.wrap(self.edges())]
-        sourceNodes = set([x.sourceNode() for x in edges])
+        #theNotSelfFilter = self._getNotSelfParameterConnectionFilter()
+        #edges = [x for x in theNotSelfFilter.wrap(self.edges())]
+        #sourceNodes = set([x.sourceNode() for x in edges])
         allNodes = set(self.nodes())
+
+        filter = FilterModule.TRUE_FILTER
+        sourceNodes = set(RelationalModule.Table.reduceRetrieve(
+            self.parameterConnectionPathTable(),
+            filter,
+            ['source node'], []))
         
+
         return allNodes.difference(sourceNodes)
 
 
@@ -952,43 +965,6 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         if parameter.portDirection() == ParameterModule.PORT_DIRECTION_INTERNAL:
             return (self, parameter)
 
-        # at this point, we should only be left with input data parameters
-        # so, if there is an incoming parameter connection
-        # and the source of that parameter connection is a blackboard parameter
-        # then that is the parameter to edit
-        """
-        parameterConnectionFilter = FilterModule.constructAndFilter()
-        parameterConnectionFilter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'source node',
-                FilterModule.IdentityFilter(self.graph())
-                )
-            )
-        parameterConnectionFilter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'target node',
-                FilterModule.IdentityFilter(self)
-                )
-            )
-        parameterConnectionFilter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'target parameter',
-                FilterModule.EquivalenceFilter(parameterName)
-                )
-            )
-
-        rows = [x for x in 
-                self.graph().parameterConnectionsTable().retrieve(
-                parameterConnectionFilter, 
-                ['source node', 'source parameter']
-                )]
-        parameters = []
-        for sourceNode, sourceParameterName in rows:
-            sourceParameter = sourceNode.getParameter(sourceParameterName)
-            if not sourceParameter.portType() ==  ParameterModule.PORT_TYPE_BLACKBOARD:
-                continue
-            parameters.append((sourceNode, sourceParameter))
-        """
         filter = FilterModule.constructAndFilter()
         filter.addFilter(
             RelationalModule.ColumnValueFilter(
@@ -1003,28 +979,22 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
                 )
             )
         
-        parameters = RelationalModule.Table.reduceRetrieve(
-            self.graph().parameterConnectionPathTable(),
+        sourceNode = None
+        sourceParameterId = None
+        for row in self.graph().parameterConnectionPathTable().retrieve(
             filter,
-            ['additional parameters'], [])
-
-
-        if len(parameters) is 0:
+            ['source node', 'source parameter']):
+            sourceNode = row[0]
+            sourceParameterId = row[1]
+            pass
+            
+        if sourceNode is None:
             logging.debug('no incoming blackboard parameters found')
+            print 'no incoming blackboard parameters found'
             return (self, parameter)
-
-        if len(parameters) is not 1:
-            raise ValueError('expected only one incoming connection from a blackboard parameter, got %s' % len(parameters))
-
-        parameterId = parameters[0][0]
-        parameter = self.graph().getParameter(parameterId)
-
-        logging.debug('returning %s as the parameter to edit for (%s,%s)' %
-                      (parameter, self, parameterName))
-
-        # parameters is a list of tuples of (node, parameter)
-        return (self.graph(), parameter)
-
+        
+        parameter = sourceNode.getParameter(sourceParameterId)
+        return (sourceNode, parameter)
     
     def referencesLibraryDefinition(self):
         definition = self.definitionToReference()

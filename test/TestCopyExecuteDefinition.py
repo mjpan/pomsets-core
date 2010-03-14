@@ -203,8 +203,7 @@ class TestReferenceDefinition(unittest.TestCase):
 
         # assert nodeToCopy == copiedNode
         differences = [x for x in nodeToCopy.getDifferencesWith(copiedNode)]
-        self.assertEquals(['self has 1 outgoing edges, other has 0'], 
-                          differences)
+        self.assertEquals([], differences)
         
         return
 
@@ -220,8 +219,7 @@ class TestReferenceDefinition(unittest.TestCase):
 
         # assert nodeToCopy == copiedNode
         differences = [x for x in nodeToCopy.getDifferencesWith(copiedNode)]
-        self.assertEquals(['self has 1 incoming edges, other has 0'],
-                          differences)
+        self.assertEquals([], differences)
 
         
         return

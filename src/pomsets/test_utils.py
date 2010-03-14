@@ -270,11 +270,11 @@ def createPomsetContainingParameterSweep():
         compositeDefinition,
         mapperNode, 'output file',
         reducerNode, 'input files')
-    builder.connect(
-        compositeDefinition,
-        mapperNode, 'temporal output',
-        reducerNode, 'temporal input',
-        )
+    #builder.connect(
+    #    compositeDefinition,
+    #    mapperNode, 'temporal output',
+    #    reducerNode, 'temporal input',
+    #    )
 
     compositeDefinition.name('basic map-reduce')
     
