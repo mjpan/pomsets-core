@@ -1,6 +1,8 @@
 import os
 import sys
 
+sys.path.insert(0, '%s/pomsets-core/src'% os.getenv('APP_ROOT'))
+
 import pomsets.context as ContextModule
 import pomsets.library as LibraryModule
 
