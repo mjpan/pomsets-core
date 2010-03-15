@@ -182,8 +182,7 @@ class Automaton(ResourceModule.Struct):
 
 
     def executeCommand(self, command):
-        self.commandManager().do(command)
-        return
+        return self.commandManager().do(command)
 
 
     def getPostExecuteCallbackFor(self, task):

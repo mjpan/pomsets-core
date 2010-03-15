@@ -130,6 +130,7 @@ class Definition(ResourceModule.Struct):
         self.addParameter(outputParameter)
         return
 
+
     def getParametersByFilter(self, filter):
         theFilter = RelationalModule.ColumnValueFilter(
             'parameter',
@@ -285,6 +286,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
             
         raise StopIteration
     
+
     def __copy__(self):
         
         result = self.__class__()
@@ -311,44 +313,40 @@ class CompositeDefinition(GraphModule.Graph, Definition,
             result.addNode(newNode)
             memo[node] = newNode
             
-        # copy over the parameter connections
+        # copy over the parameter connections paths
         columns = ['source node', 'source parameter', 
                    'target node', 'target parameter']
-        for row in self.parameterConnectionsTable().retrieve(columns=columns):
+        for row in self.parameterConnectionPathTable().retrieve(columns=columns):
+
             sourceNode = row[0]
             targetNode = row[2]
             sourceParameter = row[1]
             targetParameter = row[3]
             copySourceNode = memo[sourceNode]
             copyTargetNode = memo[targetNode]
-            connection = result.connectParameters(
+            result.connectNodes(
                 copySourceNode, sourceParameter,
                 copyTargetNode, targetParameter
                 )
-            result.addParameterConnectionPath(
-                copySourceNode, sourceParameter,
-                copyTargetNode, targetParameter,
-                tuple([connection])
-                )
-
             pass
-            
+
         # copy over the parameter bindings
         result.parameterBindings(self.parameterBindings())
         
         return result
+
     
     def getClassForCreateNode(self):
         return ReferenceDefinition
     
     def getClassForCreateEdge(self):
-        return ParameterModule.ParameterConnection
+        return ParameterModule.ParameterConnectionPath
 
 
     def initializeParameterConnectionPaths(self):
         table = RelationalModule.createTable(
             'parameter connection path',
-            ['source node', 'source parameter', 
+            ['edge', 'source node', 'source parameter', 
              'target node', 'target parameter',
              'path', 'additional parameters']
         )
@@ -414,38 +412,253 @@ class CompositeDefinition(GraphModule.Graph, Definition,
 
         # add temporal connections
         for predecessor in predecessors:
-            connection = self.connectParameters(
+            self.connectNodes(
                 predecessor, 'temporal output',
                 node, 'temporal input'
             )
-            self.addParameterConnectionPath(
-                predecessor, 'temporal output',
-                node, 'temporal input',
-                tuple([connection])
-                )
             pass
         for successor in successors:
-            connection = self.connectParameters(
+            self.connectNodes(
                 node, 'temporal output',
                 successor, 'temporal input'
             )
-            self.addParameterConnectionPath(
-                node, 'temporal output',
-                successor, 'temporal input',
-                tuple([connection])
-                )
             pass
 
         return node
     
-    
-    def connectParameters(self, 
-                          sourceNode, sourceParameter, 
-                          targetNode, targetParameter):
+
+    def canConnect(self, sourceNode, sourceParameterId,
+                   targetNode, targetParameterId):
+        """
+        This is a validation function to determine whether the
+        ports provided can be connected to each other
+        """
+
+        # cannot connect to itself
+        if sourceNode == targetNode and sourceParameterId==targetParameterId:
+            logging.debug("cannot connect parameter to itself")
+            return False
+
+        sourceParameter = None
+        targetParameter = None
+        try:
+            sourceParameter = sourceNode.getParameter(sourceParameterId)
+            targetParameter = targetNode.getParameter(targetParameterId)
+        except Exception, e:
+            # if the parameter does not exist
+            # then there's no way to connect
+            logging.debug('cannot connect non-existent parameters')
+            return False
         
+        # inputs cannot connect to each other
+        # outputs also cannot connect to each other
+        #if sourceParameter.portDirection() == targetParameter.portDirection():
+        #    print 'cannot connect parameters of the same direction'
+        #    logging.debug('cannot connect parameters of the same direction')
+        #    return False
+
+        if not sourceParameter.portType() == targetParameter.portType():
+            logging.debug("cannot connect ports of different types")
+            return False
+
+        # the target parameter cannot be an input
+        # nor an output file
+        if not targetParameter.portDirection() == ParameterModule.PORT_DIRECTION_INPUT or \
+                targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
+            logging.debug("parameter %s is not an input" % targetParameterId)
+            return False
+        
+        # the source parameter cannot be an output (file or not)
+        if not sourceParameter.portDirection() == ParameterModule.PORT_DIRECTION_OUTPUT and \
+           not sourceParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
+            logging.debug("parameter %s is not an output" % sourceParameterId)
+            return False
+
+
+        # cannot connect if a path already exists
+        filter = self.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+        paths = RelationalModule.Table.reduceRetrieve(
+            self.parameterConnectionPathTable(),
+            filter, ['path'], [])
+        if len(paths) is not 0:
+            return False
+
+        # cannot connect if data and already connected to something else
+        if targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISINPUTFILE):
+            filter = FilterModule.constructAndFilter()
+            filter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'target node',
+                    FilterModule.IdentityFilter(targetNode)
+                    )
+                )
+            filter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'target parameter',
+                    FilterModule.EquivalenceFilter(targetParameterId)
+                    )
+                )
+            paths = RelationalModule.Table.reduceRetrieve(
+                self.parameterConnectionPathTable(),
+                filter, ['path'], [])
+            if len(paths) is not 0:
+                return False
+            pass
+
+        return True
+
+
+    def disconnect(self, 
+                   sourceNode, sourceParameterId,
+                   targetNode, targetParameterId):
+        """
+        looks for the connection path
+        then removes the individual atomic connections
+        """
+
+        filter = self.constructParameterConnectionFilter(
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId)
+
+        paths = RelationalModule.Table.reduceRetrieve(
+            self.parameterConnectionPathTable(),
+            filter, ['path'], [])
+
+        # remove any blackboard parameters
+        for connections, additionalParameterIds in self.parameterConnectionPathTable().retrieve(filter=filter, columns=['path', 'additional parameters']):
+
+            map(self.removeParameterConnection, list(connections))
+            parameters = [self.getParameter(x) 
+                          for x in additionalParameterIds]
+            map(self.removeParameter, parameters)
+            pass
+        # remove the row from the table
+        self.parameterConnectionPathTable().removeRows(filter)
+
+        # now to see if there are any raw parameter connection
+        connections = RelationalModule.Table.reduceRetrieve(
+            self.parameterConnectionsTable(),
+            filter, ['parameter connection'], [])
+
+        # remove the parameter connections
+        map(self.removeParameterConnection, connections)
+        
+        # remove the edges
+        # there should be only one
+        edges = RelationalModule.Table.reduceRetrieve(
+            self.parameterConnectionPathTable(),
+            filter, ['edge'], [])
+        map(self.removeEdge, edges)
+
+        return
+
+
+
+    def connectNodes(self, 
+                     sourceNode, sourceParameterId,
+                     targetNode, targetParameterId):
+        """
+        This assumes that the caller has already
+        verified that canConnect() returns True
+        """
+        if sourceNode not in self.nodes() or targetNode not in self.nodes():
+            raise ValueError('cannot connect a node not in this graph')
+
+        sourceParameter = sourceNode.getParameter(sourceParameterId)
+        targetParameter = targetNode.getParameter(targetParameterId)
+
+        connections = tuple([])
+        additionalParameters = None
+
+        portType = sourceParameter.portType()
+        if portType == ParameterModule.PORT_TYPE_TEMPORAL:
+            connection = self._connectParameters(
+                sourceNode, sourceParameterId,
+                targetNode, targetParameterId
+            )
+            connections = tuple([connection])
+
+            path = [
+                sourceNode,
+                sourceParameterId,
+                connection,
+                targetParameterId,
+                targetNode
+            ]
+            
+        else:
+    
+            # TODO:
+            # need to check whether the output parameter
+            # already as a blackboard parameter connected to it
+            # if so, will need to use that instead
+
+            # create a blackboard parameter
+            bbParameterId = '%s.%s-%s.%s' % (sourceNode.name(),
+                                             sourceParameterId,
+                                             targetNode.name(),
+                                             targetParameterId)
+            bbParameter = ParameterModule.BlackboardParameter(
+                bbParameterId)
+            self.addParameter(bbParameter)
+    
+            # create a parameter connection (source->blackboard)
+            sourceParameterConnection = self._connectParameters(
+                sourceNode, sourceParameterId,
+                self, bbParameterId
+            )
+    
+            # create a parameter connection (blackboard->target)
+            targetParameterConnection = self._connectParameters(
+                self, bbParameterId,
+                targetNode, targetParameterId
+            )
+
+            connections = tuple([sourceParameterConnection, targetParameterConnection])
+            additionalParameters = tuple([bbParameterId])
+
+            path = [
+                sourceNode,
+                sourceParameterId,
+                sourceParameterConnection,
+                bbParameterId,
+                targetParameterConnection,
+                targetParameterId,
+                targetNode
+            ]
+
         edge = self.createEdge([sourceNode, targetNode])
+        edge.sourceNode(sourceNode)
+        edge.targetNode(targetNode)
+        edge.sourceParameter(sourceParameterId)
+        edge.targetParameter(targetParameterId)
+        edge.path(path)
+
+
+        self.addParameterConnectionPath(
+            edge,
+            sourceNode, sourceParameterId,
+            targetNode, targetParameterId,
+            connections,
+            additionalParameters)
+
+        return edge
+
+    
+    def _connectParameters(self, 
+                           sourceNode, sourceParameter, 
+                           targetNode, targetParameter):
+        """
+        This is an internal function 
+        that creates a connection between two parameters
+        """
+        
+        parameterConnection = ParameterModule.ParameterConnection()
+
         # this sets the references for parameter connections
-        edge.setReferences(sourceNode, sourceParameter,
+        parameterConnection.setReferences(sourceNode, sourceParameter,
                            targetNode, targetParameter)
 
         row = self.parameterConnectionsTable().addRow()
@@ -453,12 +666,13 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         row.setColumn('source parameter', sourceParameter)
         row.setColumn('target node', targetNode)
         row.setColumn('target parameter', targetParameter)
-        row.setColumn('parameter connection', edge)
+        row.setColumn('parameter connection', parameterConnection)
         
-        return edge
+        return parameterConnection
 
 
     def addParameterConnectionPath(self, 
+                                   edge,
                                    sourceNode, sourceParameter,
                                    targetNode, targetParameter, path,
                                    additionalParameters=None):
@@ -468,6 +682,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
 
         row = self.parameterConnectionPathTable().addRow()
 
+        row.setColumn('edge', edge)
         row.setColumn('source node', sourceNode)
         row.setColumn('source parameter', sourceParameter)
         row.setColumn('target node', targetNode)
@@ -476,7 +691,6 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         row.setColumn('additional parameters', additionalParameters)
 
         return
-
 
 
     def constructParameterConnectionFilter(self, 
@@ -517,7 +731,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
             connection.targetNode(),
             connection.targetParameter())
         self.parameterConnectionsTable().removeRows(filter)
-        self.removeEdge(connection)
+
         return
 
 
@@ -631,14 +845,10 @@ class LoopDefinition(CompositeDefinition):
             LoopDefinition.PARAMETER_STATE)
         self.addParameter(parameter)
         
-        connection = self.connectParameters(
+
+        self._connectParameters(
             self, LoopDefinition.PARAMETER_INITIAL_STATE,
             self, LoopDefinition.PARAMETER_STATE
-        )
-        self.addParameterConnectionPath(
-            self, LoopDefinition.PARAMETER_INITIAL_STATE,
-            self, LoopDefinition.PARAMETER_STATE,
-            tuple([connection])
             )
         
         return
@@ -1048,9 +1258,11 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
     
     
     def addParameterSweepGroup(self, groupMembers):
-        unknownSweeps = [x for x in groupMembers if x not in self.parameterSweeps()]
+        unknownSweeps = [x for x in groupMembers 
+                         if x not in self.parameterSweeps()]
+
         if len(unknownSweeps) is not 0:
-            raise NotImplementedError('cannot not group for unknown sweeps %s' % unknownSweeps)
+            raise NotImplementedError('cannot group for unknown sweeps %s' % unknownSweeps)
 
         # TODO:
         # verify that the sweeps are not already in another group
@@ -1065,6 +1277,20 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         
         return
 
+    def removeParameterSweepGroup(self, group):
+
+        groupFilter = FilterModule.constructOrFilter()
+        for memberId in group:
+            groupFilter.addFilter(
+                FilterModule.EquivalenceFilter(memberId))
+            pass
+
+        filter = RelationalModule.ColumnValueFilter(
+            'id', groupFilter)
+        self.parameterSweepGroups().removeRows(filter)
+        return
+
+
     def getGroupForParameterSweep(self, parameterId):
         filter = RelationalModule.ColumnValueFilter(
             'id',
@@ -1078,12 +1304,27 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         )
         # by default, a parameter sweep is in its own group
         if len(groups) is 0:
-            return (parameterId)
+            return tuple([parameterId])
         elif len(groups) is not 1:
             raise NotImplementedError(
                 'have not implemented case where parameter sweep is in 2 different groups')
         return groups[0]
+
     
+    def parameterIsInOwnParameterSweepGroup(self, parameterId):
+        filter = RelationalModule.ColumnValueFilter(
+            'id',
+            FilterModule.EquivalenceFilter(parameterId)
+        )
+        groups = RelationalModule.Table.reduceRetrieve(
+            self.parameterSweepGroups(),
+            filter,
+            ['group'],
+            []
+        )
+        # by default, a parameter sweep is in its own group
+        return len(groups) is 0
+
     
     def isReadyToExecute(self, parentTask):
         allPredecessors = set(self.predecessors())
@@ -1126,7 +1367,70 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
             
         # default to False
         return self.parameterStagingMap().get(parameter, False)
-    
+
+
+    def predecessors(self):
+        """
+        theFilter = self.incomingEdgeFilter()
+        for edge in self.getEdges(theFilter):
+            source = edge.source()
+            sourceNode = edge.convertEntityToNode(source)
+            yield sourceNode
+        """
+
+        """
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'target parameter',
+                FilterModule.EquivalenceFilter(parameterName)
+                )
+            )
+        
+        sourceNode = None
+        sourceParameterId = None
+        for row in self.graph().parameterConnectionPathTable().retrieve(
+            filter,
+            ['source node', 'source parameter']):
+            sourceNode = row[0]
+            sourceParameterId = row[1]
+            pass
+        """
+        filter = RelationalModule.ColumnValueFilter(
+                'target node',
+                FilterModule.IdentityFilter(self))
+        nodes = set([])
+        for row in self.graph().parameterConnectionPathTable().retrieve(
+            filter, ['source node']):
+            targetNode = row[0]
+            if targetNode in nodes:
+                continue
+            nodes.add(targetNode)
+            yield targetNode
+        raise StopIteration
+
+
+
+    def successors(self):
+        """
+        theFilter = self.outgoingEdgeFilter()
+        for edge in self.getEdges(theFilter):
+            sink = edge.sink()
+            sinkNode = edge.convertEntityToNode(sink)
+            yield sinkNode
+        """
+        filter = RelationalModule.ColumnValueFilter(
+                'source node',
+                FilterModule.IdentityFilter(self))
+        nodes = set([])
+        for row in self.graph().parameterConnectionPathTable().retrieve(
+            filter, ['target node']):
+            sourceNode = row[0]
+            if sourceNode in nodes:
+                continue
+            nodes.add(sourceNode)
+            yield sourceNode
+        raise StopIteration
+        
     
     # END class ReferenceDefinition
     pass

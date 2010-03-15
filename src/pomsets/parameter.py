@@ -354,19 +354,39 @@ class DefaultValue(ResourceModule.ResourceReference):
 
 
 
-class ParameterConnection(GraphModule.Edge):
-
+class ParameterConnectionPath(GraphModule.Edge):
+    
     ATTRIBUTES = GraphModule.Edge.ATTRIBUTES + [
+        'sourceNode',
+        'targetNode',
+        'sourceParameter',
+        'targetParameter',
+        'path'
+    ]
+
+    def __init__(self, graph=None, nodes=None):
+        GraphModule.Edge.__init__(self, graph=graph, entities=nodes)
+        self.path([])
+        return
+    
+
+    # END class ParameterConnectionPath
+    pass
+
+
+
+class ParameterConnection(ResourceModule.Struct):
+
+    ATTRIBUTES = [
         'sourceNode',
         'targetNode',
         'sourceParameter',
         'targetParameter'
     ]
 
-    def __init__(self, definition=None, nodes=None):
-        GraphModule.Edge.__init__(self, graph=definition, entities=nodes)
-
-        return
+    #def __init__(self, definition=None, nodes=None):
+    #    GraphModule.Edge.__init__(self, graph=definition, entities=nodes)
+    #    return
 
     def setReferences(self,
                       sourceNode, sourceParameter,

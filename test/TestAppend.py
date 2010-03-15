@@ -133,19 +133,19 @@ class TestCase2(BaseModule.BaseTestClass):
         node.definitionToReference(atomicDefinition)
         node.setParameterBinding('terms to append', ['world'])
         
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             compositeDefinition, 'input sentence',
             compositeDefinition, 'synsem data'
         )
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             compositeDefinition, 'synsem data',
             compositeDefinition, 'output sentence'
         )
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             compositeDefinition, 'synsem data',
             node, 'input sentence'
         )
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             node, 'output sentence',
             compositeDefinition, 'synsem data'
         )
@@ -209,29 +209,29 @@ class TestCase3(BaseModule.BaseTestClass):
         for index in range(len(expectedSentence)):
             node = compositeDefinition.createNode(id='node%s' % index)
             node.definitionToReference(atomicDefinition)
-            compositeDefinition.connectParameters(
+            compositeDefinition.connectNodes(
                 compositeDefinition, 'synsem data',
                 node, 'input sentence'
             )
-            compositeDefinition.connectParameters(
+            compositeDefinition.connectNodes(
                 node, 'output sentence',
                 compositeDefinition, 'synsem data'
             )
             node.setParameterBinding('terms to append', [expectedSentence[index]])
             nodes.append(node)
             pass
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             compositeDefinition, 'input sentence',
             compositeDefinition, 'synsem data'
         )
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             compositeDefinition, 'synsem data',
             compositeDefinition, 'output sentence'
         )
 
         # add temporal connections
         for sourceNode, targetNode in zip(nodes[:-1], nodes[1:]):
-            compositeDefinition.connectParameters(
+            compositeDefinition.connectNodes(
                 sourceNode, 'temporal output',
                 targetNode, 'temporal input'
             )
@@ -298,22 +298,22 @@ class TestCase4(BaseModule.BaseTestClass):
         for index in range(len(expectedSentence)):
             node = compositeDefinition.createNode(id='node%s' % index)
             node.definitionToReference(atomicDefinition)
-            compositeDefinition.connectParameters(
+            compositeDefinition.connectNodes(
                 compositeDefinition, 'synsem data',
                 node, 'input sentence'
             )
-            compositeDefinition.connectParameters(
+            compositeDefinition.connectNodes(
                 node, 'output sentence',
                 compositeDefinition, 'synsem data'
             )
             node.setParameterBinding('terms to append', [expectedSentence[index]])
             nodes.append(node)
             pass
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             compositeDefinition, 'input sentence',
             compositeDefinition, 'synsem data'
         )
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             compositeDefinition, 'synsem data',
             compositeDefinition, 'output sentence'
         )
@@ -324,7 +324,7 @@ class TestCase4(BaseModule.BaseTestClass):
                                          (2, 5), (4, 5)]:
             sourceNode = nodes[sourceIndex]
             targetNode = nodes[targetIndex]
-            compositeDefinition.connectParameters(
+            compositeDefinition.connectNodes(
                 sourceNode, 'temporal output',
                 targetNode, 'temporal input'
             )

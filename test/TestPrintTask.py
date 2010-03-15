@@ -10,8 +10,6 @@ import currypy
 
 import pypatterns.filter as FilterModule
 
-import pomsets.command as ExecuteEnvironmentModule
-
 import TestExecute as BaseModule
 
 class TestCase1(BaseModule.TestCase1):
@@ -21,6 +19,7 @@ class TestCase1(BaseModule.TestCase1):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -47,6 +46,7 @@ class TestCase2(BaseModule.TestCase2):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -74,6 +74,7 @@ class TestCase4(BaseModule.TestCase4):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -100,6 +101,7 @@ class TestCase8(BaseModule.TestCase8):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -129,6 +131,7 @@ class TestCase9(BaseModule.TestCase9):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -158,6 +161,7 @@ class TestCase10(BaseModule.TestCase10):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -173,6 +177,7 @@ class TestParameterSweep1(BaseModule.TestParameterSweep1):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -198,6 +203,7 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -220,6 +226,7 @@ class TestParameterSweep3(BaseModule.TestParameterSweep3):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -244,6 +251,7 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
 
     def createExecuteEnvironment(self):
         io = StringIO.StringIO()
+        import pomsets.command as ExecuteEnvironmentModule
         self.env = ExecuteEnvironmentModule.PrintTaskCommand()
         self.env.postfix('\n')
         self.env.outputStream(io)
@@ -264,7 +272,10 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
 
 
 def main():
-    util.configLogging()
+    sys.path.insert(0, '../src')
+
+    import utils
+    utils.configLogging()
 
     suite = unittest.TestSuite()
 

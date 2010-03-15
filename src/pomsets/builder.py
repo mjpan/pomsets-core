@@ -241,82 +241,8 @@ class Builder(object):
         This is a validation function to determine whether the
         ports provided can be connected to each other
         """
-
-        # cannot connect to itself
-        if sourceNode == targetNode and sourceParameterId==targetParameterId:
-            logging.debug("cannot connect parameter to itself")
-            return False
-
-        sourceParameter = None
-        targetParameter = None
-        try:
-            sourceParameter = sourceNode.getParameter(sourceParameterId)
-            targetParameter = targetNode.getParameter(targetParameterId)
-        except Exception, e:
-            # if the parameter does not exist
-            # then there's no way to connect
-            logging.debug('cannot connect non-existent parameters')
-            return False
-        
-        # inputs cannot connect to each other
-        # outputs also cannot connect to each other
-        #if sourceParameter.portDirection() == targetParameter.portDirection():
-        #    print 'cannot connect parameters of the same direction'
-        #    logging.debug('cannot connect parameters of the same direction')
-        #    return False
-
-        if not sourceParameter.portType() == targetParameter.portType():
-            logging.debug("cannot connect ports of different types")
-            return False
-
-        # the target parameter cannot be an input
-        # nor an output file
-        if not targetParameter.portDirection() == ParameterModule.PORT_DIRECTION_INPUT or \
-                targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
-            logging.debug("parameter %s is not an input" % targetParameterId)
-            return False
-        
-        # the source parameter cannot be an output (file or not)
-        if not sourceParameter.portDirection() == ParameterModule.PORT_DIRECTION_OUTPUT and \
-           not sourceParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
-            logging.debug("parameter %s is not an output" % sourceParameterId)
-            return False
-
-
-        # cannot connect if a path already exists
-        filter = pomset.constructParameterConnectionFilter(
-            sourceNode, sourceParameterId,
-            targetNode, targetParameterId)
-        paths = RelationalModule.Table.reduceRetrieve(
-            pomset.parameterConnectionPathTable(),
-            filter, ['path'], [])
-        if len(paths) is not 0:
-            return False
-
-        # cannot connect if data and already connected to something else
-        if targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISINPUTFILE):
-            filter = FilterModule.constructAndFilter()
-            filter.addFilter(
-                RelationalModule.ColumnValueFilter(
-                    'target node',
-                    FilterModule.IdentityFilter(targetNode)
-                    )
-                )
-            filter.addFilter(
-                RelationalModule.ColumnValueFilter(
-                    'target parameter',
-                    FilterModule.EquivalenceFilter(targetParameterId)
-                    )
-                )
-            paths = RelationalModule.Table.reduceRetrieve(
-                pomset.parameterConnectionPathTable(),
-                filter, ['path'], [])
-            if len(paths) is not 0:
-                return False
-            pass
-
-        return True
-
+        return pomset.canConnect(sourceNode, sourceParameterId,
+                                 targetNode, targetParameterId)
 
 
     def connect(self, 
@@ -327,77 +253,8 @@ class Builder(object):
         This assumes that the caller has already
         verified that canConnect() returns True
         """
-        sourceParameter = sourceNode.getParameter(sourceParameterId)
-        targetParameter = targetNode.getParameter(targetParameterId)
-
-
-        portType = sourceParameter.portType()
-        if portType == ParameterModule.PORT_TYPE_TEMPORAL:
-            connection = pomset.connectParameters(
-                sourceNode, sourceParameterId,
-                targetNode, targetParameterId
-            )
-            pomset.addParameterConnectionPath(
-                sourceNode, sourceParameterId,
-                targetNode, targetParameterId,
-                tuple([connection])
-                )
-
-            path = [
-                sourceNode,
-                sourceParameterId,
-                connection,
-                targetParameterId,
-                targetNode
-            ]
-            
-        else:
-    
-            # TODO:
-            # need to check whether the output parameter
-            # already as a blackboard parameter connected to it
-            # if so, will need to use that instead
-
-            # create a blackboard parameter
-            bbParameterId = '%s.%s-%s.%s' % (sourceNode.name(),
-                                             sourceParameterId,
-                                             targetNode.name(),
-                                             targetParameterId)
-            bbParameter = ParameterModule.BlackboardParameter(
-                bbParameterId)
-            pomset.addParameter(bbParameter)
-    
-            # create a parameter connection (source->blackboard)
-            sourceParameterConnection = pomset.connectParameters(
-                sourceNode, sourceParameterId,
-                pomset, bbParameterId
-            )
-    
-            # create a parameter connection (blackboard->target)
-            targetParameterConnection = pomset.connectParameters(
-                pomset, bbParameterId,
-                targetNode, targetParameterId
-            )
-
-            pomset.addParameterConnectionPath(
-                sourceNode, sourceParameterId,
-                targetNode, targetParameterId,
-                tuple([sourceParameterConnection, targetParameterConnection]),
-                tuple([bbParameterId])
-                )
-
-            path = [
-                sourceNode,
-                sourceParameterId,
-                sourceParameterConnection,
-                bbParameter,
-                targetParameterConnection,
-                targetParameterId,
-                targetNode
-            ]
-
-        return path
-
+        return pomset.connectNodes(sourceNode, sourceParameterId,
+                                   targetNode, targetParameterId)
 
 
 
@@ -408,31 +265,8 @@ class Builder(object):
         looks for the connection path
         then removes the individual atomic connections
         """
-
-        filter = pomset.constructParameterConnectionFilter(
-            sourceNode, sourceParameterId,
-            targetNode, targetParameterId)
-
-        paths = RelationalModule.Table.reduceRetrieve(
-            pomset.parameterConnectionPathTable(),
-            filter, ['path'], [])
-
-        for connections, additionalParameterIds in pomset.parameterConnectionPathTable().retrieve(filter=filter, columns=['path', 'additional parameters']):
-
-            map(pomset.removeParameterConnection, list(connections))
-            parameters = [pomset.getParameter(x) 
-                          for x in additionalParameterIds]
-            map(pomset.removeParameter, parameters)
-            pass
-        pomset.parameterConnectionPathTable().removeRows(filter)
-
-        # now to see if there are any raw parameter connection
-        connections = RelationalModule.Table.reduceRetrieve(
-            pomset.parameterConnectionsTable(),
-            filter, ['parameter connection'], [])
-        map(pomset.removeParameterConnection, connections)
-        
-        return
+        return pomset.disconnect(sourceNode, sourceParameterId,
+                                 targetNode, targetParameterId)
 
 
     # END class Builder

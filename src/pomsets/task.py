@@ -292,6 +292,11 @@ class CompositeTask(Task):
     
     
     def enqueueTaskIfReady(self, definition):
+
+        #if not isinstance(definition, DefinitionModule.ReferenceDefinition):
+        #    print "skipping definition %s" % definition.name()
+        #    return
+
         if not definition.isReadyToExecute(self):
             return
 
@@ -492,8 +497,8 @@ class CompositeTask(Task):
                 self.automaton(), addRowCommand, 'status', 'initialized')
             )
 
-        self.automaton().executeCommand(command)
-
+        ret = self.automaton().executeCommand(command)
+        
         return
 
     def getTaskInformation(self, task):
@@ -762,7 +767,8 @@ class TaskGenerator(ResourceModule.Struct):
         """
 
         # create a filter where the source nodes are self,
-        # the target node is self, and the target parameter is of type blackboard
+        # the target node is self, 
+        # and the target parameter is of type blackboard
         theParameterConnectionFilter = parentTask.getFilterForOwnInternalParameterConnections()
         for parameterConnection in RelationalModule.Table.reduceRetrieve(
             parentTask.definition().parameterConnectionsTable(),
@@ -779,7 +785,10 @@ class TaskGenerator(ResourceModule.Struct):
             )
             pass
         
+
+
         return
+
     
     def pushDataForBlackboardParameters(self, parentTask):
         """
@@ -857,10 +866,11 @@ class TaskGenerator(ResourceModule.Struct):
         referencedParameters = [
             x for x in definition.getParametersByFilter(parameterFilter)
         ]
+
         
         # propagate the parameter bindings into the input parameters
         for referencedParameter in referencedParameters:
-            
+
             connectionFilter = FilterModule.constructAndFilter()
             connectionFilter.addFilter(
                 RelationalModule.ColumnValueFilter(
@@ -881,6 +891,7 @@ class TaskGenerator(ResourceModule.Struct):
                 ['parameter connection'],
                 []
             )
+
             if len(incomingConnections) is 0:
                 # there's no incoming connection to this parameter
                 # check if self has the binding
@@ -900,6 +911,9 @@ class TaskGenerator(ResourceModule.Struct):
                 incomingConnection.sourceNode(),
                 incomingConnection.sourceParameter()
             )
+
+            if not parentTask.hasParameterBinding(parameterId):
+                continue
             
             childTask.setParameterBinding(
                 referencedParameter.id(),

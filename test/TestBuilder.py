@@ -495,13 +495,21 @@ class TestBuilder(unittest.TestCase):
                                            targetParameterId)
         self.assertFalse(pomset.hasParameter(bbParameterName))
 
+        # assert the successors and predecessors
+        successors = [x for x in sourceNode.successors()]
+        self.assertEquals(successors, [])
+        predecessors = [x for x in targetNode.predecessors()]
+        self.assertEquals(predecessors, [])
+
+
         # connect the data parameters
-        path = self.builder.connect(
+        edge = self.builder.connect(
             pomset,
             sourceNode, sourceParameterId,
             targetNode, targetParameterId)
 
         # assert the parameter connection path
+        path = edge.path()
         self.assertEquals(len(path), 7)
         filter = pomset.constructParameterConnectionFilter(
             sourceNode, sourceParameterId,
@@ -541,6 +549,11 @@ class TestBuilder(unittest.TestCase):
         # assert an additional internal blackboard parameter
         self.assertTrue(pomset.hasParameter(bbParameterName))
 
+        # assert the successors and predecessors
+        successors = [x for x in sourceNode.successors()]
+        self.assertEquals(successors, [targetNode])
+        predecessors = [x for x in targetNode.predecessors()]
+        self.assertEquals(predecessors, [sourceNode])
 
 
         self.builder.disconnect(pomset,
@@ -572,8 +585,15 @@ class TestBuilder(unittest.TestCase):
             filter, ['parameter connection'])
         self.assertEquals(0, len(connections))
 
-
         self.assertFalse(pomset.hasParameter(bbParameterName))
+
+
+        # assert the successors and predecessors
+        successors = [x for x in sourceNode.successors()]
+        self.assertEquals(successors, [])
+        predecessors = [x for x in targetNode.predecessors()]
+        self.assertEquals(predecessors, [])
+
         return
 
 
@@ -590,14 +610,24 @@ class TestBuilder(unittest.TestCase):
         targetNode = self.builder.createNewNode(
             pomset, definitionToReference=reduceDefinition)
 
+
+        # assert the successors and predecessors
+        successors = [x for x in sourceNode.successors()]
+        self.assertEquals(successors, [])
+        predecessors = [x for x in targetNode.predecessors()]
+        self.assertEquals(predecessors, [])
+
+
         sourceParameterId = 'temporal output'
         targetParameterId = 'temporal input'
         parameters = pomset.getParametersByFilter(FilterModule.TRUE_FILTER)
         numParameters = len(parameters)
-        path = self.builder.connect(
+
+        edge = self.builder.connect(
             pomset,
             sourceNode, sourceParameterId,
             targetNode, targetParameterId)
+        path = edge.path()
 
         # assert parameter connection path
         filter = pomset.constructParameterConnectionFilter(
@@ -624,6 +654,12 @@ class TestBuilder(unittest.TestCase):
             filter, ['parameter connection'])
         self.assertEquals(1, len(connections))
 
+        # assert the successors and predecessors
+        successors = [x for x in sourceNode.successors()]
+        self.assertEquals(successors, [targetNode])
+        predecessors = [x for x in targetNode.predecessors()]
+        self.assertEquals(predecessors, [sourceNode])
+
 
         self.builder.disconnect(
             pomset,
@@ -639,6 +675,11 @@ class TestBuilder(unittest.TestCase):
             filter, ['parameter connection'])
         self.assertEquals(0, len(connections))
         
+        # assert the successors and predecessors
+        successors = [x for x in sourceNode.successors()]
+        self.assertEquals(successors, [])
+        predecessors = [x for x in targetNode.predecessors()]
+        self.assertEquals(predecessors, [])
 
         return
 

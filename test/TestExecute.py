@@ -249,7 +249,7 @@ class TestCase4(BaseTestClass, unittest.TestCase):
         node.definitionToReference(atomicDefinition)
         node.name('echo')
 
-        compositeDefinition.connectParameters(
+        compositeDefinition._connectParameters(
             compositeDefinition, 'item to echo',
             node, 'item to echo'
         )
@@ -293,7 +293,7 @@ class TestCase8(BaseTestClass, unittest.TestCase):
         for index in range(3):
             node = compositeDefinition.createNode(id='node%s' % index)
             node.definitionToReference(atomicDefinition)
-            compositeDefinition.connectParameters(
+            compositeDefinition._connectParameters(
                 compositeDefinition, 'item to echo',
                 node, 'item to echo'
             )
@@ -336,7 +336,7 @@ class TestCase9(BaseTestClass, unittest.TestCase):
         for index in range(3):
             node = compositeDefinition.createNode(id='node%s' % index)
             node.definitionToReference(atomicDefinition)
-            compositeDefinition.connectParameters(
+            compositeDefinition._connectParameters(
                 compositeDefinition, 'item to echo',
                 node, 'item to echo'
             )
@@ -345,7 +345,7 @@ class TestCase9(BaseTestClass, unittest.TestCase):
             pass
 
         for sourceNode, targetNode in zip(nodes[:-1], nodes[1:]):
-            compositeDefinition.connectParameters(
+            compositeDefinition.connectNodes(
                 sourceNode, 'temporal output',
                 targetNode, 'temporal input'
             )
@@ -434,7 +434,7 @@ class TestParameterSweep1(BaseTestClass, unittest.TestCase):
         compositeDefinition.addParameter(parameter)
         node.isParameterSweep('item to echo', True)
         
-        compositeDefinition.connectParameters(
+        compositeDefinition._connectParameters(
             compositeDefinition, 'item to echo',
             node, 'item to echo'
         )
@@ -554,7 +554,7 @@ class TestParameterSweep2(BaseTestClass, unittest.TestCase):
             compositeDefinition.addParameter(parameter)
             node.isParameterSweep(parameterId, True)
         
-            compositeDefinition.connectParameters(
+            compositeDefinition._connectParameters(
                 compositeDefinition, parameterId,
                 node, parameterId
             )
@@ -587,11 +587,13 @@ class TestParameterSweep2(BaseTestClass, unittest.TestCase):
         
         # assert that the files do not exist
         for inputFile in self.inputFiles:
-            assert self.fileExists(inputFile), 'expected inputFile %s to exist' % inputFile
+            assert self.fileExists(inputFile), \
+                'expected inputFile %s to exist' % inputFile
             pass
         
         for outputFile in self.outputFiles:
-            assert not self.fileExists(outputFile), 'expected outputFile %s to not exist' % outputFile
+            assert not self.fileExists(outputFile), \
+                'expected outputFile %s to not exist' % outputFile
         
         pass
 
@@ -601,7 +603,8 @@ class TestParameterSweep2(BaseTestClass, unittest.TestCase):
 
         # assert that the files exist
         for outputFile in self.outputFiles:
-            assert self.fileExists(outputFile), 'expected output file %s to exist' % outputFile
+            assert self.fileExists(outputFile), \
+                'expected output file %s to exist' % outputFile
             pass
         
         return 
@@ -684,7 +687,7 @@ class TestParameterSweep3(BaseTestClass, unittest.TestCase):
                 portDirection=ParameterModule.PORT_DIRECTION_INPUT)
             compositeDefinition.addParameter(parameter)
         
-            compositeDefinition.connectParameters(
+            compositeDefinition._connectParameters(
                 compositeDefinition, parameterId,
                 node, parameterId
             )
@@ -833,7 +836,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
         inputParameter.setAttribute(
             ParameterModule.PORT_ATTRIBUTE_PARAMETERSWEEP, True)
         compositeDefinition.addParameter(inputParameter)
-        compositeDefinition.connectParameters(
+        compositeDefinition._connectParameters(
             compositeDefinition, 'input file',
             mapperNode, 'input file'
         )
@@ -843,7 +846,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
                 id='output file', 
                 portDirection=ParameterModule.PORT_DIRECTION_INPUT)
         compositeDefinition.addParameter(outputParameter)
-        compositeDefinition.connectParameters(
+        compositeDefinition._connectParameters(
             compositeDefinition, 'output file',
             reducerNode, 'output file'
         )
@@ -851,20 +854,27 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
         blackboardParameter = \
             ParameterModule.BlackboardParameter('intermediate file')
         compositeDefinition.addParameter(blackboardParameter)
-        compositeDefinition.connectParameters(
+        compositeDefinition._connectParameters(
             compositeDefinition, 'intermediate file',
             mapperNode, 'output file'
         )
-        compositeDefinition.connectParameters(
+        """
+        compositeDefinition._connectParameters(
             compositeDefinition, 'intermediate file',
             reducerNode, 'input files',
         )
         
-        compositeDefinition.connectParameters(
+        compositeDefinition.connectNodes(
             mapperNode, 'temporal output',
             reducerNode, 'temporal input',
         )
-        
+        """
+        edge = compositeDefinition.connectNodes(
+            mapperNode, 'output file',
+            reducerNode, 'input files',
+        )
+        self.intermediateParameterId = edge.path()[3]
+
         return compositeDefinition
 
 
@@ -886,6 +896,14 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
             'intermediate file',
             self.intermediateFiles
         )
+        """
+        print "binding %s to %s" % (self.intermediateParameterId,
+                                    self.intermediateFiles)
+        compositeTask.setParameterBinding(
+            self.intermediateParameterId,
+            self.intermediateFiles
+        )
+        """
         return compositeTask
 
 

@@ -247,34 +247,11 @@ def createPomsetContainingParameterSweep():
     reducerNode.isCritical(True)
     reducerNode.name('reducer')
 
-    """
-    blackboardParameter = \
-        ParameterModule.BlackboardParameter('intermediate file')
-    compositeDefinition.addParameter(blackboardParameter)
-    compositeDefinition.connectParameters(
-        compositeDefinition, 'intermediate file',
-        mapperNode, 'output file'
-    )
-    compositeDefinition.connectParameters(
-        compositeDefinition, 'intermediate file',
-        reducerNode, 'input files',
-    )
-
-    compositeDefinition.connectParameters(
-        mapperNode, 'temporal output',
-        reducerNode, 'temporal input',
-    )
-    """
     builder = BuilderModule.Builder()
     builder.connect(
         compositeDefinition,
         mapperNode, 'output file',
         reducerNode, 'input files')
-    #builder.connect(
-    #    compositeDefinition,
-    #    mapperNode, 'temporal output',
-    #    reducerNode, 'temporal input',
-    #    )
 
     compositeDefinition.name('basic map-reduce')
     
