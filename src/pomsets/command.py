@@ -12,37 +12,6 @@ import pomsets.resource as ResourceModule
 import pomsets.parameter as ParameterModule
 
 
-def sortParameters(parameters, orderings):
-    # TODO:
-    # this is not the most efficient implementation
-    # i.e. it creates too many intermediate data structures
-    # will have to optimize
-    
-    # map according to id
-    idMap = dict([(x.id(), x) for x in parameters])
-    
-    # first find all the parameters w/o precedings
-    successors = {}
-    relations = {}
-    for row in orderings.rows():
-        predecessor = row.getColumn('source')
-        successor = row.getColumn('target')
-        relations[predecessor] = \
-            relations.get(predecessor, []) + [successor]
-        successors[successor] = []
-        pass
-
-    toProcess = list(set(idMap.keys()).difference(set(successors.keys())))
-    sorted = []
-    while len(toProcess):
-        current = toProcess.pop(0)
-        if current in sorted:
-            continue
-        toProcess.extend(relations.get(current, []))
-        sorted.append(current)
-        pass
-    
-    return [idMap[x] for x in sorted]
 
 
 def buildCommandFunction_default(task):
@@ -80,7 +49,7 @@ def buildCommandFunction_commandlineArgsOnly(task):
         x for x in
         task.definition().getParametersByFilter(commandlineParameterFilter)]
 
-    commandLineParameters = sortParameters(
+    commandLineParameters = ParameterModule.sortParameters(
         commandLineParameters, 
         task.definition().parameterOrderingTable())
     

@@ -16,7 +16,7 @@ import pomsets.test_utils as DefinitionTestModule
 
 def generateBootstrapper():
     defToLoadDef = DefinitionModule.AtomicDefinition()
-    defToLoadDef.commandBuilderType('python eval')
+    defToLoadDef.commandBuilderType('library bootstrap loader')
     defToLoadDef.id(LibraryModule.ID_LOADLIBRARYDEFINITION)
     defToLoadDef.name('load library definition')
     # need a command builder to call the loadPomset function

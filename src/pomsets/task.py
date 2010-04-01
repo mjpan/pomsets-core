@@ -31,7 +31,6 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
         'automaton',
     ]
     
-    
     def __init__(self):
 
         DefinitionModule.ParameterBindingsHolder.__init__(self)

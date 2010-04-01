@@ -18,6 +18,8 @@ PORT_ATTRIBUTE_ISLIST = 'isList'
 PORT_ATTRIBUTE_ISENUM = 'isEnum'
 PORT_ATTRIBUTE_ISOPTIONAL = 'isOptional'
 PORT_ATTRIBUTE_DESCRIPTION = 'description'
+PORT_ATTRIBUTE_KEYWORD = 'isKeyword'
+PORT_ATTRIBUTE_KEYWORDTOPASS = 'keywordToPass'
 
 # these are actually dynamic parameter attributes
 # PORT_ATTRIBUTE_STAGINGREQUIRED = 'stagingRequired'
@@ -41,6 +43,41 @@ def setAttributes(parameter, attributes):
     for key, value in attributes.iteritems():
         parameter.setAttribute(key, value)
     return
+
+
+def sortParameters(parameters, orderings):
+    # TODO:
+    # this is not the most efficient implementation
+    # i.e. it creates too many intermediate data structures
+    # will have to optimize
+    
+    # map according to id
+    idMap = dict([(x.id(), x) for x in parameters])
+    
+    # first find all the parameters w/o precedings
+    successors = {}
+    relations = {}
+    for row in orderings.rows():
+        predecessor = row.getColumn('source')
+        successor = row.getColumn('target')
+        relations[predecessor] = \
+            relations.get(predecessor, []) + [successor]
+        successors[successor] = []
+        pass
+
+    toProcess = list(set(idMap.keys()).difference(set(successors.keys())))
+    sorted = []
+    while len(toProcess):
+        current = toProcess.pop(0)
+        if current in sorted:
+            continue
+        toProcess.extend(relations.get(current, []))
+        sorted.append(current)
+        pass
+    
+    return [idMap[x] for x in sorted]
+
+
 
 
 class Parameter(ResourceModule.Struct):

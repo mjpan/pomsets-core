@@ -53,7 +53,13 @@ class CommandBuilder(TaskModule.CommandBuilder):
 
 
 class LibraryLoader(EnvironmentModule.Environment, ResourceModule.Struct):
-    
+    """
+    NOTE: 
+    This is very similar to, and can probably subclass from,
+    cloudpool.environment.PythonEval.  We just have not 
+    spent the time to figure out how to do so yet
+    """
+
     DEFAULT_COMMANDBUILDER_TYPE = 'library bootstrap loader'
 
     ATTRIBUTES = ['library']

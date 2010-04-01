@@ -42,6 +42,7 @@ class Builder(object):
         isList = attributes.get('list', False)
         isEnum = attributes.get('enum', False)
 
+        commandlineOptions = {}
         if isCommandline:
             prefixFlag = attributes.get('prefix flag', [])
             distributePrefixFlag = attributes.get(
@@ -66,12 +67,19 @@ class Builder(object):
             # but the name of the file is actually the input
             direction = ParameterModule.PORT_DIRECTION_INPUT
 
+        isKeyword = attributes.get('is keyword', False)
+        keywordToPass = ''
+        if isKeyword:
+            keywordToPass = attributes.get('keyword to pass')
+
         parameterAttributes = {
             ParameterModule.PORT_ATTRIBUTE_COMMANDLINE:isCommandline,
             ParameterModule.PORT_ATTRIBUTE_ISINPUTFILE:isInputFile,
             ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT:isSideEffect,
             ParameterModule.PORT_ATTRIBUTE_ISLIST:isList,
-            ParameterModule.PORT_ATTRIBUTE_COMMANDLINE_OPTIONS:commandlineOptions
+            ParameterModule.PORT_ATTRIBUTE_COMMANDLINE_OPTIONS:commandlineOptions,
+            ParameterModule.PORT_ATTRIBUTE_KEYWORD:isKeyword,
+            ParameterModule.PORT_ATTRIBUTE_KEYWORDTOPASS:keywordToPass,
             }
 
         parameter = ParameterModule.DataParameter(
@@ -95,8 +103,13 @@ class Builder(object):
         return
 
 
-    def createExecutableObject(self, path, staticArgs=None):
-        executableObject = TaskCommandModule.Executable()
+    def createExecutableObject(self, path, 
+                               executableClass=None, staticArgs=None):
+
+        if executableClass is None:
+            executableClass = TaskCommandModule.Executable
+        executableObject = executableClass()
+
         executableObject.stageable(False)
         executableObject.path(path)
         if staticArgs is None:
@@ -107,6 +120,7 @@ class Builder(object):
 
     def createNewAtomicPomset(self, name=None, 
                               executableObject=None,
+                              commandBuilderType=None,
                               *args, **kwds):
 
         newAtomicPomset = DefinitionModule.AtomicDefinition(*args, **kwds)
@@ -123,7 +137,9 @@ class Builder(object):
         parameterOrderings = DefinitionModule.createParameterOrderingTable()
         newAtomicPomset.parameterOrderingTable(parameterOrderings)
 
-        newAtomicPomset.commandBuilderType('shell process')
+        if commandBuilderType is None:
+            commandBuilderType = 'shell process'
+        newAtomicPomset.commandBuilderType(commandBuilderType)
 
         newPomsetContext = ContextModule.Context()
         newPomsetContext.pomset(newAtomicPomset)
