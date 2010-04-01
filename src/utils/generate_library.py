@@ -44,7 +44,6 @@ def generateDefaultLoader(outputDir):
     definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
-    # wcDefinitionPath = 'wordcount.pomset'
     wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
     ContextModule.pickleDefinition(
@@ -54,7 +53,6 @@ def generateDefaultLoader(outputDir):
     definitionsToLoad.append(context)
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
-    # wcrDefinitionPath = 'wordcount_reduce.pomset'
     wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
     ContextModule.pickleDefinition(
@@ -62,6 +60,18 @@ def generateDefaultLoader(outputDir):
     context = ContextModule.Context()
     context.pomset(wcrDefinition)
     definitionsToLoad.append(context)
+
+
+    loadValuesDefinition = \
+        DefinitionTestModule.createLoadListValuesFromFilesDefinition()
+    loadValuesDefinitionPath = loadValuesDefinition.id() + '.pomset'
+    loadValuesDefinition.url(loadValuesDefinitionPath)
+    ContextModule.pickleDefinition(
+        os.path.join(outputDir, loadValuesDefinitionPath), loadValuesDefinition)
+    context = ContextModule.Context()
+    context.pomset(loadValuesDefinition)
+    definitionsToLoad.append(context)
+
     
     library = LibraryModule.Library()
     map(library.addPomsetContext, definitionsToLoad)
@@ -84,14 +94,10 @@ def generateLoaderWithFailure1(outputDir):
     definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
-    # wcDefinition.id(ID_WORDCOUNT)
-    # wcDefinitionPath = 'wordcount.pomset'
     wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
-    # to ensure that the loading fi
-    #ContextModule.pickleDefinition(
-    #    os.path.join(outputDir, wcDefinitionPath), wcDefinition)
+    # to ensure that the loading fails
     context = ContextModule.Context()
     context.pomset(wcDefinition)
     definitionsToLoad.append(context)
@@ -119,21 +125,15 @@ def generateLoaderWithFailure2(outputDir):
     definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
-    # wcDefinition.id(ID_WORDCOUNT)
-    # wcDefinitionPath = 'wordcount.pomset'
     wcDefinitionPath = wcDefinition.id() + '.pomset'
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
-    # to ensure that the loading fi
-    #ContextModule.pickleDefinition(
-    #    os.path.join(outputDir, wcDefinitionPath), wcDefinition)
+    # to ensure that the loading fails
     context = ContextModule.Context()
     context.pomset(wcDefinition)
     definitionsToLoad.append(context)
     
-    wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
-    # wcrDefinition.id(ID_WORDCOUNT_REDUCE)
-    # wcrDefinitionPath = 'wordcount_reduce.pomset'
+    wcDrefinition = DefinitionTestModule.createWordCountReduceDefinition()
     wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
     ContextModule.pickleDefinition(

@@ -12,10 +12,12 @@ import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
+import pomsets.python as PythonModule
 import pomsets.task as TaskModule
 
 ID_WORDCOUNT = 'word count_8613fe86-e7fc-4487-b4d2-0989706f8825'
 ID_WORDCOUNT_REDUCE = 'word count reducer_08979d5f-6c0d-43b7-9206-dfe69eae6c26'
+ID_LOADLISTVALUESFROMFILES = 'load list values from files_fc6175d6-c18b-4403-9b79-bd2b0b0012ff'
 
 def pickleAndReloadDefinition(path, definition):
 
@@ -40,6 +42,35 @@ def pickleAndReloadDefinition(path, definition):
                 os.unlink(fileToDelete)
                 pass
         pass
+
+    return definition
+
+
+def createLoadListValuesFromFilesDefinition():
+    builder = BuilderModule.Builder()
+
+    path = ['pomsets.python.operator',
+            'loadListValuesFromFiles']
+    executableObject = builder.createExecutableObject(
+        path,
+        executableClass=PythonModule.Function)
+
+    pythonEvalContext = builder.createNewAtomicPomset(
+        name='load list values from files',
+        executableObject = executableObject,
+        commandBuilderType = 'python eval')
+    
+    definition= pythonEvalContext.pomset()
+    builder.addPomsetParameter(
+        definition, 'eval result',
+        {'direction':ParameterModule.PORT_DIRECTION_OUTPUT,
+         'commandline':False})
+    builder.addPomsetParameter(
+        definition, 'file to read',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT})
+
+    definition.id(ID_LOADLISTVALUESFROMFILES)
+    definition.isLibraryDefinition(True)
 
     return definition
 

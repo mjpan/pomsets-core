@@ -1,13 +1,23 @@
 import os
 import unittest
 
+import pypatterns.command as CommandPatternModule
+import pypatterns.filter as FilterModule
+import pypatterns.relational as RelationalModule
 
-import TestExecute as BaseModule
+import cloudpool as CloudModule
 
+import pomsets.automaton as AutomatonModule
 import pomsets.builder as BuilderModule
+import pomsets.library as LibraryModule
+import pomsets.parameter as ParameterModule
 import pomsets.python as PythonModule
 import pomsets.task as TaskModule
-import pomsets.parameter as ParameterModule
+import pomsets.test_utils as TestUtilsModule
+
+
+import TestExecute as BaseModule
+import TestLoadLibraryReference as TestLibraryModule
 
 class TestPythonFunction(unittest.TestCase):
 
@@ -304,7 +314,9 @@ class TestPythonCommandBuilder(unittest.TestCase):
 
 
 
-class TestLoadListValues(BaseModule.BaseTestClass, unittest.TestCase):
+
+
+class TestLoadListValues1(BaseModule.BaseTestClass, unittest.TestCase):
 
 
     BASE_DIR = os.path.join(os.getcwd(), 'resources', 'testdata', 'TestOperator')
@@ -317,26 +329,14 @@ class TestLoadListValues(BaseModule.BaseTestClass, unittest.TestCase):
         return
 
 
+    def getPythonEvalDefinition(self):
+        pythonEvalDefinition = \
+            TestUtilsModule.createLoadListValuesFromFilesDefinition()
+        return pythonEvalDefinition
+
+
     def createDefinition(self):
-        path = ['pomsets.python.operator',
-                'loadListValuesFromFiles']
-        executableObject = self.builder.createExecutableObject(
-            path,
-            executableClass=PythonModule.Function)
-
-        pythonEvalContext = self.builder.createNewAtomicPomset(
-            name='testPython',
-            executableObject = executableObject,
-            commandBuilderType = 'python eval')
-        pythonEvalDefinition = pythonEvalContext.pomset()
-        self.builder.addPomsetParameter(
-            pythonEvalDefinition, 'eval result',
-            {'direction':ParameterModule.PORT_DIRECTION_OUTPUT,
-             'commandline':False})
-        self.builder.addPomsetParameter(
-            pythonEvalDefinition, 'file to read',
-            {'direction':ParameterModule.PORT_DIRECTION_INPUT})
-
+        pythonEvalDefinition = self.getPythonEvalDefinition()
 
         parentContext = self.builder.createNewNestPomset(name='root')
         parentDefinition = parentContext.pomset()
@@ -350,8 +350,8 @@ class TestLoadListValues(BaseModule.BaseTestClass, unittest.TestCase):
         self.builder.bindParameterValue(
             self.definition,
             'file to read',
-            [os.path.sep.join([TestLoadListValues.BASE_DIR, 
-                               TestLoadListValues.INPUT_FILE])]
+            [os.path.sep.join([TestLoadListValues1.BASE_DIR, 
+                               TestLoadListValues1.INPUT_FILE])]
             )
 
         return parentDefinition
@@ -387,7 +387,7 @@ class TestLoadListValues(BaseModule.BaseTestClass, unittest.TestCase):
 
     def getPicklePath(self):
         return os.path.sep + \
-            os.path.join('tmp', 'TestOperator.TestLoadListValues.testExecute2')
+            os.path.join('tmp', 'TestOperator.%s.testExecute2' % self.__class__.__name__)
 
 
     def assertPostExecute(self):
@@ -404,6 +404,46 @@ class TestLoadListValues(BaseModule.BaseTestClass, unittest.TestCase):
         return 
 
 
-    # END class TestOperator
+    # END class TestLoadListValues1
     pass
 
+
+class TestLoadListValues2(TestLoadListValues1):
+
+
+    def getLibraryDir(self):
+        return os.path.join(os.getcwd(), 'resources', 'testdata', 'TestLibrary', 'library')
+
+    def initializeLibrary(self):
+        library = LibraryModule.Library()
+        library.shouldMarkAsLibraryDefinition(True)
+        libraryDir = self.getLibraryDir()
+        library.bootstrapLoaderDefinitionsDir(libraryDir)
+
+        library.loadBootstrapLoaderDefinitions()
+        return library
+
+    def setUp(self):
+        TestLoadListValues1.setUp(self)
+
+        automaton = AutomatonModule.Automaton()
+        automaton.setThreadPool(None, CloudModule.Pool(1))
+        automaton.commandManager(CommandPatternModule.CommandManager())
+        self.automaton = automaton
+
+        self.library = self.initializeLibrary()
+        TestLibraryModule.runBootstrapLoader(automaton, self.library)
+        return
+
+
+    def getPythonEvalDefinition(self):
+            
+        filter = RelationalModule.ColumnValueFilter(
+            'definition',
+            FilterModule.IdFilter(TestUtilsModule.ID_LOADLISTVALUESFROMFILES))
+        
+        return self.library.getDefinition(filter)
+
+        
+    # END class TestLoadListValues2
+    pass

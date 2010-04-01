@@ -156,7 +156,8 @@ class TestBootstrapLoaderPomset(BaseTestClass):
             (DefinitionLibraryModule.ID_BOOTSTRAPLOADER, True),
             (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
             (TestDefinitionModule.ID_WORDCOUNT_REDUCE, False),
-            (TestDefinitionModule.ID_WORDCOUNT, False)]:
+            (TestDefinitionModule.ID_WORDCOUNT, False),
+            (TestDefinitionModule.ID_LOADLISTVALUESFROMFILES, False)]:
             
             filter = RelationalModule.ColumnValueFilter(
                 'definition',
@@ -171,12 +172,13 @@ class TestBootstrapLoaderPomset(BaseTestClass):
         assert not request.exception
     
 
-        self.assertEqual(4, loadedDefinitionTable.rowCount())
+        self.assertEqual(5, loadedDefinitionTable.rowCount())
         for definitionId, expectedValue in [
             (DefinitionLibraryModule.ID_BOOTSTRAPLOADER, True),
             (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
             (TestDefinitionModule.ID_WORDCOUNT_REDUCE, True),
-            (TestDefinitionModule.ID_WORDCOUNT, True)]:
+            (TestDefinitionModule.ID_WORDCOUNT, True),
+            (TestDefinitionModule.ID_LOADLISTVALUESFROMFILES, True)]:
             
             filter = RelationalModule.ColumnValueFilter(
                 'definition',
