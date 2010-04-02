@@ -432,7 +432,7 @@ class TestLoadListValues2(TestLoadListValues1):
         self.automaton = automaton
 
         self.library = self.initializeLibrary()
-        TestLibraryModule.runBootstrapLoader(automaton, self.library)
+        automaton.runBootstrapLoader(self.library)
         return
 
 
@@ -440,7 +440,7 @@ class TestLoadListValues2(TestLoadListValues1):
             
         filter = RelationalModule.ColumnValueFilter(
             'definition',
-            FilterModule.IdFilter(TestUtilsModule.ID_LOADLISTVALUESFROMFILES))
+            FilterModule.IdFilter(LibraryModule.ID_LOADLISTVALUESFROMFILES))
         
         return self.library.getDefinition(filter)
 

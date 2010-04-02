@@ -28,48 +28,6 @@ import pomsets.task as TaskModule
 import pomsets.test_utils as TestDefinitionModule
 
 
-def runBootstrapLoader(automaton, library, isCritical=False):
-
-    definition = library.getBootstrapLoader()
-    
-    task = TaskModule.CompositeTask()
-    task.definition(definition)
-    taskGenerator = TaskModule.NestTaskGenerator()
-    task.taskGenerator(taskGenerator)
-    
-    successCallback = automaton.getPostExecuteCallbackFor(task)
-    errorCallback = automaton.getErrorCallbackFor(task)
-    executeTaskFunction = automaton.getExecuteTaskFunction(task)
-    
-    commandBuilder = DefinitionLibraryModule.CommandBuilder()
-    commandBuilderMap = {
-        'library bootstrap loader':commandBuilder,
-        'python eval':commandBuilder
-        }
-    executeEnvironment = DefinitionLibraryModule.LibraryLoader(library)
-    requestContext = {
-        'task':task,
-        'command builder map':commandBuilderMap,
-        'execute environment':executeEnvironment
-    }
-    
-    request = threadpool.WorkRequest(
-        executeTaskFunction,
-        args = [],
-        kwds = requestContext,
-        callback = successCallback,
-        exc_callback = errorCallback
-    )
-    threadPool = automaton.getThreadPoolUsingRequest(request)
-    request.kwds['thread pool'] = threadPool
-    
-    task.workRequest(request)
-
-    task.automaton(automaton)
-
-    automaton.enqueueRequest(request, shouldWait=True)
-    
-    return request
 
     
 class BaseTestClass(unittest.TestCase):
@@ -157,7 +115,7 @@ class TestBootstrapLoaderPomset(BaseTestClass):
             (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
             (TestDefinitionModule.ID_WORDCOUNT_REDUCE, False),
             (TestDefinitionModule.ID_WORDCOUNT, False),
-            (TestDefinitionModule.ID_LOADLISTVALUESFROMFILES, False)]:
+            (DefinitionLibraryModule.ID_LOADLISTVALUESFROMFILES, False)]:
             
             filter = RelationalModule.ColumnValueFilter(
                 'definition',
@@ -168,7 +126,7 @@ class TestBootstrapLoaderPomset(BaseTestClass):
         
         
         
-        request = runBootstrapLoader(self.automaton, library)
+        request = self.automaton.runBootstrapLoader(library)
         assert not request.exception
     
 
@@ -178,7 +136,7 @@ class TestBootstrapLoaderPomset(BaseTestClass):
             (DefinitionLibraryModule.ID_LOADLIBRARYDEFINITION, True),
             (TestDefinitionModule.ID_WORDCOUNT_REDUCE, True),
             (TestDefinitionModule.ID_WORDCOUNT, True),
-            (TestDefinitionModule.ID_LOADLISTVALUESFROMFILES, True)]:
+            (DefinitionLibraryModule.ID_LOADLISTVALUESFROMFILES, True)]:
             
             filter = RelationalModule.ColumnValueFilter(
                 'definition',
@@ -204,7 +162,7 @@ class TestBootstrapLoaderPomset(BaseTestClass):
         # load the library definitions
         library = self.initializeLibrary()
 
-        request = runBootstrapLoader(self.automaton, library)
+        request = self.automaton.runBootstrapLoader(library)
         assert not request.exception
 
         # create the pomset, add a node
@@ -267,7 +225,7 @@ class TestRecoverFromLoadFailure1(BaseTestClass):
         
         self.assertEqual(2, loadedDefinitionTable.rowCount())
 
-        request = runBootstrapLoader(self.automaton, library, isCritical=False)
+        request = self.automaton.runBootstrapLoader(library, isCritical=False)
 
         self.assertEqual(2, loadedDefinitionTable.rowCount())
 
@@ -313,7 +271,7 @@ class TestRecoverFromLoadFailure2(BaseTestClass):
         
         self.assertEqual(2, loadedDefinitionTable.rowCount())
 
-        request = runBootstrapLoader(self.automaton, library, isCritical=False)
+        request = self.automaton.runBootstrapLoader(library, isCritical=False)
 
         self.assertEqual(3, loadedDefinitionTable.rowCount())
 
@@ -361,7 +319,7 @@ class TestLoadAcrossSessions(BaseTestClass):
     
         library = self.initializeLibrary()
         
-        request = runBootstrapLoader(self.automaton, library)
+        request = self.automaton.runBootstrapLoader(library)
         assert not request.exception
             
         # TODO:

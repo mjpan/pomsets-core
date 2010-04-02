@@ -19,7 +19,6 @@ import pypatterns.filter as FilterModule
 import pomsets.command as TaskCommandModule
 import pomsets.definition as DefinitionModule
 import pomsets.error as ErrorModule
-import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
 import pomsets.task as TaskModule
 

@@ -1,11 +1,13 @@
 import logging
 import sys
 
-import resource as ResourceModule
+import threadpool as ThreadpoolModule
+
 
 import pomsets.error as ErrorModule
+import pomsets.library as LibraryModule
+import pomsets.resource as ResourceModule
 
-import threadpool as ThreadpoolModule
 
 class Automaton(ResourceModule.Struct):
     """
@@ -273,6 +275,53 @@ class Automaton(ResourceModule.Struct):
             raise ExecuteErrorModule.ExecutionError(e)
 
         return task
+
+
+
+    def runBootstrapLoader(self, library, isCritical=False):
+
+        definition = library.getBootstrapLoader()
+
+        import pomsets.task as TaskModule
+
+        task = TaskModule.CompositeTask()
+        task.definition(definition)
+        taskGenerator = TaskModule.NestTaskGenerator()
+        task.taskGenerator(taskGenerator)
+
+        successCallback = self.getPostExecuteCallbackFor(task)
+        errorCallback = self.getErrorCallbackFor(task)
+        executeTaskFunction = self.getExecuteTaskFunction(task)
+
+        commandBuilder = LibraryModule.CommandBuilder()
+        commandBuilderMap = {
+            'library bootstrap loader':commandBuilder,
+            'python eval':commandBuilder
+            }
+        executeEnvironment = LibraryModule.LibraryLoader(library)
+        requestContext = {
+            'task':task,
+            'command builder map':commandBuilderMap,
+            'execute environment':executeEnvironment
+        }
+
+        request = ThreadpoolModule.WorkRequest(
+            executeTaskFunction,
+            args = [],
+            kwds = requestContext,
+            callback = successCallback,
+            exc_callback = errorCallback
+        )
+        threadPool = self.getThreadPoolUsingRequest(request)
+        request.kwds['thread pool'] = threadPool
+
+        task.workRequest(request)
+
+        task.automaton(self)
+
+        self.enqueueRequest(request, shouldWait=True)
+
+        return request
 
     
     #end class Automaton
