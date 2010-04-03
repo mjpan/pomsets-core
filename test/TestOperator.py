@@ -447,3 +447,209 @@ class TestLoadListValues2(TestLoadListValues1):
         
     # END class TestLoadListValues2
     pass
+
+
+class TestRange1(BaseModule.BaseTestClass, unittest.TestCase):
+
+
+    def setUp(self):
+        BaseModule.BaseTestClass.setUp(self)
+        self.builder = BuilderModule.Builder()
+        return
+
+
+    def getPythonEvalDefinition(self):
+        pythonEvalDefinition = \
+            TestUtilsModule.createRangeDefinition()
+        return pythonEvalDefinition
+
+
+    def createDefinition(self):
+        pythonEvalDefinition = self.getPythonEvalDefinition()
+
+        parentContext = self.builder.createNewNestPomset(name='root')
+        parentDefinition = parentContext.pomset()
+        
+
+        self.definition = self.builder.createNewNode(
+            parentDefinition, name='node', 
+            definitionToReference=pythonEvalDefinition)
+
+
+        self.bindParameterValues()
+
+        return parentDefinition
+
+
+    def bindParameterValues(self):
+        self.builder.bindParameterValue(
+            self.definition,
+            'end', 3)
+
+        return
+
+
+    def createCommandBuilderMap(self):
+        commandBuilderMap = BaseModule.BaseTestClass.createCommandBuilderMap(self)
+        commandBuilderMap['python eval'] = PythonModule.CommandBuilder()
+        return commandBuilderMap
+
+
+    def createExecuteEnvironment(self):
+        return PythonModule.PythonEval()
+
+
+    def createTask(self, definition):
+
+        parentTask = TaskModule.CompositeTask()
+        parentTask.definition(definition)
+        taskGenerator = TaskModule.NestTaskGenerator()
+        parentTask.taskGenerator(taskGenerator)
+
+        # TODO:
+        # bind the parameters
+        #task = TaskModule.createTaskForDefinition(
+        #    parentTask, self.definition)
+        # return task
+
+        self.parentTask = parentTask
+
+        return parentTask
+
+
+    def getPicklePath(self):
+        return os.path.sep + \
+            os.path.join('tmp', 'TestOperator.%s.testExecute2' % self.__class__.__name__)
+
+
+    def assertPostExecute(self):
+        BaseModule.BaseTestClass.assertPostExecute(self)
+
+        childTasks = self.parentTask.getChildTasks()
+        childTask = childTasks[0]
+
+        values = childTask.getParameterBinding('eval result')
+
+        self.assertEquals(range(3),
+                          values)
+        
+        return 
+
+
+    # END class TestRange1
+    pass
+
+
+class TestRange2(TestRange1):
+
+    def bindParameterValues(self):
+        self.builder.bindParameterValue(
+            self.definition,
+            'start', 2)
+
+        self.builder.bindParameterValue(
+            self.definition,
+            'end', 10)
+
+        self.definition.parameterIsActive('start', True)
+
+        return
+
+    def assertPostExecute(self):
+        BaseModule.BaseTestClass.assertPostExecute(self)
+
+        childTasks = self.parentTask.getChildTasks()
+        childTask = childTasks[0]
+
+        values = childTask.getParameterBinding('eval result')
+
+        self.assertEquals(range(2,10),
+                          values)
+        
+        return 
+
+
+    # END class TestRange2
+    pass
+
+
+class TestRange3(TestRange1):
+    """
+    This tests the default value
+    """
+
+    def getPythonEvalDefinition(self):
+        pythonEvalDefinition = TestRange1.getPythonEvalDefinition(self)
+
+        parameter = pythonEvalDefinition.getParameter('start')
+        parameter.defaultValue(5)
+
+        return pythonEvalDefinition
+
+
+    def bindParameterValues(self):
+
+        self.builder.bindParameterValue(
+            self.definition,
+            'end', 10)
+
+        self.definition.parameterIsActive('start', True)
+
+        return
+
+
+    def assertPostExecute(self):
+        BaseModule.BaseTestClass.assertPostExecute(self)
+
+        childTasks = self.parentTask.getChildTasks()
+        childTask = childTasks[0]
+
+        values = childTask.getParameterBinding('eval result')
+
+        self.assertEquals(range(5,10),
+                          values)
+        
+        return 
+
+
+    # END class TestRange3
+    pass
+
+
+class TestRange4(TestRange1):
+
+    def bindParameterValues(self):
+        self.builder.bindParameterValue(
+            self.definition,
+            'start', 2)
+
+        self.builder.bindParameterValue(
+            self.definition,
+            'end', 10)
+
+        self.builder.bindParameterValue(
+            self.definition,
+            'step', 3)
+
+        self.definition.parameterIsActive('start', True)
+        self.definition.parameterIsActive('step', True)
+
+        return
+
+    def assertPostExecute(self):
+        BaseModule.BaseTestClass.assertPostExecute(self)
+
+        childTasks = self.parentTask.getChildTasks()
+        childTask = childTasks[0]
+
+        values = childTask.getParameterBinding('eval result')
+
+        self.assertEquals(range(2,10,3),
+                          values)
+        
+        return 
+
+
+    # END class TestRange4
+    pass
+

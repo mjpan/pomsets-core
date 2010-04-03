@@ -21,6 +21,7 @@ PORT_ATTRIBUTE_DESCRIPTION = 'description'
 PORT_ATTRIBUTE_KEYWORD = 'isKeyword'
 PORT_ATTRIBUTE_KEYWORDTOPASS = 'keywordToPass'
 
+
 # these are actually dynamic parameter attributes
 # PORT_ATTRIBUTE_STAGINGREQUIRED = 'stagingRequired'
 # PORT_ATTRIBUTE_PSGROUP = 'parameter sweep group'
@@ -54,14 +55,26 @@ def sortParameters(parameters, orderings):
     # map according to id
     idMap = dict([(x.id(), x) for x in parameters])
     
-    # first find all the parameters w/o precedings
+    # first find all the parameters w/o predecessors
     successors = {}
     relations = {}
     for row in orderings.rows():
         predecessor = row.getColumn('source')
+
+        # TODO:
+        # the following is mainly, but not completely true
+        # as it does not handle transitive relations
+        #
+        # if the predecessor is not in the map
+        # then it's as if the successor does not have that predecessor
+        if not predecessor in idMap:
+            continue
+
         successor = row.getColumn('target')
+
         relations[predecessor] = \
             relations.get(predecessor, []) + [successor]
+
         successors[successor] = []
         pass
 
@@ -75,7 +88,7 @@ def sortParameters(parameters, orderings):
         sorted.append(current)
         pass
     
-    return [idMap[x] for x in sorted]
+    return [idMap[x] for x in sorted if x in idMap]
 
 
 

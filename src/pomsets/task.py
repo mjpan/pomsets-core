@@ -68,14 +68,31 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
         if hasattr(self.definition(), 'parameterBindings'):
             logging.debug("pulling parameter bindings from self.definition()")
 
+            """
             for key, value in self.definition().parameterBindings().iteritems():
                 if key in self.parameterBindings():
                     continue
                 
-                logging.debug('pulled value "%s" for key %s from self.definition()' % (value, key))
+
                 self.setParameterBinding(key, value)
                 pass
-            
+            """
+            for parameter in self.definition().getParametersByFilter(FilterModule.TRUE_FILTER):
+                parameterId = parameter.id()
+                if parameterId in self.parameterBindings():
+                    continue
+
+                if self.definition().hasParameterBinding(parameterId):
+                    self.setParameterBinding(
+                        parameterId,
+                        self.definition().getParameterBinding(parameterId))
+                elif parameter.defaultValue() is not None:
+                    self.setParameterBinding(
+                        parameterId,
+                        parameter.defaultValue())
+                    pass
+                pass
+
         logging.debug(
             "task %s completed checking bindings on definition" % self)
 
@@ -122,6 +139,13 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
                 keyFunction = lambda x: x.portDirection()
             )
         )
+        theFilter.addFilter(
+            FilterModule.ObjectKeyMatchesFilter(
+                filter=FilterModule.IdentityFilter(False),
+                keyFunction = lambda x: x.optional()
+            )
+        )
+
 
         boundParameterIds = self.parameterBindings().keys()
 

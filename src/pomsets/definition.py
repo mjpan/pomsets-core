@@ -52,6 +52,7 @@ class ParameterBindingsHolder(ResourceModule.Struct):
     pass
 
 
+
 class Definition(ResourceModule.Struct):
     
     ATTRIBUTES = GuiOptionsHolder.ATTRIBUTES + [
@@ -62,6 +63,7 @@ class Definition(ResourceModule.Struct):
         'description',
         'name',
         'parameterOrderingTable',
+        'parameterActiveMap'
     ]
 
     SYMBOL_INPUT = 'input'
@@ -82,6 +84,7 @@ class Definition(ResourceModule.Struct):
         
         self.initializeParameters()
         self.isLibraryDefinition(False)
+        self.parameterActiveMap({})
         return
     
     
@@ -190,10 +193,49 @@ class Definition(ResourceModule.Struct):
             pass
         return
 
+
+    def parameterIsActive(self, id, value=None):
+        if value is not None:
+            self.parameterActiveMap()[id] = value
+        return self.parameterActiveMap().get(id, False)
     
     def isAtomic(self):
         return False
     
+
+    def getFilterForCommandlineArguments(self):
+        # TODO:
+        # should change the naming so that they're not just
+        # "command line arguments"
+        # more like "explicitly passed arguments"
+
+        parameterFilter = FilterModule.constructAndFilter()
+
+        parameterFilter.addFilter(
+            FilterModule.ObjectKeyMatchesFilter(
+                filter = FilterModule.IdentityFilter(True),
+                keyFunction = lambda x: x.getAttribute(ParameterModule.PORT_ATTRIBUTE_COMMANDLINE)
+                )
+            )
+
+        notOptionalOrActiveFilter = FilterModule.constructOrFilter()
+        notOptionalOrActiveFilter.addFilter(
+            FilterModule.ObjectKeyMatchesFilter(
+                filter = FilterModule.IdentityFilter(False),
+                keyFunction = lambda x: x.optional()
+                )
+            )
+        notOptionalOrActiveFilter.addFilter(
+            FilterModule.ObjectKeyMatchesFilter(
+                filter = FilterModule.IdentityFilter(True),
+                keyFunction = lambda x: self.parameterIsActive(x.id())
+                )
+            )
+        parameterFilter.addFilter(notOptionalOrActiveFilter)
+        return parameterFilter
+
+
+    # END class Definition
     pass
 
 
@@ -923,6 +965,7 @@ def createParameterOrderingTable():
     return table
     
 
+"""
 def createPythonEvalDefinition():
     definition = AtomicDefinition()
     definition.commandBuilderType('python eval')
@@ -940,6 +983,7 @@ def createPythonEvalDefinition():
     definition.addParameter(parameter)
     
     return definition
+"""
 
 
 def createShellProcessDefinition(inputParameters=None,
@@ -1034,7 +1078,8 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         'parameterSweepGroups',
         'parameterStagingMap',
         'comment',
-        'isCritical'
+        'isCritical',
+        'parameterActiveMap'
     ]
     
     def __init__(self, id=None, graph=None):
@@ -1056,6 +1101,8 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
 
         # default to True
         self.isCritical(True)
+
+        self.parameterActiveMap({})
 
         pass
 
@@ -1155,7 +1202,18 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         return self.definitionToReference().getParametersByFilter(theFilter)
         """
         return self.definitionToReference().getParametersByFilter(filter)
+
     
+    def parameterIsActive(self, id, value=None):
+
+        if value is not None:
+            self.parameterActiveMap()[id] = value
+
+        # if specified locally, use that value
+        # otherwise, default to value in definition
+        return self.parameterActiveMap().get(
+            id, self.definitionToReference().parameterIsActive(id))
+
     
     def getParameterToEdit(self, parameterName):
 
@@ -1205,6 +1263,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         parameter = sourceNode.getParameter(sourceParameterId)
         return (sourceNode, parameter)
     
+
     def referencesLibraryDefinition(self):
         definition = self.definitionToReference()
         if definition is None:
@@ -1430,7 +1489,49 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
             nodes.add(sourceNode)
             yield sourceNode
         raise StopIteration
-        
+
+
+    def getFilterForCommandlineArguments(self):
+        # TODO:
+        # this duplicates the code in Definition.getFilterForCommandlineArguments
+        # because we have an unittest where the AtomicDefinition class
+        # needs to have this function available
+        # but by doing so, the "self.parameterIsActive"
+        # does not call the one in this class
+
+
+        # TODO:
+        # should change the naming so that they're not just
+        # "command line arguments"
+        # more like "explicitly passed arguments"
+
+        parameterFilter = FilterModule.constructAndFilter()
+
+        parameterFilter.addFilter(
+            FilterModule.ObjectKeyMatchesFilter(
+                filter = FilterModule.IdentityFilter(True),
+                keyFunction = lambda x: x.getAttribute(ParameterModule.PORT_ATTRIBUTE_COMMANDLINE)
+                )
+            )
+
+        notOptionalOrActiveFilter = FilterModule.constructOrFilter()
+        notOptionalOrActiveFilter.addFilter(
+            FilterModule.ObjectKeyMatchesFilter(
+                filter = FilterModule.IdentityFilter(False),
+                keyFunction = lambda x: x.optional()
+                )
+            )
+        notOptionalOrActiveFilter.addFilter(
+            FilterModule.ObjectKeyMatchesFilter(
+                filter = FilterModule.IdentityFilter(True),
+                keyFunction = lambda x: self.parameterIsActive(x.id())
+                )
+            )
+        parameterFilter.addFilter(notOptionalOrActiveFilter)
+        return parameterFilter
+
+
+
     
     # END class ReferenceDefinition
     pass

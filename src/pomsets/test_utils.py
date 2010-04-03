@@ -74,6 +74,46 @@ def createLoadListValuesFromFilesDefinition():
 
     return definition
 
+def createRangeDefinition():
+
+    builder = BuilderModule.Builder()
+    path = (None, 'range')
+    executableObject = builder.createExecutableObject(
+        path,
+        executableClass=PythonModule.Function)
+
+    pythonEvalContext = builder.createNewAtomicPomset(
+        name='range',
+        executableObject = executableObject,
+        commandBuilderType = 'python eval')
+    
+    definition= pythonEvalContext.pomset()
+    builder.addPomsetParameter(
+        definition, 'eval result',
+        {'direction':ParameterModule.PORT_DIRECTION_OUTPUT,
+         'commandline':False})
+    builder.addPomsetParameter(
+        definition, 'start',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT,
+         'optional':True,
+         'default value':0})
+    builder.addPomsetParameter(
+        definition, 'end',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT})
+    builder.addPomsetParameter(
+        definition, 'step',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT,
+         'optional':True})
+
+    builder.addParameterOrdering(definition, 'start', 'end')
+    builder.addParameterOrdering(definition, 'end', 'step')
+
+    definition.id(DefinitionLibraryModule.ID_LOADLISTVALUESFROMFILES)
+    definition.isLibraryDefinition(True)
+
+    return definition
+
+
 
 def createWordCountDefinition(dir=None):
     

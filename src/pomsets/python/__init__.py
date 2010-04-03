@@ -40,14 +40,8 @@ class CommandBuilder(TaskModule.CommandBuilder):
 
         parameterBindings = task.parameterBindings()
     
-        # TODO:
-        # should change the naming so that they're not just
-        # "command line arguments"
-        # more like "explicitly passed arguments"
-        parameterFilter = FilterModule.ObjectKeyMatchesFilter(
-            filter = FilterModule.IdentityFilter(True),
-            keyFunction = lambda x: x.getAttribute(ParameterModule.PORT_ATTRIBUTE_COMMANDLINE)
-            )
+
+        parameterFilter = task.definition().getFilterForCommandlineArguments()
     
         parameters = [
             x for x in
@@ -57,10 +51,10 @@ class CommandBuilder(TaskModule.CommandBuilder):
             parameters, 
             task.definition().parameterOrderingTable())
 
-
         commandArgList = []
         for parameter in parameters:
             key = parameter.id()
+
             value = task.getParameterBinding(key)
             if isinstance(value, str):
                 # TODO
@@ -126,8 +120,10 @@ class PythonEval(EnvironmentModule.Environment):
 
         # evalResult = eval(command)
         moduleName = task.definition().executable().module()
-        module = PythonEval.importModule(moduleName)
-        command = '.'.join(['module', command])
+        if moduleName is not None:
+            module = PythonEval.importModule(moduleName)
+            command = '.'.join(['module', command])
+
         evalResult = eval(command)
 
         request.kwds['eval result'] = evalResult

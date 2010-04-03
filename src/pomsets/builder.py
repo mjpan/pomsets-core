@@ -36,7 +36,7 @@ class Builder(object):
         direction = attributes['direction']
 
         isOptional = attributes.get('optional', False)
-        isActive = attributes.get('active', True)
+        isActive = attributes.get('active', not isOptional)
         isCommandline = attributes.get('commandline', True)
         isFile = attributes.get('file', False)
         isList = attributes.get('list', False)
@@ -88,9 +88,14 @@ class Builder(object):
             portDirection=direction)
         parameter.name(parameterName)
 
+        defaultValue = attributes.get('default value', None)
+        if defaultValue is not None:
+            parameter.defaultValue(defaultValue)
+
         ParameterModule.setAttributes(parameter, parameterAttributes)
 
         pomset.addParameter(parameter)
+        pomset.parameterIsActive(parameterName, isActive)
 
         return parameter
 

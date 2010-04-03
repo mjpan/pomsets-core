@@ -40,11 +40,9 @@ def buildCommandFunction_commandlineArgsOnly(task):
     
     parameterBindings = task.parameterBindings()
     
-    commandlineParameterFilter = FilterModule.ObjectKeyMatchesFilter(
-        filter = FilterModule.IdentityFilter(True),
-        keyFunction = lambda x: x.getAttribute(ParameterModule.PORT_ATTRIBUTE_COMMANDLINE)
-    )
-    
+    commandlineParameterFilter = \
+        task.definition().getFilterForCommandlineArguments()
+
     commandLineParameters = [
         x for x in
         task.definition().getParametersByFilter(commandlineParameterFilter)]
