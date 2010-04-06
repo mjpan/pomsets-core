@@ -31,8 +31,13 @@ class Builder(object):
         
     def addPomsetParameter(self, pomset, parameterName, attributes):
 
+        # TODO:
+        # should verify that the pomset
+        # does not already have a parameter with the given name
+
+
         # the direction has to be specified
-        # almost everything else has a 
+        # almost everything else has a default value
         direction = attributes['direction']
 
         isOptional = attributes.get('optional', False)
@@ -288,6 +293,14 @@ class Builder(object):
         """
         return pomset.disconnect(sourceNode, sourceParameterId,
                                  targetNode, targetParameterId)
+
+
+    def exposeNodeParameter(self, pomset, parameterId,
+                            node, nodeParameterId,
+                            shouldCreate=False):
+        return pomset.exposeNodeParameter(
+            parameterId, node, nodeParameterId, 
+            shouldCreate=shouldCreate)
 
 
     # END class Builder

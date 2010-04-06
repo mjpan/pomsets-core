@@ -298,7 +298,11 @@ class Automaton(ResourceModule.Struct):
             'library bootstrap loader':commandBuilder,
             'python eval':commandBuilder
             }
+
         executeEnvironment = LibraryModule.LibraryLoader(library)
+        #executeEnvironmentMap = {
+        #    'library bootstrap loader':LibraryModule.LibraryLoader(library)
+        #    }
         requestContext = {
             'task':task,
             'command builder map':commandBuilderMap,

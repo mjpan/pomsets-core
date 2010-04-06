@@ -108,6 +108,7 @@ class PythonEval(EnvironmentModule.Environment):
 
     
     def execute(self, task, *args, **kargs):
+
         request = task.workRequest()
         
         commandBuilder = self.getCommandBuilder(task)
@@ -128,6 +129,8 @@ class PythonEval(EnvironmentModule.Environment):
 
         request.kwds['eval result'] = evalResult
         task.setParameterBinding('eval result', evalResult)
+
+        print "setting task %s eval result" % task.__hash__()
         
         return 0
     

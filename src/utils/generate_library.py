@@ -17,6 +17,7 @@ import pomsets.test_utils as DefinitionTestModule
 def generateBootstrapper():
     defToLoadDef = DefinitionModule.AtomicDefinition()
     defToLoadDef.commandBuilderType('library bootstrap loader')
+    defToLoadDef.executeEnvironmentType('library bootstrap loader')
     defToLoadDef.id(LibraryModule.ID_LOADLIBRARYDEFINITION)
     defToLoadDef.name('load library definition')
     # need a command builder to call the loadPomset function
@@ -81,6 +82,7 @@ def generateDefaultLoader(outputDir):
         os.path.join(outputDir, 'loadLibraryDefinitions.pomset'), defToLoadDefs)
     
     return
+
 
 def generateLoaderWithFailure1(outputDir):
     

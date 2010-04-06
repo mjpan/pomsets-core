@@ -667,7 +667,12 @@ class AtomicTask(Task):
         
         return
 
+
     def getCommandBuilderType(self):
+        """
+        this is called by Task.getCommandBuilder()
+        """
+
         definition = self.definition()
         if isinstance(definition, DefinitionModule.ReferenceDefinition):
             definition = definition.definitionToReference()
@@ -682,8 +687,8 @@ class AtomicTask(Task):
         if not executable.stageable():
             return
         
-        request = self.workRequest()
-        shell = request.kwds['execute environment']
+        shell = self.getExecuteEnvironment()
+
         fs = shell.getFS()
 
         localPath = executable.path()
@@ -727,9 +732,8 @@ class AtomicTask(Task):
             )
         )
         
-        request = self.workRequest()
-        shell = request.kwds['execute environment']
-        # map(shell.stageFile, self.definition().getParametersByFilter(filter))
+        shell = self.getExecuteEnvironment()
+
         for parameter in self.definition().getParametersByFilter(filter):
             values = self.getParameterBinding(parameter.id())
             for value in values:
@@ -758,9 +762,8 @@ class AtomicTask(Task):
             )
         )
         
-        request = self.workRequest()
-        shell = request.kwds['execute environment']
-        # map(shell.stageFile, self.definition().getParametersByFilter(filter))
+        shell = self.getExecuteEnvironment()
+
         for parameter in self.definition().getParametersByFilter(filter):
             values = self.getParameterBinding(parameter.id())
             for value in values:
@@ -793,23 +796,26 @@ class TaskGenerator(ResourceModule.Struct):
         # the target node is self, 
         # and the target parameter is of type blackboard
         theParameterConnectionFilter = parentTask.getFilterForOwnInternalParameterConnections()
+
+
         for parameterConnection in RelationalModule.Table.reduceRetrieve(
             parentTask.definition().parameterConnectionsTable(),
             theParameterConnectionFilter,
             ['parameter connection']):
-            targetId = parameterConnection.targetParameter()
-            targetParameter = parentTask.definition().getParameter(targetId)
+
+            targetParameterId = parameterConnection.targetParameter()
+            targetParameter = parentTask.definition().getParameter(targetParameterId)
             if not targetParameter.portType() == ParameterModule.PORT_TYPE_BLACKBOARD:
                 continue
-            sourceId = parameterConnection.sourceParameter()
+            sourceParameterId = parameterConnection.sourceParameter()
+
+
             parentTask.setParameterBinding(
-                targetId,
-                parentTask.getParameterBinding(sourceId)
+                targetParameterId,
+                parentTask.getParameterBinding(sourceParameterId)
             )
             pass
         
-
-
         return
 
     
@@ -978,6 +984,7 @@ class TaskGenerator(ResourceModule.Struct):
             parentTaskDefinition.parameterConnectionsTable(),
             filter,
             ['parameter connection'], [])
+
         for sourceNode, sourceParameterId, targetNode, targetParameterId, parameterConnection in parentTaskDefinition.parameterConnectionsTable().retrieve(
             filter, 
             ['source node', 'source parameter', 'target node', 'target parameter', 'parameter connection']):

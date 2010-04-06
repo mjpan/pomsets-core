@@ -815,5 +815,21 @@ class TestBuilder(unittest.TestCase):
                           
         return
 
+
+    def testExposeNodeParameter1(self):
+        """
+        Tests the pomset.exposeNodeParameter function
+        where the pomset's parameter is an input
+        """
+        raise NotImplementedError
+
+    def testExposeNodeParameter2(self):
+        """
+        Tests the pomset.exposeNodeParameter function
+        where the pomset's parameter is an output
+        """
+        raise NotImplementedError
+
+
     # END class TestBuilder
     pass

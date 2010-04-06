@@ -5,9 +5,7 @@ import pomsets.definition as DefinitionModule
 
 
 
-def createTestPomset():
-
-    builder = BuilderModule.Builder()
+def createTestPomset(builder):
 
     compositeContext = builder.createNewNestPomset(name='composite')
     compositeDefinition = compositeContext.pomset()
@@ -36,13 +34,49 @@ class TestDefinition(unittest.TestCase):
 
     def setUp(self):
 
-        pomset = createTestPomset()
+        self.builder = BuilderModule.Builder()
+
+        pomset = createTestPomset(self.builder)
         self.pomset = pomset
 
         return
 
 
     def tearDown(self):
+        return
+
+
+    def testGetParameter1(self):
+        pomset = self.pomset
+        self.assertRaises(NotImplementedError,
+                          pomset.getParameter, 'foo')
+        return
+
+
+    def testGetParameter2(self):
+        pomset = self.pomset
+
+        self.builder.addPomsetParameter(
+            pomset, 'foo', 
+            {'direction':'input'})
+        self.builder.addPomsetParameter(
+            pomset, 'foo', 
+            {'direction':'input'})
+
+        self.assertRaises(NotImplementedError,
+                          pomset.getParameter, 'foo')
+
+        return
+
+
+    def testGetParameter3(self):
+        pomset = self.pomset
+
+        self.builder.addPomsetParameter(
+            pomset, 'foo', 
+            {'direction':'input'})
+
+
         return
 
 

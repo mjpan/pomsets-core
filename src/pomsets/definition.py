@@ -97,6 +97,7 @@ class Definition(ResourceModule.Struct):
         # than the one of the parameter?
         if id is None:
             id = parameter.id()
+
         row.setColumn('id', id)
 
         row.setColumn('parameter', parameter)
@@ -157,13 +158,13 @@ class Definition(ResourceModule.Struct):
         return filter
 
     def getParametersHavingId(self, id):
-        filter = self.getParameterIdFilter(id)
 
-        parameters = RelationalModule.Table.reduceRetrieve(
-            self.parametersTable(),
-            filter,
-            ['parameter']
-        )
+        filter = FilterModule.ObjectKeyMatchesFilter(
+            filter=FilterModule.EquivalenceFilter(id),
+            keyFunction = lambda x: x.id()
+            )
+
+        parameters = self.getParametersByFilter(filter)
         return parameters
     
     
@@ -178,8 +179,9 @@ class Definition(ResourceModule.Struct):
             raise NotImplementedError(
                 '%s has no parameter with id %s' % (self.name(), id))
         elif len(parameters) is not 1:
+
             raise NotImplementedError(
-                '%s has more than one parameter with id %s' % self.name(), id)
+                '%s has more than one parameter with id %s' % (self.name(), id))
         return parameters[0]
 
 
@@ -689,12 +691,74 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         return edge
 
     
+    def exposeNodeParameter(self, 
+                            parameterId,
+                            node, nodeParameterId,
+                            shouldCreate=False):
+
+
+        nodeParameter = node.getParameter(nodeParameterId)
+        portDirection = nodeParameter.portDirection()
+
+
+        # TODO:
+        # rather than relying on a hardcoded name
+        # we should be able to figure out the actual blackboard parameter
+        # for the pomset's exposed parameter
+        blackboardParameterId = 'blackboard for %s' % parameterId
+
+
+        if shouldCreate:
+
+            # here we have to create a parameter
+            parameter = ParameterModule.DataParameter(
+                id=parameterId, optional=False, active=True,
+                portDirection=portDirection)
+            parameter.name(parameterId)
+            self.parameterIsActive(True)
+            ParameterModule.setAttributes(
+                parameter,
+                { 'commandline':False,
+                  ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT:parameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT)} 
+                )
+            self.addParameter(parameter)
+
+            blackboardParameter = \
+                ParameterModule.BlackboardParameter(id=blackboardParameterId)
+            blackboardParameter.name(blackboardParameterId)
+            self.addParameter(blackboardParameter)
+
+            if portDirection == ParameterModule.PORT_DIRECTION_INPUT:
+                self._connectParameters(
+                    self, parameterId,
+                    self, blackboardParameterId)
+            parameterId = blackboardParameterId
+            pass
+        else:
+            parameterId = blackboardParameterId
+            pass
+
+
+        if portDirection == ParameterModule.PORT_DIRECTION_INPUT:
+            self._connectParameters(
+                self, parameterId,
+                node, nodeParameterId)
+        else:
+            self._connectParameters(
+                node, nodeParameterId,
+                self, parameterId)
+
+        return
+
+
+
     def _connectParameters(self, 
                            sourceNode, sourceParameter, 
                            targetNode, targetParameter):
         """
         This is an internal function 
         that creates a connection between two parameters
+        one of which could be an internal parameter
         """
         
         parameterConnection = ParameterModule.ParameterConnection()
@@ -936,7 +1000,8 @@ class AtomicDefinition(Definition):
     ATTRIBUTES = Definition.ATTRIBUTES + [
         'executable',
         'functionToExecute',
-        'commandBuilderType'
+        'commandBuilderType',
+        'executeEnvironmentType'
     ]
     
     def __init__(self, **kwds):
@@ -955,7 +1020,8 @@ class AtomicDefinition(Definition):
 
 
 def executeTaskInEnvironment(task, *args, **kwds):
-    environment = task.workRequest().kwds['execute environment']
+
+    environment = task.getExecuteEnvironment()
     return environment.execute(task, *args, **kwds)
 
 

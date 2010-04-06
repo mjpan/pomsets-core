@@ -857,17 +857,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
             compositeDefinition, 'intermediate file',
             mapperNode, 'output file'
         )
-        """
-        compositeDefinition._connectParameters(
-            compositeDefinition, 'intermediate file',
-            reducerNode, 'input files',
-        )
-        
-        compositeDefinition.connectNodes(
-            mapperNode, 'temporal output',
-            reducerNode, 'temporal input',
-        )
-        """
+
         edge = compositeDefinition.connectNodes(
             mapperNode, 'output file',
             reducerNode, 'input files',
@@ -895,14 +885,6 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
             'intermediate file',
             self.intermediateFiles
         )
-        """
-        print "binding %s to %s" % (self.intermediateParameterId,
-                                    self.intermediateFiles)
-        compositeTask.setParameterBinding(
-            self.intermediateParameterId,
-            self.intermediateFiles
-        )
-        """
         return compositeTask
 
 
