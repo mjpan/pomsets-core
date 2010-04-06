@@ -811,6 +811,7 @@ class TaskGenerator(ResourceModule.Struct):
             ['parameter connection']):
 
             targetParameterId = parameterConnection.targetParameter()
+
             targetParameter = parentTask.definition().getParameter(targetParameterId)
             if not targetParameter.portType() == ParameterModule.PORT_TYPE_BLACKBOARD:
                 continue

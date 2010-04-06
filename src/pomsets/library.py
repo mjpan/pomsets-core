@@ -21,6 +21,7 @@ ID_BOOTSTRAPLOADER = 'library bootstrap loader::751fe366-1448-4db3-9db4-944075de
 
 ID_LOADLISTVALUESFROMFILES = 'load list values from files_fc6175d6-c18b-4403-9b79-bd2b0b0012ff'
 
+
 def getBootstrapLoaderPomsetsFilter():
     # we need to filter out the bootstrap pomset loaders
     # because it should not be loaded again

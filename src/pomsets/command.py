@@ -206,6 +206,7 @@ class PrintTaskCommand(ExecuteEnvironmentModule.Environment):
         self.outputStream().write(task.definition().name() + '\n')
         if self.outputStream():
             self.outputStream().write(' '.join(command))
+
         if self.postfix():
             self.outputStream().write(self.postfix())
         

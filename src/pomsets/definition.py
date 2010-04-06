@@ -732,6 +732,12 @@ class CompositeDefinition(GraphModule.Graph, Definition,
                 self._connectParameters(
                     self, parameterId,
                     self, blackboardParameterId)
+            else:
+                self._connectParameters(
+                    self, blackboardParameterId,
+                    self, parameterId)
+
+
             parameterId = blackboardParameterId
             pass
         else:

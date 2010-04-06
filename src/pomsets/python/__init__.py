@@ -94,17 +94,13 @@ class PythonEval(EnvironmentModule.Environment):
     @staticmethod
     def importModule(name):
 
-        name = name.replace('.', os.path.sep)
+        modulePath = name.split('.')
+        module = __import__(modulePath[0])
 
-        fp, pathname, description = imp.find_module(name)
+        if len(modulePath) > 1:
+            module = __import__(name, fromlist=modulePath[:1])
 
-        try:
-            return imp.load_module(name, fp, pathname, description)
-        finally:
-            # Since we may exit via an exception, close fp explicitly.
-            if fp:
-                fp.close()
-        return
+        return module
 
     
     def execute(self, task, *args, **kargs):
