@@ -363,8 +363,10 @@ class TestLoadListValues1(BaseModule.BaseTestClass, unittest.TestCase):
         return commandBuilderMap
 
 
-    def createExecuteEnvironment(self):
-        return PythonModule.PythonEval()
+    def createExecuteEnvironmentMap(self):
+        return {
+            'python eval':PythonModule.PythonEval()
+            }
 
 
     def createTask(self, definition):
@@ -495,8 +497,10 @@ class TestRange1(BaseModule.BaseTestClass, unittest.TestCase):
         return commandBuilderMap
 
 
-    def createExecuteEnvironment(self):
-        return PythonModule.PythonEval()
+    def createExecuteEnvironmentMap(self):
+        return {
+            'python eval':PythonModule.PythonEval()
+            }
 
 
     def createTask(self, definition):

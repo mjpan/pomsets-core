@@ -130,8 +130,6 @@ class PythonEval(EnvironmentModule.Environment):
         request.kwds['eval result'] = evalResult
         task.setParameterBinding('eval result', evalResult)
 
-        print "setting task %s eval result" % task.__hash__()
-        
         return 0
     
     # END class PythonEval

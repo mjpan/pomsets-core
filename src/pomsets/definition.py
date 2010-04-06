@@ -1120,6 +1120,7 @@ def createShellProcessDefinition(inputParameters=None,
     definition.executable(executable)
     
     definition.commandBuilderType('shell process')
+    definition.executeEnvironmentType('shell process')
     
     return definition
 

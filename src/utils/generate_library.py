@@ -2,6 +2,8 @@ import os
 import sys
 import uuid
 
+import optparse as OptparseModule
+
 sys.path.insert(0, os.getenv('POMSETS_HOME'))
 
 import pomsets.context as ContextModule
@@ -135,7 +137,7 @@ def generateLoaderWithFailure2(outputDir):
     context.pomset(wcDefinition)
     definitionsToLoad.append(context)
     
-    wcDrefinition = DefinitionTestModule.createWordCountReduceDefinition()
+    wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
     wcrDefinitionPath = wcrDefinition.id() + '.pomset'
     wcrDefinition.url(wcrDefinitionPath)
     ContextModule.pickleDefinition(
@@ -155,34 +157,28 @@ def generateLoaderWithFailure2(outputDir):
 
 
 
-def main(argv):
+def main(args):
 
-    if argv is None:
-        argv = []
+    parser = OptparseModule.OptionParser()
+    parser.add_option("--default", dest="default",
+                      help="if should generate default loader")
+    parser.add_option("--failure1", dest="failure1",
+                      help="if should generate loader with failure test case 1")
+    parser.add_option("--failure2", dest="failure2",
+                      help="if should generate loader with failure test case 2")
+    parser.add_option("-o", "--output", dest="outputDir",
+                      help="output dir")
 
-    shouldGenerateDefaultLoader = True
-    shouldGenerateLoaderWithFailure1 = False
-    shouldGenerateLoaderWithFailure2 = False
-    minArgLen = 2
+    (options, args) = parser.parse_args(args)
 
-    for arg in argv:
-        if arg.startswith('-default='):
-            minArgLen = minArgLen + 1
-            shouldGenerateDefaultLoader = arg[9:] in ['True', 'true', '1']
-        if arg.startswith('-failure1='):
-            minArgLen = minArgLen + 1
-            shouldGenerateLoaderWithFailure1 = arg[10:] in ['True', 'true', '1']
-        if arg.startswith('-failure2='):
-            minArgLen = minArgLen + 1
-            shouldGenerateLoaderWithFailure2 = arg[10:] in ['True', 'true', '1']
-        pass
+    shouldGenerateDefaultLoader = options.default is not None
+    shouldGenerateLoaderWithFailure1 = options.failure1 is not None
+    shouldGenerateLoaderWithFailure2 = options.failure2 is not None
 
-
-    if len(argv) < minArgLen:
+    outputDir = options.outputDir
+    if outputDir is None:
         raise ValueError('need to specify directory to output the definitions')
         
-    outputDir = argv[-1]
-
     if shouldGenerateDefaultLoader:
         generateDefaultLoader(outputDir)
         

@@ -131,6 +131,7 @@ class Builder(object):
     def createNewAtomicPomset(self, name=None, 
                               executableObject=None,
                               commandBuilderType=None,
+                              executeEnvironmentType=None,
                               *args, **kwds):
 
         newAtomicPomset = DefinitionModule.AtomicDefinition(*args, **kwds)
@@ -150,6 +151,10 @@ class Builder(object):
         if commandBuilderType is None:
             commandBuilderType = 'shell process'
         newAtomicPomset.commandBuilderType(commandBuilderType)
+
+        if executeEnvironmentType is None:
+            executeEnvironmentType = 'shell process'
+        newAtomicPomset.executeEnvironmentType(executeEnvironmentType)
 
         newPomsetContext = ContextModule.Context()
         newPomsetContext.pomset(newAtomicPomset)

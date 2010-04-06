@@ -119,8 +119,10 @@ class TestCase1(BaseModule.TestCase1):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END TestCase1
     pass
@@ -149,8 +151,10 @@ class TestCase2(BaseModule.TestCase2):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END class TestCase2
     pass
@@ -181,8 +185,10 @@ class TestCase4(BaseModule.TestCase4):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
 
     # END class TestCase4
@@ -213,8 +219,10 @@ class TestCase8(BaseModule.TestCase8):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END class TestCase8
     pass
@@ -243,8 +251,10 @@ class TestCase9(BaseModule.TestCase9):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END class TestCase9
     pass
@@ -273,8 +283,10 @@ class TestCase10(BaseModule.TestCase10):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END class TestCase
     pass
@@ -301,8 +313,10 @@ class TestParameterSweep1(BaseModule.TestParameterSweep1):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END class TestParameterSweep1
     pass
@@ -392,8 +406,10 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END class TestParameterSweep2
     pass
@@ -482,8 +498,10 @@ class TestParameterSweep3(BaseModule.TestParameterSweep3):
         self.shell.disconnect()
         return
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END class TestParameterSweep3
     pass
@@ -581,8 +599,10 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
 
 
 
-    def createExecuteEnvironment(self):
-        return self.shell
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':self.shell
+            }
 
     # END class TestParameterSweep4
     pass

@@ -35,16 +35,14 @@ class PrintObject(object):
         self.automaton = automaton
         return
 
-    def createCommandBuilder(self):
+    def createCommandBuilderMap(self):
         commandBuilder = TaskCommandModule.CommandBuilder(
             TaskCommandModule.buildCommandFunction_commandlineArgs
         )
-        return commandBuilder
+        return {
+            'shell process':commandBuilder
+            }
 
-    def createExecuteEnvironment(self):
-        return ShellModule.LocalShell()
-
-    
     def createTask(self, definition):
 
         compositeTask = TaskModule.CompositeTask()
@@ -54,30 +52,35 @@ class PrintObject(object):
         return compositeTask
     
     
-    def getRequestContext(self, task=None, executeEnvironment=None):
+    def getRequestContext(self, task=None, executeEnvironmentMap=None):
         
         automaton = self.automaton
-        commandBuilder = self.createCommandBuilder()
 
-        if executeEnvironment is None:
-            executeEnvironment = self.createExecuteEnvironment()
+        commandBuilderMap = self.createCommandBuilderMap()
+
+        if executeEnvironmentMap is None:
+            executeEnvironmentMap = self.createExecuteEnvironmentMap()
             
         requestContext = {
             'task':task,
-            'command builder':commandBuilder,
-            'execute environment':executeEnvironment
+            'command builder map':commandBuilderMap,
+            'execute environment map':executeEnvironmentMap
         }
         return requestContext
 
     
-    def createExecuteEnvironment(self):
+    def createExecuteEnvironmentMap(self):
         io = StringIO.StringIO()
-        self.env = TaskCommandModule.PrintTaskCommand()
-        self.env.outputStream(io)
-        return self.env
+        env = TaskCommandModule.PrintTaskCommand()
+        env.outputStream(io)
+        self.env = env
+
+        return {
+            'shell process':env
+            }
 
     def executeTask(self, task, 
-                    executeEnvironment=None):
+                    executeEnvironmentMap=None):
             
         automaton = self.automaton
         successCallback = automaton.getPostExecuteCallbackFor(task)
@@ -85,7 +88,7 @@ class PrintObject(object):
         executeTaskFunction = automaton.getExecuteTaskFunction(task)
         
         requestContext = self.getRequestContext(
-            task=task, executeEnvironment=executeEnvironment
+            task=task, executeEnvironmentMap=executeEnvironmentMap
         )
         request = threadpool.WorkRequest(
             executeTaskFunction,

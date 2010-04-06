@@ -82,29 +82,31 @@ class BaseTestClass(object):
         }
         return commandBuilderMap
 
-    def createExecuteEnvironment(self):
-        return ShellModule.LocalShell()
+    def createExecuteEnvironmentMap(self):
+        return {
+            'shell process':ShellModule.LocalShell()
+            }
 
-    
-    def getRequestContext(self, task=None, executeEnvironment=None):
+
+    def getRequestContext(self, task=None, executeEnvironmentMap=None):
         
         automaton = self.automaton
         commandBuilderMap = self.createCommandBuilderMap()
 
-        if executeEnvironment is None:
-            executeEnvironment = self.createExecuteEnvironment()
+        if executeEnvironmentMap is None:
+            executeEnvironmentMap = self.createExecuteEnvironmentMap()
 
         requestContext = {
             'task':task,
             'command builder map':commandBuilderMap,
-            'execute environment':executeEnvironment
+            'execute environment map':executeEnvironmentMap
         }
         
         return requestContext
     
     
     def executeTask(self, task, 
-                    executeEnvironment=None):
+                    executeEnvironmentMap=None):
             
         automaton = self.automaton
         successCallback = automaton.getPostExecuteCallbackFor(task)
@@ -112,7 +114,7 @@ class BaseTestClass(object):
         executeTaskFunction = automaton.getExecuteTaskFunction(task)
         
         requestContext = self.getRequestContext(
-            task=task, executeEnvironment=executeEnvironment
+            task=task, executeEnvironmentMap=executeEnvironmentMap
         )
 
         request = threadpool.WorkRequest(
@@ -1129,7 +1131,7 @@ class TestCase11(TestCase1):
 
     
     def executeTask(self, task, 
-                    executeEnvironment=None):
+                    executeEnvironmentMap=None):
 
         automaton = self.automaton
         successCallback = automaton.getPostExecuteCallbackFor(task)
@@ -1137,7 +1139,7 @@ class TestCase11(TestCase1):
         executeTaskFunction = automaton.getExecuteTaskFunction(task)
         
         requestContext = self.getRequestContext(
-            task=task, executeEnvironment=executeEnvironment
+            task=task, executeEnvironmentMap=executeEnvironmentMap
         )
         request = threadpool.WorkRequest(
             executeTaskFunction,

@@ -406,13 +406,6 @@ class CompositeTask(Task):
         kwds = copy.copy(self.workRequest().kwds)
         kwds['task'] = task
 
-        # customize 'execute environment id' of kwds
-        # if it is a composite task
-        # then just use the parent task's value
-        # otherwise, should get the value from the task
-        # and look into kwds to get the actual id
-        
-        
         automaton = self.automaton()
         callback = automaton.getPostExecuteCallbackFor(task)
         exc_callback = automaton.getErrorCallbackFor(task)
@@ -655,16 +648,30 @@ class AtomicTask(Task):
         that is assigned to the task
         """
         request = self.workRequest()
-        if not request.kwds.get(
+
+        if request.kwds.get(
             'worker thread configures execute environment', False):
-            return
+
+            # the thread contains the shell
+            # to the particular host
             
-        workerThread = request.kwds.get('worker thread', None)
-        if workerThread is None:
-            raise KeyError('need worker thread to configure environment')
-        
-        request.kwds['execute environment'] = workerThread.executeEnvironment()
-        
+            workerThread = request.kwds.get('worker thread', None)
+            if workerThread is None:
+                raise KeyError('need worker thread to configure environment')
+
+            request.kwds['execute environment'] = \
+                workerThread.executeEnvironment()
+        else:
+
+            executeEnvironmentMap = request.kwds['execute environment map']
+            definition = self.definition()
+            if isinstance(definition, DefinitionModule.ReferenceDefinition):
+                definition = definition.definitionToReference()
+            key = definition.executeEnvironmentType()
+            if key not in executeEnvironmentMap:
+                raise KeyError('no execute environment for type %s' % key)
+            request.kwds['execute environment'] = executeEnvironmentMap[key]
+
         return
 
 

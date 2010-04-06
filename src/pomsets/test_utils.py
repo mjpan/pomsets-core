@@ -58,7 +58,8 @@ def createLoadListValuesFromFilesDefinition():
     pythonEvalContext = builder.createNewAtomicPomset(
         name='load list values from files',
         executableObject = executableObject,
-        commandBuilderType = 'python eval')
+        commandBuilderType = 'python eval',
+        executeEnvironmentType = 'python eval')
     
     definition= pythonEvalContext.pomset()
     builder.addPomsetParameter(
@@ -85,7 +86,8 @@ def createRangeDefinition():
     pythonEvalContext = builder.createNewAtomicPomset(
         name='range',
         executableObject = executableObject,
-        commandBuilderType = 'python eval')
+        commandBuilderType = 'python eval',
+        executeEnvironmentType = 'python eval')
     
     definition= pythonEvalContext.pomset()
     builder.addPomsetParameter(

@@ -35,7 +35,7 @@ def configLogging():
 
 def generateRequestKwds():
     kwds = {
-        'execute environment':createExecuteEnvironment(),
+        'execute environment map':createExecuteEnvironmentMap(),
         'command builder map':createCommandBuilderMap()
         }
     return kwds
@@ -51,7 +51,9 @@ def createCommandBuilderMap():
     
 
 def createExecuteEnvironment():
-    return ShellModule.LocalShell()
+    return {
+        'shell process':ShellModule.LocalShell()
+        }
     
 
 

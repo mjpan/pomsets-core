@@ -15,7 +15,7 @@ class Automaton(ResourceModule.Struct):
     """
 
     ATTRIBUTES = [
-        'executeEnvironment',
+        'executeEnvironmentMap',
         'commandManager',
         'contextManager'
     ]
@@ -159,8 +159,8 @@ class Automaton(ResourceModule.Struct):
     def enqueueRequest(self, request, shouldWait=True):
 
         # set the execute environment of the request
-        if self.executeEnvironment() is not None:
-            request.kwds['execute environment'] = self.executeEnvironment()
+        if self.executeEnvironmentMap() is not None:
+            request.kwds['execute environment map'] = self.executeEnvironmentMap()
         
         threadpool = self.getThreadPoolUsingRequest(request)
 
@@ -299,14 +299,14 @@ class Automaton(ResourceModule.Struct):
             'python eval':commandBuilder
             }
 
-        executeEnvironment = LibraryModule.LibraryLoader(library)
-        #executeEnvironmentMap = {
-        #    'library bootstrap loader':LibraryModule.LibraryLoader(library)
-        #    }
+        #executeEnvironment = LibraryModule.LibraryLoader(library)
+        executeEnvironmentMap = {
+            'library bootstrap loader':LibraryModule.LibraryLoader(library)
+            }
         requestContext = {
             'task':task,
             'command builder map':commandBuilderMap,
-            'execute environment':executeEnvironment
+            'execute environment map':executeEnvironmentMap
         }
 
         request = ThreadpoolModule.WorkRequest(

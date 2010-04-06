@@ -12,18 +12,27 @@ import pypatterns.filter as FilterModule
 
 import TestExecute as BaseModule
 
+
+def createExecuteEnvironment():
+    io = StringIO.StringIO()
+    import pomsets.command as ExecuteEnvironmentModule
+    env = ExecuteEnvironmentModule.PrintTaskCommand()
+    env.postfix('\n')
+    env.outputStream(io)
+    return env
+
+
 class TestCase1(BaseModule.TestCase1):
     """
     execute of atomic function
     """
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
+    
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
 
     def assertPostExecute(self):
         expected = """echo
@@ -44,14 +53,12 @@ class TestCase2(BaseModule.TestCase2):
     execute of atomic function
     """
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
-    
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
     def assertPostExecute(self):
         expected = """echo
 /bin/echo "echoed testExecuteAtomicFunction2"
@@ -72,13 +79,11 @@ class TestCase4(BaseModule.TestCase4):
     execute of composite function
     """
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
 
     def assertPostExecute(self):
         expected = """echo
@@ -99,13 +104,12 @@ class TestCase8(BaseModule.TestCase8):
     execute of composite function
     """
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
 
     def assertPostExecute(self):
         expected = """echo 0
@@ -129,14 +133,12 @@ class TestCase9(BaseModule.TestCase9):
     execute of composite function
     """
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
-    
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
     def assertPostExecute(self):
         expected = """echo 0
 /bin/echo foo
@@ -159,15 +161,12 @@ class TestCase10(BaseModule.TestCase10):
     execution fails due to incomplete parameter binding 
     """
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
 
-    
     # END class TestCase
     pass
 
@@ -175,13 +174,11 @@ class TestCase10(BaseModule.TestCase10):
 
 class TestParameterSweep1(BaseModule.TestParameterSweep1):
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
 
     def assertPostExecute(self):
         expected = """echo
@@ -201,13 +198,11 @@ echo
 
 class TestParameterSweep2(BaseModule.TestParameterSweep2):
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
 
     def assertPostExecute(self):
         expected = """mapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\nmapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2
@@ -224,13 +219,11 @@ class TestParameterSweep2(BaseModule.TestParameterSweep2):
 
 class TestParameterSweep3(BaseModule.TestParameterSweep3):
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
 
     def assertPostExecute(self):
         expected = """reducer\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input %s/resources/testdata/TestExecute/count1 %s/resources/testdata/TestExecute/count2 -output /tmp/count_reduce
@@ -249,14 +242,12 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
     tests combining a mapper with a reducer
     """
 
-    def createExecuteEnvironment(self):
-        io = StringIO.StringIO()
-        import pomsets.command as ExecuteEnvironmentModule
-        self.env = ExecuteEnvironmentModule.PrintTaskCommand()
-        self.env.postfix('\n')
-        self.env.outputStream(io)
-        return self.env
-    
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
     def assertPostExecute(self):
         expected = """mapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\nmapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2\nreducer\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input /tmp/count1 /tmp/count2 -output /tmp/count_reduce
 """  % tuple([os.getcwd()]*5)
