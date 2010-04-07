@@ -2,6 +2,7 @@ import os
 import unittest
 
 import pomsets.builder as BuilderModule
+import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 
 
@@ -203,19 +204,27 @@ class TestDefinition2(unittest.TestCase):
 
 
     def assertPredecessors(self, node, expectedPredecessorNames):
-        predecessors = node.predecessors()
+
+        predecessors = [x for x in node.predecessors()]
+
         self.assertEquals(len(expectedPredecessorNames),
-                          predecessors)
+                          len(predecessors))
+
         actualPredecessorNames = [x.name() for x in predecessors]
+
         for expectedName in expectedPredecessorNames:
             self.assertTrue(expectedName in actualPredecessorNames)
         return
 
+
     def assertSuccessors(self, node, expectedSuccessorNames):
-        predecessors = node.predecessors()
+        successors = [x for x in node.successors()]
+
         self.assertEquals(len(expectedSuccessorNames),
-                          predecessors)
-        actualSuccessorNames = [x.name() for x in predecessors]
+                          len(successors))
+
+        actualSuccessorNames = [x.name() for x in successors]
+
         for expectedName in expectedSuccessorNames:
             self.assertTrue(expectedName in actualSuccessorNames)
         return
@@ -238,11 +247,37 @@ class TestDefinition2(unittest.TestCase):
         self.assertSuccessors(node, ['read tile image list',
                                      'read tile index list'])
 
+        nodes = [x for x in self.pomset.nodes() 
+                 if x.name() == 'read tile index list']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+        self.assertPredecessors(node, ['generate tile list'])
+        self.assertSuccessors(node, ['render tile'])
+
+        nodes = [x for x in self.pomset.nodes() 
+                 if x.name() == 'read tile image list']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+        self.assertPredecessors(node, ['generate tile list'])
+        self.assertSuccessors(node, ['render tile'])
+
+        nodes = [x for x in self.pomset.nodes() 
+                 if x.name() == 'render tile']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+        self.assertPredecessors(node, ['read tile index list',
+                                       'read tile image list'])
+        self.assertSuccessors(node, ['comp tiles'])
 
 
-        raise NotImplementedError
+        nodes = [x for x in self.pomset.nodes() 
+                 if x.name() == 'comp tiles']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+        self.assertPredecessors(node, ['render tile'])
+        self.assertSuccessors(node, [])
 
-
+        return
 
 
     # END class TestDefinition2
