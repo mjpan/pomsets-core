@@ -1,3 +1,4 @@
+import os
 import unittest
 
 import pomsets.builder as BuilderModule
@@ -5,7 +6,7 @@ import pomsets.definition as DefinitionModule
 
 
 
-def createTestPomset(builder):
+def createTestPomset1(builder):
 
     compositeContext = builder.createNewNestPomset(name='composite')
     compositeDefinition = compositeContext.pomset()
@@ -30,13 +31,13 @@ def createTestPomset(builder):
 
 
 
-class TestDefinition(unittest.TestCase):
+class TestDefinition1(unittest.TestCase):
 
     def setUp(self):
 
         self.builder = BuilderModule.Builder()
 
-        pomset = createTestPomset(self.builder)
+        pomset = createTestPomset1(self.builder)
         self.pomset = pomset
 
         return
@@ -185,5 +186,64 @@ class TestDefinition(unittest.TestCase):
         return
 
 
-    # END class TestDefinition
+    # END class TestDefinition1
+    pass
+
+
+class TestDefinition2(unittest.TestCase):
+
+    TEST_DATA_PATH = os.path.sep.join(['resources', 'testdata', 'TestDefinition', 'render.pomset'])
+
+    def setUp(self):
+
+        # load pomset from path
+        pomsetContext = ContextModule.loadPomset(path=TestDefinition2.TEST_DATA_PATH)
+        self.pomset = pomsetContext.pomset()
+        return
+
+
+    def assertPredecessors(self, node, expectedPredecessorNames):
+        predecessors = node.predecessors()
+        self.assertEquals(len(expectedPredecessorNames),
+                          predecessors)
+        actualPredecessorNames = [x.name() for x in predecessors]
+        for expectedName in expectedPredecessorNames:
+            self.assertTrue(expectedName in actualPredecessorNames)
+        return
+
+    def assertSuccessors(self, node, expectedSuccessorNames):
+        predecessors = node.predecessors()
+        self.assertEquals(len(expectedSuccessorNames),
+                          predecessors)
+        actualSuccessorNames = [x.name() for x in predecessors]
+        for expectedName in expectedSuccessorNames:
+            self.assertTrue(expectedName in actualSuccessorNames)
+        return
+
+
+    def testOrdering(self):
+
+        nodes = [x for x in self.pomset.nodes() 
+                 if x.name() == 'generate tiling info']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+        self.assertPredecessors(node, [])
+        self.assertSuccessors(node, ['generate tile list'])
+
+        nodes = [x for x in self.pomset.nodes() 
+                 if x.name() == 'generate tile list']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+        self.assertPredecessors(node, ['generate tiling info'])
+        self.assertSuccessors(node, ['read tile image list',
+                                     'read tile index list'])
+
+
+
+        raise NotImplementedError
+
+
+
+
+    # END class TestDefinition2
     pass

@@ -6,6 +6,7 @@ import optparse as OptparseModule
 
 sys.path.insert(0, os.getenv('POMSETS_HOME'))
 
+import pomsets.builder as BuilderModule
 import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
 import pomsets.library as LibraryModule
@@ -17,11 +18,25 @@ import pomsets.test_utils as DefinitionTestModule
 
 
 def generateBootstrapper():
+
+    """
     defToLoadDef = DefinitionModule.AtomicDefinition()
     defToLoadDef.commandBuilderType('library bootstrap loader')
     defToLoadDef.executeEnvironmentType('library bootstrap loader')
     defToLoadDef.id(LibraryModule.ID_LOADLIBRARYDEFINITION)
     defToLoadDef.name('load library definition')
+    """
+
+    builder = BuilderModule.Builder()
+    definitionContext = builder.createNewAtomicPomset(
+        name='load library definition', 
+        executableObject=None,
+        commandBuilderType='library bootstrap loader',
+        executeEnvironmentType='library bootstrap loader')
+    definition = definitionContext.pomset()
+    definition.id(LibraryModule.ID_LOADLIBRARYDEFINITION)
+
+    """
     # need a command builder to call the loadPomset function
     # need a python eval environment to execute the output of commandbuilder
     parameter = ParameterModule.DataParameter(
@@ -29,9 +44,16 @@ def generateBootstrapper():
         portDirection=ParameterModule.PORT_DIRECTION_INPUT)
     ParameterModule.setAttributes(parameter, {})
     defToLoadDef.addParameter(parameter)
-    defToLoadDef.isLibraryDefinition(True)
-    defToLoadDef.functionToExecute(DefinitionModule.executeTaskInEnvironment)
-    return defToLoadDef
+    """
+    builder.addPomsetParameter(
+        definition, 'pomset url', 
+        { 'direction':ParameterModule.PORT_DIRECTION_INPUT }
+        )
+
+
+    definition.isLibraryDefinition(True)
+    definition.functionToExecute(DefinitionModule.executeTaskInEnvironment)
+    return definition
 
 
 
@@ -75,7 +97,6 @@ def generateDefaultLoader(outputDir):
     context.pomset(loadValuesDefinition)
     definitionsToLoad.append(context)
 
-    
     library = LibraryModule.Library()
     map(library.addPomsetContext, definitionsToLoad)
 

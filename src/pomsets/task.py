@@ -66,7 +66,7 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
             (self, self.definition()))
 
         if hasattr(self.definition(), 'parameterBindings'):
-            logging.debug("pulling parameter bindings from self.definition()")
+            logging.debug("pulling parameter bindings from self.definition %s" % self.definition().name())
 
             """
             for key, value in self.definition().parameterBindings().iteritems():
@@ -79,6 +79,7 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
             """
             for parameter in self.definition().getParametersByFilter(FilterModule.TRUE_FILTER):
                 parameterId = parameter.id()
+                logging.debug("checking for parameter %s" % parameterId)
                 if parameterId in self.parameterBindings():
                     continue
 
@@ -277,12 +278,16 @@ class CompositeTask(Task):
         
         self.pullParameterBindingsFromDefinition()
       
+        logging.debug("%s validing parameters" % self)
         self.validateParameters()
 
+        logging.debug("%s preinitializing child tasks" % self)
         self.preInitializeChildTasks()
         
+        logging.debug("%s initializing child tasks" % self)
         self.initializeChildTasks()
 
+        logging.debug("%s starting next tasks" % self)
         self.startNextTasks()
         
         return True
@@ -632,13 +637,17 @@ class AtomicTask(Task):
         
         self.pullParameterBindingsFromDefinition()
         
+        logging.debug("%s validating parameters" % self)
         self.validateParameters()
                 
+        logging.debug("%s executing function" % self)
         functionToExecute = self.definition().functionToExecute()
         result = functionToExecute(self)
 
+        logging.debug("%s pushing data for parameters" % self)
         self.pushDataForParameters()
 
+        logging.debug("%s returning execution result" % self)
         return result
     
     

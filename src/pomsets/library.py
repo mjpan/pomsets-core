@@ -170,6 +170,8 @@ class Library(ResourceModule.Struct):
         fullPath = os.path.join(
             self.bootstrapLoaderDefinitionsDir(), relativePath)
 
+        print "loading from full path %s" % fullPath
+
         return self.loadFromFullFilePath(fullPath)
     
 

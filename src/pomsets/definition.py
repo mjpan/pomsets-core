@@ -1330,6 +1330,13 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
             pass
             
         if sourceNode is None:
+
+            # TODO:
+            # there are no parameter connection paths found
+            # however, see if the parameter
+            # is actually connected to a parameter
+            # in the parent definition
+
             logging.debug('no incoming blackboard parameters found')
             return (self, parameter)
         

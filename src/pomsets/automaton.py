@@ -278,10 +278,34 @@ class Automaton(ResourceModule.Struct):
 
 
 
+    def generateRequestContext(self):
+        commandBuilder = LibraryModule.CommandBuilder()
+        commandBuilderMap = {
+            'library bootstrap loader':commandBuilder,
+            'python eval':commandBuilder
+            }
+
+        executeEnvironmentMap = {
+            }
+        requestContext = {
+            'command builder map':commandBuilderMap,
+            'execute environment map':executeEnvironmentMap
+        }
+        return requestContext
+
+
+    def addValuesToRequestContextForBootstrapLoader(self, requestContext, *args, **kwds):
+
+        library = kwds['library']
+        requestContext['execute environment map']['library bootstrap loader']  =LibraryModule.LibraryLoader(library)
+        return
+
+
     def runBootstrapLoader(self, library, isCritical=False):
 
         definition = library.getBootstrapLoader()
 
+        """
         import pomsets.task as TaskModule
 
         task = TaskModule.CompositeTask()
@@ -292,14 +316,15 @@ class Automaton(ResourceModule.Struct):
         successCallback = self.getPostExecuteCallbackFor(task)
         errorCallback = self.getErrorCallbackFor(task)
         executeTaskFunction = self.getExecuteTaskFunction(task)
+        """
 
+        """
         commandBuilder = LibraryModule.CommandBuilder()
         commandBuilderMap = {
             'library bootstrap loader':commandBuilder,
             'python eval':commandBuilder
             }
 
-        #executeEnvironment = LibraryModule.LibraryLoader(library)
         executeEnvironmentMap = {
             'library bootstrap loader':LibraryModule.LibraryLoader(library)
             }
@@ -308,7 +333,11 @@ class Automaton(ResourceModule.Struct):
             'command builder map':commandBuilderMap,
             'execute environment map':executeEnvironmentMap
         }
+        """
+        requestContext = self.generateRequestContext()
+        self.addValuesToRequestContextForBootstrapLoader(requestContext, library=library)
 
+        """
         request = ThreadpoolModule.WorkRequest(
             executeTaskFunction,
             args = [],
@@ -326,7 +355,13 @@ class Automaton(ResourceModule.Struct):
         self.enqueueRequest(request, shouldWait=True)
 
         return request
+        """
+        task = self.executePomset(pomset=definition, 
+                                  requestKwds=requestContext,
+                                  shouldWait=True)
+        return task.workRequest()
 
     
     #end class Automaton
     pass
+
