@@ -1465,40 +1465,8 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         return len(groups) is 0
 
     
-    def isReadyToExecute(self, parentTask):
-        allPredecessors = set(self.predecessors())
-        
-        # need to filter for the predecessors that have completed
-        predecessorFilter = FilterModule.constructOrFilter()
-        for predecessor in allPredecessors:
-            predecessorFilter.addFilter(
-                RelationalModule.ColumnValueFilter(
-                    'definition',
-                    FilterModule.IdentityFilter(predecessor)
-                )
-            )
-            pass
-        
-        completedPredecessorFilter = FilterModule.constructAndFilter()
-        completedPredecessorFilter.addFilter(predecessorFilter)
-        completedPredecessorFilter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'status',
-                FilterModule.EquivalenceFilter('completed')
-            )
-        )
-        completedPredecessors = RelationalModule.Table.reduceRetrieve(
-            parentTask.tasksTable(),
-            completedPredecessorFilter,
-            ['definition'],
-            []
-        )
-        
-        # if every one of those predecessors
-        # can be found in tokens, and vice versa
-        return len(set(completedPredecessors).symmetric_difference(allPredecessors)) is 0
-    
-    
+
+
     def parameterStagingRequired(self, parameter, value=None):
 
         if value is not None:

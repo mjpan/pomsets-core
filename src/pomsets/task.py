@@ -61,12 +61,8 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
 
 
     def pullParameterBindingsFromDefinition(self):
-        logging.debug(
-            "task %s checking if self.definition() %s has parameter bindings" %
-            (self, self.definition()))
 
         if hasattr(self.definition(), 'parameterBindings'):
-            logging.debug("pulling parameter bindings from self.definition %s" % self.definition().name())
 
             """
             for key, value in self.definition().parameterBindings().iteritems():
@@ -79,7 +75,6 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
             """
             for parameter in self.definition().getParametersByFilter(FilterModule.TRUE_FILTER):
                 parameterId = parameter.id()
-                logging.debug("checking for parameter %s" % parameterId)
                 if parameterId in self.parameterBindings():
                     continue
 
@@ -93,9 +88,6 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
                         parameter.defaultValue())
                     pass
                 pass
-
-        logging.debug(
-            "task %s completed checking bindings on definition" % self)
 
         return
 
@@ -173,7 +165,8 @@ class CompositeTask(Task):
         'taskGenerator',
         'tasksTable',
         'allChildTasksHaveCompleted',
-        'hasGeneratedTasks'
+        'hasGeneratedTasks',
+        'isParameterSweepTasksHolder'
     ]
     
     def __init__(self):
@@ -181,6 +174,7 @@ class CompositeTask(Task):
         
         self.allChildTasksHaveCompleted(False)
         self.initializeTasksTable()
+        self.isParameterSweepTasksHolder(False)
         return
 
     def initializeTasksTable(self):
@@ -278,16 +272,12 @@ class CompositeTask(Task):
         
         self.pullParameterBindingsFromDefinition()
       
-        logging.debug("%s validing parameters" % self)
         self.validateParameters()
 
-        logging.debug("%s preinitializing child tasks" % self)
         self.preInitializeChildTasks()
         
-        logging.debug("%s initializing child tasks" % self)
         self.initializeChildTasks()
 
-        logging.debug("%s starting next tasks" % self)
         self.startNextTasks()
         
         return True
@@ -319,13 +309,60 @@ class CompositeTask(Task):
         return
     
     
+
+    def isReadyToExecute(self, definitionForChildTask):
+
+        if self.isParameterSweepTasksHolder():
+            parentTask = self.parentTask()
+            return parentTask.isReadyToExecute(definitionForChildTask)
+
+        allPredecessors = set(definitionForChildTask.predecessors())
+        
+        # need to filter for the predecessors that have completed
+        predecessorFilter = FilterModule.constructOrFilter()
+        for predecessor in allPredecessors:
+            predecessorFilter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'definition',
+                    FilterModule.IdentityFilter(predecessor)
+                )
+            )
+            pass
+        
+        completedPredecessorFilter = FilterModule.constructAndFilter()
+        completedPredecessorFilter.addFilter(predecessorFilter)
+        completedPredecessorFilter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'status',
+                FilterModule.EquivalenceFilter('completed')
+            )
+        )
+        completedPredecessors = RelationalModule.Table.reduceRetrieve(
+            self.tasksTable(),
+            completedPredecessorFilter,
+            ['definition'],
+            []
+        )
+        
+        
+
+        # if every one of those predecessors
+        # can be found in tokens, and vice versa
+        readyToExecute = len(set(completedPredecessors).symmetric_difference(allPredecessors)) is 0
+
+    
+        return readyToExecute
+
+
+
     def enqueueTaskIfReady(self, definition):
 
         #if not isinstance(definition, DefinitionModule.ReferenceDefinition):
         #    print "skipping definition %s" % definition.name()
         #    return
 
-        if not definition.isReadyToExecute(self):
+        if not self.isReadyToExecute(definition):
+            logging.debug("definition %s is not ready to execute" % definition.name())
             return
 
         # retrieve all the tasks that have been initialized
@@ -377,6 +414,7 @@ class CompositeTask(Task):
             requests.append(request)
             pass
 
+
         # execute the command
         self.automaton().executeCommand(command)
 
@@ -384,7 +422,6 @@ class CompositeTask(Task):
         # TODO:
         # should instead at this time determine 
         # the actual threadpool to place the request
-        
         
         # enqueue the requests
         map(self.automaton().enqueueRequest, requests, 
@@ -522,6 +559,7 @@ class CompositeTask(Task):
         
         return
 
+
     def getTaskInformation(self, task):
         filter = self._getFilterForTask(task)
         
@@ -543,6 +581,7 @@ class CompositeTask(Task):
         # TODO: add this as a critical section
         self.completedChildTask = task
         if self.taskGenerator().canGenerateMoreTasks(self):
+
             self.taskGenerator().generateReadyTasks(self)
             self.startNextTasks()
         elif self.taskGenerator().allGeneratedTasksHaveExecuted(self):
@@ -637,17 +676,13 @@ class AtomicTask(Task):
         
         self.pullParameterBindingsFromDefinition()
         
-        logging.debug("%s validating parameters" % self)
         self.validateParameters()
                 
-        logging.debug("%s executing function" % self)
         functionToExecute = self.definition().functionToExecute()
         result = functionToExecute(self)
 
-        logging.debug("%s pushing data for parameters" % self)
         self.pushDataForParameters()
 
-        logging.debug("%s returning execution result" % self)
         return result
     
     
@@ -1072,6 +1107,7 @@ class NestTaskGenerator(TaskGenerator):
             definitionsForNextTasks.extend(parentTask.definitionsForNextTasks)
         
         for definitionForNextTask in definitionsForNextTasks:
+
             if not parentTask.hasInitializedChildTask(definitionForNextTask):
                 parentTask.initializeForChildDefinition(definitionForNextTask)
                 pass
@@ -1425,7 +1461,8 @@ class ParameterSweepTaskGenerator(TaskGenerator):
         if not parentTask.hasGeneratedTasks():
             definitionForTask = parentTask.definition()
             
-            # here we need to create new tasks that are not Parameter Sweep Tasks
+            # here we need to create new tasks 
+            # that are not Parameter Sweep Tasks
             # but use the same definition
             # we will need to bind the correct values to the parameters
             # CODE HERE
@@ -1462,8 +1499,11 @@ class ParameterSweepTaskGenerator(TaskGenerator):
                 pass
             
             parentTask.hasGeneratedTasks(True)
+            parentTask.isParameterSweepTasksHolder(True)
             pass
+
         return
+
             
     def pullDataForParametersOfChild(self, parentTask, childTask):
         """
