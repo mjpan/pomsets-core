@@ -198,7 +198,9 @@ class TestDefinition2(unittest.TestCase):
     def setUp(self):
 
         # load pomset from path
-        pomsetContext = ContextModule.loadPomset(path=TestDefinition2.TEST_DATA_PATH)
+        pomsetContext = ContextModule.loadPomset(
+            path=TestDefinition2.TEST_DATA_PATH)
+
         self.pomset = pomsetContext.pomset()
         return
 
@@ -279,6 +281,265 @@ class TestDefinition2(unittest.TestCase):
 
         return
 
-
     # END class TestDefinition2
     pass
+
+
+class TestParameterToEdit1(unittest.TestCase):
+
+    TEST_DATA_PATH = os.path.sep.join(['resources', 'testdata', 'TestDefinition', 'render.pomset'])
+
+    def setUp(self):
+
+        # load pomset from path
+        pomsetContext = ContextModule.loadPomset(
+            path=TestParameterToEdit1.TEST_DATA_PATH)
+
+        self.pomset = pomsetContext.pomset()
+        return
+
+
+    def testParameterToEdit1(self):
+
+        nodes = [x for x in self.pomset.nodes() 
+                 if x.name() == 'read tile index list']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        parameterId = 'eval result'
+        expectedParameterId = 'eval result'
+
+        # for an output parameter, itself
+        nodeToEdit, parameterToEdit = node.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is node)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+        return
+
+
+    def testParameterToEdit2(self):
+
+        nodes = [x for x in self.pomset.nodes() 
+                 if x.name() == 'read tile index list']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        parameterId = 'temporal input'
+        expectedParameterId = 'temporal input'
+
+        # for an output parameter, itself
+        nodeToEdit, parameterToEdit = node.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is node)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+        parameterId = 'temporal output'
+        expectedParameterId = 'temporal output'
+
+        # for an output parameter, itself
+        nodeToEdit, parameterToEdit = node.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is node)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+        return
+
+
+    def testParameterToEdit3(self):
+
+        # for blackboard parameter, itself
+
+        parameterId = 'blackboard for tile size'
+        expectedParameterId = 'blackboard for tile size'
+
+        parentDefinition = DefinitionModule.ReferenceDefinition()
+        parentDefinition.definitionToReference(self.pomset)
+
+        # for an output parameter, itself
+        nodeToEdit, parameterToEdit = \
+            parentDefinition.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is parentDefinition)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+
+        parameterId = '%s.%s-%s.%s' % ('read tile index list',
+                                       'eval result',
+                                       'render tile',
+                                       'tile index')
+        expectedParameterId = parameterId
+
+        nodeToEdit, parameterToEdit = \
+            parentDefinition.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is parentDefinition)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+        return
+
+
+    # END class TestParameterToEdit1
+    pass
+
+
+class TestParameterToEdit2(unittest.TestCase):
+
+    def testParameterToEdit1(self):
+
+        # for an unconnected input parameter, itself
+        
+        raise NotImplementedError(
+            'need to add a node that does not have a connected input parameter')
+
+
+    # END class TestParameterToEdit2
+    pass
+
+
+
+class TestParameterToEdit3(unittest.TestCase):
+
+
+    TEST_DATA_PATH = os.path.sep.join(['resources', 'testdata', 'TestDefinition', 'render.pomset'])
+
+    def setUp(self):
+
+        # load pomset from path
+        pomsetContext = ContextModule.loadPomset(
+            path=TestParameterToEdit3.TEST_DATA_PATH)
+
+        self.pomset = pomsetContext.pomset()
+        return
+
+
+    def testParameterToEdit1(self):
+        """
+        verify that exposed parameters return themselves
+        """
+
+        parameterId = 'tile size'
+        expectedParameterId = 'tile size'
+
+        parentDefinition = DefinitionModule.ReferenceDefinition()
+        parentDefinition.definitionToReference(self.pomset)
+
+        nodeToEdit, parameterToEdit = \
+            parentDefinition.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is parentDefinition)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+        
+
+        return
+
+
+    def testParameterToEdit2(self):
+        """
+        verify that a node's input parameter that's exposed
+        returns the parent definition
+        """
+
+        nodes = [x for x in self.pomset.nodes()
+                 if x.name() == 'render tile']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        parameterId = 'tile size'
+        expectedParameterId = 'tile size'
+
+        nodeToEdit, parameterToEdit = \
+            node.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is self.pomset)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+        raise NotImplementedError('need to test with a reference def to the root')
+
+
+    def testParameterToEdit3(self):
+        """
+        verify that a node's output file parameter that's exposed
+        returns the parent definition
+        """
+        nodes = [x for x in self.pomset.nodes()
+                 if x.name() == 'comp tiles']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        parameterId = 'output file'
+        expectedParameterId = 'output file'
+
+        nodeToEdit, parameterToEdit = \
+            node.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is self.pomset)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+        raise NotImplementedError('need to test with a reference def to the root')
+
+
+    def testParameterToEdit4(self):
+        """
+        verify that a node's output file parameter that's exposed
+        returns the parent definition
+        """
+        nodes = [x for x in self.pomset.nodes()
+                 if x.name() == 'comp tiles']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        parameterId = 'input dir'
+        expectedParameterId = 'tmp dir'
+
+        nodeToEdit, parameterToEdit = \
+            node.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is self.pomset)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+        parameterId = 'output file'
+        expectedParameterId = 'output file'
+
+        nodeToEdit, parameterToEdit = \
+            node.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is self.pomset)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+        raise NotImplementedError('need to test with a reference def to the root')
+
+
+    def testParameterToEdit5(self):
+        """
+        the output file connected to an input file
+        is the parameter to edit
+        """
+
+        nodes = [x for x in self.pomset.nodes()
+                 if x.name() == 'generate tile list']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        expectedNodes = [x for x in self.pomset.nodes()
+                 if x.name() == 'generate tiling info']
+        self.assertTrue(len(nodes) is 1)
+        expectedNode = expectedNodes[0]
+
+        parameterId = 'input file'
+        expectedParameterId = 'output file'
+
+        nodeToEdit, parameterToEdit = \
+            node.getParameterToEdit(parameterId)
+
+        self.assertTrue(nodeToEdit is expectedNode)
+        self.assertEquals(expectedParameterId, parameterToEdit.id())
+
+
+        return
+
+
+
+    # END class TestParameterToEdit3
+    pass
+

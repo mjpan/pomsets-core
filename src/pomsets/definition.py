@@ -745,14 +745,30 @@ class CompositeDefinition(GraphModule.Graph, Definition,
             pass
 
 
+
+        # TODO:
+        # consolidate the code in these two code paths
+        # TODO:
+        # pass the actual list of connections 
+        # for the parameter connection path
         if portDirection == ParameterModule.PORT_DIRECTION_INPUT:
             self._connectParameters(
                 self, parameterId,
                 node, nodeParameterId)
+            self.addParameterConnectionPath(
+                None,
+                self, parameterId,
+                node, nodeParameterId,
+                None, None)
         else:
             self._connectParameters(
                 node, nodeParameterId,
                 self, parameterId)
+            self.addParameterConnectionPath(
+                None,
+                node, nodeParameterId,
+                self, parameterId,
+                None, None)
 
         return
 
@@ -1319,7 +1335,19 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
                 FilterModule.EquivalenceFilter(parameterName)
                 )
             )
+        notGraphFilter = FilterModule.constructNotFilter()
+        notGraphFilter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'source node',
+                FilterModule.IdentityFilter(self.graph())
+                )
+            )
+        filter.addFilter(notGraphFilter)
         
+        # handle the case that this is referencing the root definition
+        if self.graph() is None:
+            return (self, parameter)
+
         sourceNode = None
         sourceParameterId = None
         for row in self.graph().parameterConnectionPathTable().retrieve(
@@ -1336,6 +1364,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
             # however, see if the parameter
             # is actually connected to a parameter
             # in the parent definition
+            # via a blackboard parameter
 
             logging.debug('no incoming blackboard parameters found')
             return (self, parameter)
@@ -1508,11 +1537,13 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         nodes = set([])
         for row in self.graph().parameterConnectionPathTable().retrieve(
             filter, ['source node']):
-            targetNode = row[0]
-            if targetNode in nodes:
+            sourceNode = row[0]
+            if sourceNode in nodes:
                 continue
-            nodes.add(targetNode)
-            yield targetNode
+            if sourceNode is self.graph():
+                continue
+            nodes.add(sourceNode)
+            yield sourceNode
         raise StopIteration
 
 
@@ -1531,11 +1562,13 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         nodes = set([])
         for row in self.graph().parameterConnectionPathTable().retrieve(
             filter, ['target node']):
-            sourceNode = row[0]
-            if sourceNode in nodes:
+            targetNode = row[0]
+            if targetNode in nodes:
                 continue
-            nodes.add(sourceNode)
-            yield sourceNode
+            if targetNode is self.graph():
+                continue
+            nodes.add(targetNode)
+            yield targetNode
         raise StopIteration
 
 
