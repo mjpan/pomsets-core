@@ -166,51 +166,38 @@ class Executable(ResourceModule.Struct):
 
 
 
-class PrintTaskCommand(ExecuteEnvironmentModule.Environment):
+class PrintTaskCommand(ExecuteEnvironmentModule.Environment, ResourceModule.Struct):
     
     DEFAULT_COMMANDBUILDER_TYPE = 'print task'
     
+    ATTRIBUTES = [
+        'outputStream',
+        'prefix',
+        'postfix'
+        ]
+
     def __init__(self):
+        ResourceModule.Struct.__init__(self)
         return
     
-    def outputStream(self, value=None):
-        if value is not None:
-            self._outputStream = value
-        if not hasattr(self, '_outputStream'):
-            self._outputStream = None
-        return self._outputStream
-
-    def prefix(self, value=None):
-        if value is not None:
-            self._prefix = value
-        if not hasattr(self, '_prefix'):
-            self._prefix = None
-        return self._prefix
-
-    def postfix(self, value=None):
-        if value is not None:
-            self._postfix = value
-        if not hasattr(self, '_postfix'):
-            self._postfix = None
-        return self._postfix
-
     def execute(self, task, *args, **kargs):
         
         commandBuilder = self.getCommandBuilder(task)
         
         command = commandBuilder.buildCommand(task)
 
-        if self.prefix():
-            self.outputStream().write(self.prefix())
-
-        self.outputStream().write(task.definition().name() + '\n')
         if self.outputStream():
+            if self.prefix():
+                self.outputStream().write(self.prefix())
+
+            self.outputStream().write(task.definition().name() + '\n')
             self.outputStream().write(' '.join(command))
 
-        if self.postfix():
-            self.outputStream().write(self.postfix())
+            if self.postfix():
+                self.outputStream().write(self.postfix())
         
         return 0
+
     
     # END class PrintTaskCommand
     pass

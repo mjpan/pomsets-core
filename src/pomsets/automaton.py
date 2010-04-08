@@ -159,9 +159,10 @@ class Automaton(ResourceModule.Struct):
     def enqueueRequest(self, request, shouldWait=True):
 
         # set the execute environment of the request
-        if self.executeEnvironmentMap() is not None:
+        if self.executeEnvironmentMap() is not None and \
+                not 'execute environment map' in request.kwds:
             request.kwds['execute environment map'] = self.executeEnvironmentMap()
-        
+
         threadpool = self.getThreadPoolUsingRequest(request)
 
         if threadpool.isEmpty():

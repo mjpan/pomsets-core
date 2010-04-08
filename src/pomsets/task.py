@@ -569,6 +569,7 @@ class CompositeTask(Task):
         row = rows[0]
         return row
     
+
     def childTaskHasCompleted(self, task):
         row = self.getTaskInformation(task)
         
@@ -579,10 +580,10 @@ class CompositeTask(Task):
         self.automaton().executeCommand(command)
 
         # TODO: add this as a critical section
-        self.completedChildTask = task
-        if self.taskGenerator().canGenerateMoreTasks(self):
+        #self.completedChildTask = task
+        if self.taskGenerator().canGenerateMoreTasks(self, completedChildTask=task):
 
-            self.taskGenerator().generateReadyTasks(self)
+            self.taskGenerator().generateReadyTasks(self, completedChildTask=task)
             self.startNextTasks()
         elif self.taskGenerator().allGeneratedTasksHaveExecuted(self):
             # a maximal node just completed
@@ -592,7 +593,7 @@ class CompositeTask(Task):
             pass
             
             pass
-        del self.completedChildTask
+        #del self.completedChildTask
         
         return
 
@@ -693,8 +694,16 @@ class AtomicTask(Task):
         """
         request = self.workRequest()
 
-        if request.kwds.get(
-            'worker thread configures execute environment', False):
+        definition = self.definition()
+        if isinstance(definition, DefinitionModule.ReferenceDefinition):
+            definition = definition.definitionToReference()
+
+        executeEnvironmentType = definition.executeEnvironmentType()
+        workerThreadConfiguresEnvironment = request.kwds.get(
+            'worker thread configures execute environment', False)
+
+        if executeEnvironmentType == 'shell process' and \
+                workerThreadConfiguresEnvironment:
 
             # the thread contains the shell
             # to the particular host
@@ -703,18 +712,21 @@ class AtomicTask(Task):
             if workerThread is None:
                 raise KeyError('need worker thread to configure environment')
 
+            print "using worker thread to configure environment %s for task %s" % (workerThread.executeEnvironment(), self.definition().name())
+
+
             request.kwds['execute environment'] = \
                 workerThread.executeEnvironment()
         else:
 
             executeEnvironmentMap = request.kwds['execute environment map']
-            definition = self.definition()
-            if isinstance(definition, DefinitionModule.ReferenceDefinition):
-                definition = definition.definitionToReference()
+
             key = definition.executeEnvironmentType()
             if key not in executeEnvironmentMap:
                 raise KeyError('no execute environment for type %s' % key)
             request.kwds['execute environment'] = executeEnvironmentMap[key]
+
+            print "set execute environment %s for task %s" % (executeEnvironmentMap[key], self.definition().name())
 
         return
 
@@ -1075,13 +1087,14 @@ class NestTaskGenerator(TaskGenerator):
         return createTaskForDefinition(parentTask, definition)
     
     
-    def canGenerateMoreTasks(self, parentTask):
+    def canGenerateMoreTasks(self, parentTask, completedChildTask=None):
         if not hasattr(parentTask, 'hasGeneratedMinimalTasks') or \
            not parentTask.hasGeneratedMinimalTasks:
             return True
         
-        if hasattr(parentTask, 'completedChildTask'):
-            completedDefinition = parentTask.completedChildTask.definition()
+        # if hasattr(parentTask, 'completedChildTask'):
+        if completedChildTask is not None:
+            completedDefinition = completedChildTask.definition()
             if len([x for x in completedDefinition.successors()]) is not 0:
                 return True
             
@@ -1091,15 +1104,16 @@ class NestTaskGenerator(TaskGenerator):
         return False
 
     
-    def generateReadyTasks(self, parentTask):
+    def generateReadyTasks(self, parentTask, completedChildTask=None):
 
         definitionsForNextTasks = []
         if not hasattr(parentTask, 'hasGeneratedMinimalTasks') or \
            not parentTask.hasGeneratedMinimalTasks:
             definitionsForNextTasks.extend(parentTask.definition().getMinimalNodes())
             parentTask.hasGeneratedMinimalTasks=True
-        elif hasattr(parentTask, 'completedChildTask'):
-            completedDefinition = parentTask.completedChildTask.definition()
+        # elif hasattr(parentTask, 'completedChildTask'):
+        elif completedChildTask is not None:
+            completedDefinition = completedChildTask.definition()
             definitionsForNextTasks.extend([x for x in completedDefinition.successors()])
             pass
             
@@ -1195,11 +1209,12 @@ class LoopTaskGenerator(TaskGenerator):
         self.loopIndex(0)
         return
     
-    def canGenerateMoreTasks(self, parentTask):
+    def canGenerateMoreTasks(self, parentTask, completedChildTask=None):
         
         # increment the state
         # if the previous task just completed
-        if hasattr(parentTask, 'completedChildTask') and \
+        # if hasattr(parentTask, 'completedChildTask') and \
+        if completedChildTask is not None and \
            not self.hasTransitionedState():
             # here we have to process the state transition
             stateTransitionFunction = eval(
@@ -1233,7 +1248,7 @@ class LoopTaskGenerator(TaskGenerator):
         return shouldContinue
 
     
-    def generateReadyTasks(self, parentTask):
+    def generateReadyTasks(self, parentTask, completedChildTask=None):
         
         # the initial state does not satisfy the continue condition
         if not self.canGenerateMoreTasks(parentTask):
@@ -1331,7 +1346,7 @@ class BranchTaskGenerator(TaskGenerator):
         return createTaskForDefinition(parentTask, definition)
 
     
-    def canGenerateMoreTasks(self, parentTask):
+    def canGenerateMoreTasks(self, parentTask, completedChildTask=None):
         """
         a branch is only executed once
         """
@@ -1339,9 +1354,10 @@ class BranchTaskGenerator(TaskGenerator):
             return True
         return False
 
-    def generateReadyTasks(self, parentTask):
+    def generateReadyTasks(self, parentTask, completedChildTask=None):
         
-        if not self.canGenerateMoreTasks(parentTask):
+        if not self.canGenerateMoreTasks(
+            parentTask, completedChildTask=completedChildTask):
             return
         
         conditionFunction = eval(parentTask.getParameterBinding(
@@ -1448,13 +1464,13 @@ class ParameterSweepTaskGenerator(TaskGenerator):
         self.taskTable(table)
         return    
     
-    def canGenerateMoreTasks(self, parentTask):
+    def canGenerateMoreTasks(self, parentTask, completedChildTask=None):
         if not parentTask.hasGeneratedTasks():
             return True
         return False
     
     
-    def generateReadyTasks(self, parentTask):
+    def generateReadyTasks(self, parentTask, completedChildTask=None):
 
         definitionsForNextTasks = []
         
