@@ -156,8 +156,7 @@ class Builder(object):
             executeEnvironmentType = 'shell process'
         newAtomicPomset.executeEnvironmentType(executeEnvironmentType)
 
-        newPomsetContext = ContextModule.Context()
-        newPomsetContext.pomset(newAtomicPomset)
+        newPomsetContext = ContextModule.wrapPomsetInContext(newAtomicPomset)
         
         return newPomsetContext
 
@@ -178,8 +177,7 @@ class Builder(object):
             name = 'pomset %s' % uuid.uuid4().hex[:3]
         newPomset.name(name)
         
-        newPomsetContext = ContextModule.Context()
-        newPomsetContext.pomset(newPomset)
+        newPomsetContext = ContextModule.wrapPomsetInContext(newPomset)
         
         return newPomsetContext
 

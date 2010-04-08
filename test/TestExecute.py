@@ -155,7 +155,11 @@ class BaseTestClass(object):
         self.assertPreExecute()
 
         definition = self.createDefinition()
-        task = self.createTask(definition)
+
+        reference = DefinitionModule.ReferenceDefinition()
+        reference.definitionToReference(definition)
+
+        task = self.createTask(reference)
         request = self.executeTask(task)
 
         self.request = request
@@ -172,7 +176,7 @@ class BaseTestClass(object):
         definition = self.createDefinition()
 
         definition = GeneratePomsetsModule.pickleAndReloadDefinition(
-            self.getPicklePath(),
+            '.'.join([self.getPicklePath(), 'pomset']),
             definition
         )
 
@@ -198,7 +202,9 @@ class TestCase1(BaseTestClass, unittest.TestCase):
 
     def createTask(self, definition):
         task = TaskModule.AtomicTask()
+
         task.definition(definition)
+
         task.setParameterBinding('item to echo', ['foo'])
         return task
 
@@ -220,6 +226,7 @@ class TestCase2(BaseTestClass, unittest.TestCase):
         return definition
 
     def createTask(self, definition):
+
         task = TaskModule.AtomicTask()
         task.definition(definition)
         task.setParameterBinding('item to echo', ['"echoed testExecuteAtomicFunction2"'])
@@ -257,6 +264,7 @@ class TestCase4(BaseTestClass, unittest.TestCase):
         return compositeDefinition
 
     def createTask(self, definition):
+
         compositeTask = TaskModule.CompositeTask()
         compositeTask.definition(definition)
         taskGenerator = TaskModule.NestTaskGenerator()
@@ -303,6 +311,7 @@ class TestCase8(BaseTestClass, unittest.TestCase):
         return compositeDefinition
 
     def createTask(self, definition):
+
         compositeTask = TaskModule.CompositeTask()
         compositeTask.definition(definition)
         taskGenerator = TaskModule.NestTaskGenerator()

@@ -74,7 +74,7 @@ def main(args):
 
     pomsetPath = args[1]
     pomsetContext = ContextModule.loadPomset(pomsetPath)
-    pomset = pomsetContext.pomset()
+    pomset = pomsetContext.reference()
 
     automaton = AutomatonModule.Automaton()
     automaton.setThreadPool(None, CloudModule.Pool(1))

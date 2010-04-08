@@ -305,58 +305,14 @@ class Automaton(ResourceModule.Struct):
 
         definition = library.getBootstrapLoader()
 
-        """
-        import pomsets.task as TaskModule
+        import pomsets.definition as DefinitionModule
+        reference = DefinitionModule.ReferenceDefinition()
+        reference.definitionToReference(definition)
 
-        task = TaskModule.CompositeTask()
-        task.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        task.taskGenerator(taskGenerator)
-
-        successCallback = self.getPostExecuteCallbackFor(task)
-        errorCallback = self.getErrorCallbackFor(task)
-        executeTaskFunction = self.getExecuteTaskFunction(task)
-        """
-
-        """
-        commandBuilder = LibraryModule.CommandBuilder()
-        commandBuilderMap = {
-            'library bootstrap loader':commandBuilder,
-            'python eval':commandBuilder
-            }
-
-        executeEnvironmentMap = {
-            'library bootstrap loader':LibraryModule.LibraryLoader(library)
-            }
-        requestContext = {
-            'task':task,
-            'command builder map':commandBuilderMap,
-            'execute environment map':executeEnvironmentMap
-        }
-        """
         requestContext = self.generateRequestContext()
         self.addValuesToRequestContextForBootstrapLoader(requestContext, library=library)
 
-        """
-        request = ThreadpoolModule.WorkRequest(
-            executeTaskFunction,
-            args = [],
-            kwds = requestContext,
-            callback = successCallback,
-            exc_callback = errorCallback
-        )
-        threadPool = self.getThreadPoolUsingRequest(request)
-        request.kwds['thread pool'] = threadPool
-
-        task.workRequest(request)
-
-        task.automaton(self)
-
-        self.enqueueRequest(request, shouldWait=True)
-
-        return request
-        """
-        task = self.executePomset(pomset=definition, 
+        task = self.executePomset(pomset=reference, 
                                   requestKwds=requestContext,
                                   shouldWait=True)
         return task.workRequest()

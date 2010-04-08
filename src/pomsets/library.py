@@ -296,9 +296,9 @@ class Library(ResourceModule.Struct):
                 'loadLibraryDefinitions.pomset')
 
         pomset = self.generateBootstrapLoaderPomset()
-        
-        ContextModule.pickleDefinition(outputPath, pomset)
+        pomsetContext = ContextModule.wrapPomsetInContext(pomset)
 
+        ContextModule.savePomsetAs(pomsetContext, outputPath)
         return
 
     

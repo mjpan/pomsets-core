@@ -26,16 +26,16 @@ def pickleAndReloadDefinition(path, definition):
     filesToDelete = []
     try:
 
-        ContextModule.pickleDefinition(path, definition)
+        pomsetContext = ContextModule.wrapPomsetInContext(definition)
+        ContextModule.savePomsetAs(pomsetContext, path)
 
         filesToDelete.append(path)
 
         pomsetContext = ContextModule.loadPomset(path)
-        definition = pomsetContext.pomset()
-
+        definition = pomsetContext.reference()
     except Exception, e:
         logging.error("errored with msg >> %s" % e)
-        pass
+        raise
     finally:
         for fileToDelete in filesToDelete:
             if os.path.exists(fileToDelete):

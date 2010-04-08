@@ -181,10 +181,10 @@ class TestBootstrapLoaderPomset(BaseTestClass):
             os.sep.join(['', 'tmp', 'foo.pomset']),
             compositeDefinition
         )
-        library.updateWithLibraryDefinitions(definition)
+        library.updateWithLibraryDefinitions(definition.definitionToReference())
         
         definitionToReference = library.getDefinition(filter)
-        assert definition.nodes()[0].definitionToReference() is definitionToReference
+        self.assertTrue(definition.definitionToReference().nodes()[0].definitionToReference() is definitionToReference)
         
         return
 

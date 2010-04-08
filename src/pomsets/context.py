@@ -26,15 +26,15 @@ def savePomset(context):
     return
 
 
-def savePomsetAs(context, path, extension='.pomset'):
-
-    pomset = context.pomset()
+def savePomsetAs(context, path, extension='pomset'):
 
     if not path.endswith(extension):
         path = '.'.join([path, extension])
 
     try:
-        pickleDefinition(path, pomset)
+        # pomset = context.pomset()
+        reference = context.reference()
+        pickleDefinition(path, reference)
 
         # saved, so no longer modified
         context.isModified(False)
@@ -53,23 +53,44 @@ def savePomsetAs(context, path, extension='.pomset'):
 # the value passed in should be a full URL
 def loadPomset(path=None):
 
+    reference = None
     pomset = None
+
+    loadedObject = None
     with open(path, 'r') as f:
-        pomset = pickle.load(f)
+        loadedObject = pickle.load(f)
         pass
 
-    if pomset is None:
+    if loadedObject is None:
         # TODO: should send a failed command event
         raise IOError("failed to load pomset from %s" % path)
 
-    pomsetContext = Context()
-    pomsetContext.pomset(pomset)
-
-    pomsetContext.isModified(False)
+    pomsetContext = wrapPomsetInContext(loadedObject)
 
     # TODO:
     # the value passed in should be a full URL
     pomsetContext.url(path)
+
+    return pomsetContext
+
+
+
+def wrapPomsetInContext(pomset):
+
+    import pomsets.definition as DefinitionModule
+
+    reference = None
+    if isinstance(pomset, DefinitionModule.ReferenceDefinition):
+        reference = pomset
+        pomset = reference.definitionToReference()
+    if reference is None:
+        reference = DefinitionModule.ReferenceDefinition()
+        reference.definitionToReference(pomset)
+
+    pomsetContext = Context()
+    pomsetContext.pomset(pomset)
+    pomsetContext.reference(reference)
+    pomsetContext.isModified(False)
 
     return pomsetContext
 
@@ -79,6 +100,7 @@ class Context(ResourceModule.Struct):
     ATTRIBUTES = [
         'isModified',
         'pomset',
+        'reference',
         'url'
         ]
 

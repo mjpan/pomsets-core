@@ -35,7 +35,7 @@ class TestCase1(BaseModule.TestCase1):
             }
 
     def assertPostExecute(self):
-        expected = """echo
+        expected = """_anonymous
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
@@ -60,7 +60,7 @@ class TestCase2(BaseModule.TestCase2):
             }
 
     def assertPostExecute(self):
-        expected = """echo
+        expected = """_anonymous
 /bin/echo "echoed testExecuteAtomicFunction2"
 """
         actual = self.env.outputStream().getvalue()

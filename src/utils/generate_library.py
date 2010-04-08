@@ -64,8 +64,7 @@ def generateDefaultLoader(outputDir):
     defToLoadDef = generateBootstrapper()
     ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
-    context = ContextModule.Context()
-    context.pomset(defToLoadDef)
+    context = ContextModule.wrapPomsetInContext(defToLoadDef)
     definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
@@ -73,8 +72,7 @@ def generateDefaultLoader(outputDir):
     wcDefinition.url(wcDefinitionPath)
     ContextModule.pickleDefinition(
         os.path.join(outputDir, wcDefinitionPath), wcDefinition)
-    context = ContextModule.Context()
-    context.pomset(wcDefinition)
+    context = ContextModule.wrapPomsetInContext(wcDefinition)
     definitionsToLoad.append(context)
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
@@ -82,8 +80,7 @@ def generateDefaultLoader(outputDir):
     wcrDefinition.url(wcrDefinitionPath)
     ContextModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
-    context = ContextModule.Context()
-    context.pomset(wcrDefinition)
+    context = ContextModule.wrapPomsetInContext(wcrDefinition)
     definitionsToLoad.append(context)
 
 
@@ -93,8 +90,7 @@ def generateDefaultLoader(outputDir):
     loadValuesDefinition.url(loadValuesDefinitionPath)
     ContextModule.pickleDefinition(
         os.path.join(outputDir, loadValuesDefinitionPath), loadValuesDefinition)
-    context = ContextModule.Context()
-    context.pomset(loadValuesDefinition)
+    context = ContextModule.wrapPomsetInContext(loadValuesDefinition)
     definitionsToLoad.append(context)
 
     library = LibraryModule.Library()
@@ -114,8 +110,7 @@ def generateLoaderWithFailure1(outputDir):
     defToLoadDef = generateBootstrapper()
     ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
-    context = ContextModule.Context()
-    context.pomset(defToLoadDef)
+    context = ContextModule.wrapPomsetInContext(defToLoadDef)
     definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
@@ -123,8 +118,7 @@ def generateLoaderWithFailure1(outputDir):
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
     # to ensure that the loading fails
-    context = ContextModule.Context()
-    context.pomset(wcDefinition)
+    context = ContextModule.wrapPomsetInContext(wcDefinition)
     definitionsToLoad.append(context)
     
     library = LibraryModule.Library()
@@ -145,8 +139,7 @@ def generateLoaderWithFailure2(outputDir):
     defToLoadDef = generateBootstrapper()
     ContextModule.pickleDefinition(
         os.path.join(outputDir, 'loadLibraryDefinition.pomset'), defToLoadDef)
-    context = ContextModule.Context()
-    context.pomset(defToLoadDef)
+    context = ContextModule.wrapPomsetInContext(defToLoadDef)
     definitionsToLoad.append(context)
     
     wcDefinition = DefinitionTestModule.createWordCountDefinition()
@@ -154,8 +147,7 @@ def generateLoaderWithFailure2(outputDir):
     wcDefinition.url(wcDefinitionPath)
     # we purposely do not pickle it
     # to ensure that the loading fails
-    context = ContextModule.Context()
-    context.pomset(wcDefinition)
+    context = ContextModule.wrapPomsetInContext(wcDefinition)
     definitionsToLoad.append(context)
     
     wcrDefinition = DefinitionTestModule.createWordCountReduceDefinition()
@@ -163,8 +155,7 @@ def generateLoaderWithFailure2(outputDir):
     wcrDefinition.url(wcrDefinitionPath)
     ContextModule.pickleDefinition(
         os.path.join(outputDir, wcrDefinitionPath), wcrDefinition)
-    context = ContextModule.Context()
-    context.pomset(wcrDefinition)
+    context = ContextModule.wrapPomsetInContext(wcrDefinition)
     definitionsToLoad.append(context)
     
     library = LibraryModule.Library()
