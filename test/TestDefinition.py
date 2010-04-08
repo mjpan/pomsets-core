@@ -281,6 +281,28 @@ class TestDefinition2(unittest.TestCase):
 
         return
 
+    def testGetMinimalNodes(self):
+
+        minimalNodes = self.pomset.getMinimalNodes()
+        self.assertTrue(len(minimalNodes) is 1)
+
+        self.assertEquals(['generate tiling info'],
+                          [x.name() for x in minimalNodes])
+
+        return
+
+
+    def testGetMaximalNodes(self):
+        
+        maximalNodes = self.pomset.getMaximalNodes()
+        self.assertTrue(len(maximalNodes) is 1)
+        
+        self.assertEquals(['comp tiles'],
+                          [x.name() for x in maximalNodes])
+
+        return
+
+
     # END class TestDefinition2
     pass
 

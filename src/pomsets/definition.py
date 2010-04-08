@@ -885,12 +885,15 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         
     
     def getMinimalNodes(self):
-        #theNotSelfFilter = self._getNotSelfParameterConnectionFilter()
-        #edges = [x for x in theNotSelfFilter.wrap(self.edges())]
-        #targetNodes = set([x.targetNode() for x in edges])
         allNodes = set(self.nodes())
 
-        filter = FilterModule.TRUE_FILTER
+        notSelfFilter = FilterModule.constructNotFilter()
+        notSelfFilter.addFilter(
+            FilterModule.IdentityFilter(self)
+            )
+        filter = RelationalModule.ColumnValueFilter(
+            'source node',
+            notSelfFilter)
         targetNodes = set(RelationalModule.Table.reduceRetrieve(
             self.parameterConnectionPathTable(),
             filter,
@@ -899,12 +902,15 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         return allNodes.difference(targetNodes)
 
     def getMaximalNodes(self):
-        #theNotSelfFilter = self._getNotSelfParameterConnectionFilter()
-        #edges = [x for x in theNotSelfFilter.wrap(self.edges())]
-        #sourceNodes = set([x.sourceNode() for x in edges])
         allNodes = set(self.nodes())
 
-        filter = FilterModule.TRUE_FILTER
+        notSelfFilter = FilterModule.constructNotFilter()
+        notSelfFilter.addFilter(
+            FilterModule.IdentityFilter(self)
+            )
+        filter = RelationalModule.ColumnValueFilter(
+            'target node',
+            notSelfFilter)
         sourceNodes = set(RelationalModule.Table.reduceRetrieve(
             self.parameterConnectionPathTable(),
             filter,
