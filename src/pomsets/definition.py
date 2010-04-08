@@ -736,12 +736,6 @@ class CompositeDefinition(GraphModule.Graph, Definition,
                 self._connectParameters(
                     self, blackboardParameterId,
                     self, parameterId)
-
-
-            parameterId = blackboardParameterId
-            pass
-        else:
-            parameterId = blackboardParameterId
             pass
 
 
@@ -753,7 +747,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         # for the parameter connection path
         if portDirection == ParameterModule.PORT_DIRECTION_INPUT:
             self._connectParameters(
-                self, parameterId,
+                self, blackboardParameterId,
                 node, nodeParameterId)
             self.addParameterConnectionPath(
                 None,
@@ -763,7 +757,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         else:
             self._connectParameters(
                 node, nodeParameterId,
-                self, parameterId)
+                self, blackboardParameterId)
             self.addParameterConnectionPath(
                 None,
                 node, nodeParameterId,
@@ -1335,6 +1329,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
                 FilterModule.EquivalenceFilter(parameterName)
                 )
             )
+        """
         notGraphFilter = FilterModule.constructNotFilter()
         notGraphFilter.addFilter(
             RelationalModule.ColumnValueFilter(
@@ -1343,6 +1338,7 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
                 )
             )
         filter.addFilter(notGraphFilter)
+        """
         
         # handle the case that this is referencing the root definition
         if self.graph() is None:

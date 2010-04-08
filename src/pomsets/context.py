@@ -115,6 +115,14 @@ class Context(ResourceModule.Struct):
         # and actually handle pomset nests
 
         return [self.pomset()]
-    
+
+    def getParameterToEdit(self, definition, parameterName):
+        nodeToEdit, parameterToEdit = \
+            definition.getParameterToEdit(parameterName)
+        if nodeToEdit is self.pomset():
+            nodeToEdit = self.reference()
+
+        return (nodeToEdit, parameterToEdit)
+
     # END class Context
     pass

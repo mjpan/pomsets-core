@@ -410,6 +410,7 @@ class TestParameterToEdit3(unittest.TestCase):
             path=TestParameterToEdit3.TEST_DATA_PATH)
 
         self.pomset = pomsetContext.pomset()
+        self.pomsetContext = pomsetContext
         return
 
 
@@ -449,12 +450,12 @@ class TestParameterToEdit3(unittest.TestCase):
         expectedParameterId = 'tile size'
 
         nodeToEdit, parameterToEdit = \
-            node.getParameterToEdit(parameterId)
+            self.pomsetContext.getParameterToEdit(node, parameterId)
 
-        self.assertTrue(nodeToEdit is self.pomset)
+        self.assertTrue(nodeToEdit is self.pomsetContext.reference())
         self.assertEquals(expectedParameterId, parameterToEdit.id())
 
-        raise NotImplementedError('need to test with a reference def to the root')
+        return
 
 
     def testParameterToEdit3(self):
@@ -471,12 +472,12 @@ class TestParameterToEdit3(unittest.TestCase):
         expectedParameterId = 'output file'
 
         nodeToEdit, parameterToEdit = \
-            node.getParameterToEdit(parameterId)
+            self.pomsetContext.getParameterToEdit(node, parameterId)
 
-        self.assertTrue(nodeToEdit is self.pomset)
+        self.assertTrue(nodeToEdit is self.pomsetContext.reference())
         self.assertEquals(expectedParameterId, parameterToEdit.id())
 
-        raise NotImplementedError('need to test with a reference def to the root')
+        return
 
 
     def testParameterToEdit4(self):
@@ -493,21 +494,21 @@ class TestParameterToEdit3(unittest.TestCase):
         expectedParameterId = 'tmp dir'
 
         nodeToEdit, parameterToEdit = \
-            node.getParameterToEdit(parameterId)
+            self.pomsetContext.getParameterToEdit(node, parameterId)
 
-        self.assertTrue(nodeToEdit is self.pomset)
+        self.assertTrue(nodeToEdit is self.pomsetContext.reference())
         self.assertEquals(expectedParameterId, parameterToEdit.id())
 
         parameterId = 'output file'
         expectedParameterId = 'output file'
 
         nodeToEdit, parameterToEdit = \
-            node.getParameterToEdit(parameterId)
+            self.pomsetContext.getParameterToEdit(node, parameterId)
 
-        self.assertTrue(nodeToEdit is self.pomset)
+        self.assertTrue(nodeToEdit is self.pomsetContext.reference())
         self.assertEquals(expectedParameterId, parameterToEdit.id())
 
-        raise NotImplementedError('need to test with a reference def to the root')
+        return
 
 
     def testParameterToEdit5(self):
