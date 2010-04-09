@@ -260,6 +260,9 @@ class CompositeTask(Task):
     
     def do(self):
 
+        if self.parentTask() is not None:
+            self.parentTask().childTaskIsRunning(self)
+
         # create tasks for each of the minimal nodes in the graph
         # add those tasks to the queue
         # each of the requests being added to the queue
@@ -365,6 +368,9 @@ class CompositeTask(Task):
             logging.debug("definition %s is not ready to execute" % definition.name())
             return
 
+
+        logging.debug("checking if status of task for definition %s is \"initialized\"" % definition.name())
+
         # retrieve all the tasks that have been initialized
         filter = FilterModule.constructAndFilter()
         filter.addFilter(self._getFilterForDefinition(definition))
@@ -407,7 +413,7 @@ class CompositeTask(Task):
 
             command.addCommand(
                 RelationalCommandModule.SetColumnValueCommand(
-                    row, 'status', 'started'
+                    row, 'status', 'queued'
                 )
             )
 
@@ -417,6 +423,8 @@ class CompositeTask(Task):
 
         # execute the command
         self.automaton().executeCommand(command)
+
+        logging.debug("status of %s tasks for definition %s should now be \"queued\"" % (len(rows), definition.name()))
 
 
         # TODO:
@@ -570,6 +578,16 @@ class CompositeTask(Task):
         return row
     
 
+    def childTaskIsRunning(self, task):
+        row = self.getTaskInformation(task)
+        
+        command = RelationalCommandModule.SetColumnValueCommand(
+            row, 'status', 'running'
+        )
+        
+        self.automaton().executeCommand(command)
+        return
+
     def childTaskHasCompleted(self, task):
         row = self.getTaskInformation(task)
         
@@ -670,6 +688,9 @@ class AtomicTask(Task):
     
     
     def do(self):
+
+        if self.parentTask() is not None:
+            self.parentTask().childTaskIsRunning(self)
 
         self.configureExecuteEnvironment()
         
@@ -1111,7 +1132,6 @@ class NestTaskGenerator(TaskGenerator):
            not parentTask.hasGeneratedMinimalTasks:
             definitionsForNextTasks.extend(parentTask.definition().getMinimalNodes())
             parentTask.hasGeneratedMinimalTasks=True
-        # elif hasattr(parentTask, 'completedChildTask'):
         elif completedChildTask is not None:
             completedDefinition = completedChildTask.definition()
             definitionsForNextTasks.extend([x for x in completedDefinition.successors()])
