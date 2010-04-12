@@ -507,8 +507,7 @@ class CompositeDefinition(GraphModule.Graph, Definition,
 
         # the target parameter cannot be an input
         # nor an output file
-        if not targetParameter.portDirection() == ParameterModule.PORT_DIRECTION_INPUT or \
-                targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
+        if not targetParameter.portDirection() == ParameterModule.PORT_DIRECTION_INPUT:
             logging.debug("parameter %s is not an input" % targetParameterId)
             return False
         
@@ -518,6 +517,12 @@ class CompositeDefinition(GraphModule.Graph, Definition,
             logging.debug("parameter %s is not an output" % sourceParameterId)
             return False
 
+
+        # we cannot connect output file to output file
+        if sourceParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT) and \
+                targetParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT):
+            logging.debug("cannot connect output file to output file")
+            return False
 
         # cannot connect if a path already exists
         filter = self.constructParameterConnectionFilter(

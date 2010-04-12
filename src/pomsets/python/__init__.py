@@ -16,6 +16,7 @@ class Function(CommandModule.Executable):
 
     def __init__(self):
         CommandModule.Executable.__init__(self)
+        self.path(['',''])
         return
 
     def name(self):

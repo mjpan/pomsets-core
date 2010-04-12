@@ -360,14 +360,9 @@ class CompositeTask(Task):
 
     def enqueueTaskIfReady(self, definition):
 
-        #if not isinstance(definition, DefinitionModule.ReferenceDefinition):
-        #    print "skipping definition %s" % definition.name()
-        #    return
-
         if not self.isReadyToExecute(definition):
             logging.debug("definition %s is not ready to execute" % definition.name())
             return
-
 
         logging.debug("checking if status of task for definition %s is \"initialized\"" % definition.name())
 
@@ -733,9 +728,6 @@ class AtomicTask(Task):
             if workerThread is None:
                 raise KeyError('need worker thread to configure environment')
 
-            print "using worker thread to configure environment %s for task %s" % (workerThread.executeEnvironment(), self.definition().name())
-
-
             request.kwds['execute environment'] = \
                 workerThread.executeEnvironment()
         else:
@@ -746,8 +738,6 @@ class AtomicTask(Task):
             if key not in executeEnvironmentMap:
                 raise KeyError('no execute environment for type %s' % key)
             request.kwds['execute environment'] = executeEnvironmentMap[key]
-
-            print "set execute environment %s for task %s" % (executeEnvironmentMap[key], self.definition().name())
 
         return
 
