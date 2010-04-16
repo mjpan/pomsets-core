@@ -1510,7 +1510,17 @@ class ParameterSweepTaskGenerator(TaskGenerator):
                 processedGroups.add(group)
                 numTasksToCreate *= numParameters
                 pass
-            
+
+            # This is a bit complicated
+            # so we need to keep track of which index we are in the each ps group
+            # so that we can retrieve the value from the same index in each ps group
+            # but we also need to keep track of where we are in the total tasks
+            # so that we can increment indices in the ps group accordingly
+            # so that when one group rolls over, another gets incremented
+            parameterSweepGroupIndices = [0 for x in processedGroups]
+            indexToGroupMap = dict(enumerate(processedGroups))
+            groupToIndexMap = dict([(y, x) for x, y in enumerate(processedGroups)])
+
             for index in range(numTasksToCreate):
                 parentTask.initializeForChildDefinition(definitionForTask)
                 row = self.taskTable().addRow()
@@ -1519,9 +1529,22 @@ class ParameterSweepTaskGenerator(TaskGenerator):
                 row.setColumn('task', None)
                 parameterBindings = copy.copy(parentTask.parameterBindings())
                 for parameterSweepId, modulus in parameterSweepIdMap.iteritems():
+                    group = definitionForTask.getGroupForParameterSweep(parameterSweepId)
                     parameterBindings[parameterSweepId] = \
-                        [parameterBindings[parameterSweepId][index%modulus]]
+                        [parameterBindings[parameterSweepId][parameterSweepGroupIndices[groupToIndexMap[group]]]]
+                    pass
                 row.setColumn('parameter bindings', parameterBindings)
+
+                psGroupIndex = len(parameterSweepGroupIndices) - 1
+                while True:
+                    parameterSweepGroupIndices[psGroupIndex] = (parameterSweepGroupIndices[psGroupIndex] + 1) % parameterSweepIdMap[indexToGroupMap[psGroupIndex][0]]
+                    if not parameterSweepGroupIndices[psGroupIndex] == 0:
+                        break
+                    psGroupIndex = psGroupIndex - 1
+                    if psGroupIndex < 0:
+                        break
+                    pass
+
                 pass
             
             parentTask.hasGeneratedTasks(True)

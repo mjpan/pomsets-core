@@ -10,6 +10,10 @@ import currypy
 
 import pypatterns.filter as FilterModule
 
+import pomsets.definition as DefinitionModule
+import pomsets.parameter as ParameterModule
+import pomsets.task as TaskModule
+
 import TestExecute as BaseModule
 
 
@@ -262,29 +266,86 @@ class TestParameterSweep4(BaseModule.TestParameterSweep4):
 
 
 
-def main():
-    sys.path.insert(0, '../src')
+class TestParameterSweep5(BaseModule.TestParameterSweep4):
+    """
+    This is the same as TestParameterSweep4 
+    with the exception that the mapper's parameter sweep parameters
+    are not in the same parameter sweep group
+    """
 
-    import utils
-    utils.configLogging()
 
-    suite = unittest.TestSuite()
+    def createDefinition(self):
+    
+        compositeDefinition = DefinitionModule.getNewNestDefinition()
 
-    suite.addTest(unittest.makeSuite(TestCase1, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase2, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase4, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase8, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase9, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase10, 'test'))
-    suite.addTest(unittest.makeSuite(TestParameterSweep1, 'test'))
-    suite.addTest(unittest.makeSuite(TestParameterSweep2, 'test'))
-    suite.addTest(unittest.makeSuite(TestParameterSweep3, 'test'))
-    suite.addTest(unittest.makeSuite(TestParameterSweep4, 'test'))
+        # setup the reference definition for parameter sweep
+        mapperNode = compositeDefinition.createNode(id='mapper')
+        mapperNode.definitionToReference(BaseModule.DEFINITION_WORDCOUNT)
+        mapperNode.isParameterSweep('input file', True)
+        mapperNode.isParameterSweep('output file', True)
+        mapperNode.name('mapper')
 
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
-    return
+        reducerNode = compositeDefinition.createNode(id='reducer')
+        reducerNode.definitionToReference(BaseModule.DEFINITION_WORDCOUNT_REDUCE)
+        reducerNode.name('reducer')
 
-if __name__=="__main__":
-    main()
+        inputParameter = \
+            ParameterModule.DataParameter(
+                id='input file', 
+                portDirection=ParameterModule.PORT_DIRECTION_INPUT)
+        inputParameter.setAttribute(
+            ParameterModule.PORT_ATTRIBUTE_PARAMETERSWEEP, True)
+        compositeDefinition.addParameter(inputParameter)
+        compositeDefinition._connectParameters(
+            compositeDefinition, 'input file',
+            mapperNode, 'input file'
+        )
+        
+        outputParameter = \
+            ParameterModule.DataParameter(
+                id='output file', 
+                portDirection=ParameterModule.PORT_DIRECTION_INPUT)
+        compositeDefinition.addParameter(outputParameter)
+        compositeDefinition._connectParameters(
+            compositeDefinition, 'output file',
+            reducerNode, 'output file'
+        )
+        
+        blackboardParameter = \
+            ParameterModule.BlackboardParameter('intermediate file')
+        compositeDefinition.addParameter(blackboardParameter)
+        compositeDefinition._connectParameters(
+            compositeDefinition, 'intermediate file',
+            mapperNode, 'output file'
+        )
+
+        edge = compositeDefinition.connectNodes(
+            mapperNode, 'output file',
+            reducerNode, 'input files',
+        )
+        self.intermediateParameterId = edge.path()[3]
+
+        return compositeDefinition
+
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+    def assertPostExecute(self):
+        expected = """mapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count1\nmapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count1\nmapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text1 /tmp/count2\nmapper\n%s/resources/testdata/TestExecute/wordcount.py %s/resources/testdata/TestExecute/text2 /tmp/count2\nreducer\n%s/resources/testdata/TestExecute/wordcount_reduce.py -input /tmp/count1 /tmp/count2 -output /tmp/count_reduce
+"""  % tuple([os.getcwd()]*9)
+
+        actual = self.env.outputStream().getvalue()
+        self.assertEquals(expected, actual)
+        return
+
+    
+    # END class TestParameterSweep5
+    pass
+
+
+
 
