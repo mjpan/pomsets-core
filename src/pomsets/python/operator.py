@@ -20,3 +20,7 @@ def loadListValuesFromFiles(filePaths):
         pass
 
     return values
+
+
+def stringReplace(fullString, originalSubstring, newSubstring, *args):
+    return fullString.replace(originalSubstring, newSubstring, *args)

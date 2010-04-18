@@ -113,6 +113,53 @@ def createMakeDirsDefinition():
     return definition
 
 
+def createStringReplaceDefinition():
+
+    builder = BuilderModule.Builder()
+    path = ('pomsets.python.operator', 'stringReplace')
+    executableObject = builder.createExecutableObject(
+        path,
+        executableClass=PythonModule.Function)
+
+    pythonEvalContext = builder.createNewAtomicPomset(
+        name='string replace',
+        executableObject = executableObject,
+        commandBuilderType = 'python eval',
+        executeEnvironmentType = 'python eval')
+    
+    definition= pythonEvalContext.pomset()
+    builder.addPomsetParameter(
+        definition, 'eval result',
+        {'direction':ParameterModule.PORT_DIRECTION_OUTPUT,
+         'commandline':False})
+    builder.addPomsetParameter(
+        definition, 'string to modify',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT,
+         'optional':False})
+    builder.addPomsetParameter(
+        definition, 'original substring',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT,
+         'optional':False})
+    builder.addPomsetParameter(
+        definition, 'new substring',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT,
+         'optional':False})
+    builder.addPomsetParameter(
+        definition, 'count',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT,
+         'optional':True,
+         'default value':1})
+
+    builder.addParameterOrdering(definition, 'string to modify', 'original substring')
+    builder.addParameterOrdering(definition, 'original substring', 'new substring')
+    builder.addParameterOrdering(definition, 'new substring', 'count')
+
+    definition.id(DefinitionLibraryModule.ID_STRINGREPLACE)
+    definition.isLibraryDefinition(True)
+
+    return definition
+
+
 
 def createRangeDefinition():
 

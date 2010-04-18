@@ -738,10 +738,12 @@ class TestMakeDirs1(BaseModule.BaseTestClass, unittest.TestCase):
 
 
     def assertPreExecute(self):
+        BaseModule.BaseTestClass.assertPreExecute(self)
         self.assertFalse(os.path.exists(TestMakeDirs1.PATH_TO_CREATE))
         return
 
     def assertPostExecute(self):
+        BaseModule.BaseTestClass.assertPostExecute(self)
         self.assertTrue(os.path.exists(TestMakeDirs1.PATH_TO_CREATE))
         return 
 
@@ -778,12 +780,103 @@ class TestMakeDirs2(TestMakeDirs1):
         return
 
     def assertPreExecute(self):
+        BaseModule.BaseTestClass.assertPreExecute(self)
         self.assertFalse(os.path.exists(TestMakeDirs2.PATH_PARENT))
         return
 
     def assertPostExecute(self):
+        BaseModule.BaseTestClass.assertPostExecute(self)
         self.assertTrue(os.path.exists(TestMakeDirs2.PATH_TO_CREATE))
         return 
 
     # END TestMakeDirs2
+    pass
+
+
+
+class TestStringReplace1(BaseModule.BaseTestClass, unittest.TestCase):
+
+    PATH_TO_CREATE = os.path.sep.join(['', 'tmp', 'TestMakeDirs1'])
+
+    def setUp(self):
+        BaseModule.BaseTestClass.setUp(self)
+        self.builder = BuilderModule.Builder()
+        return
+
+    def getPythonEvalDefinition(self):
+        pythonEvalDefinition = \
+            TestUtilsModule.createStringReplaceDefinition()
+        return pythonEvalDefinition
+
+
+    def createDefinition(self):
+        pythonEvalDefinition = self.getPythonEvalDefinition()
+
+        parentContext = self.builder.createNewNestPomset(name='root')
+        parentDefinition = parentContext.pomset()
+        
+        self.definition = self.builder.createNewNode(
+            parentDefinition, name='node', 
+            definitionToReference=pythonEvalDefinition)
+
+        self.bindParameterValues()
+
+        return parentDefinition
+
+
+    def bindParameterValues(self):
+        self.builder.bindParameterValue(
+            self.definition,
+            'string to modify', 'this is a test')
+        self.builder.bindParameterValue(
+            self.definition,
+            'original substring', ' is a ')
+        self.builder.bindParameterValue(
+            self.definition,
+            'new substring', ' is a successful ')
+        return
+
+
+    def createCommandBuilderMap(self):
+        commandBuilderMap = BaseModule.BaseTestClass.createCommandBuilderMap(self)
+        commandBuilderMap['python eval'] = PythonModule.CommandBuilder()
+        return commandBuilderMap
+
+
+    def createExecuteEnvironmentMap(self):
+        return {
+            'python eval':PythonModule.PythonEval()
+            }
+
+
+    def createTask(self, definition):
+
+        parentTask = TaskModule.CompositeTask()
+        parentTask.definition(definition)
+        taskGenerator = TaskModule.NestTaskGenerator()
+        parentTask.taskGenerator(taskGenerator)
+
+        self.parentTask = parentTask
+
+        return parentTask
+
+
+    def getPicklePath(self):
+        return os.path.sep + \
+            os.path.join('tmp', 'TestOperator.%s.testExecute2' % self.__class__.__name__)
+
+
+    def assertPostExecute(self):
+        BaseModule.BaseTestClass.assertPostExecute(self)
+
+        childTasks = self.parentTask.getChildTasks()
+        childTask = childTasks[0]
+
+        values = childTask.getParameterBinding('eval result')
+
+        self.assertEquals('this is a successful test', values)
+        return 
+
+
+    # END class TestMakeDirs1
     pass
