@@ -50,7 +50,7 @@ def createCommandBuilderMap():
     return commandBuilderMap
     
 
-def createExecuteEnvironment():
+def createExecuteEnvironmentMap():
     return {
         'shell process':ShellModule.LocalShell()
         }

@@ -75,6 +75,45 @@ def createLoadListValuesFromFilesDefinition():
 
     return definition
 
+
+def createMakeDirsDefinition():
+
+    builder = BuilderModule.Builder()
+    path = ('os', 'makedirs')
+    executableObject = builder.createExecutableObject(
+        path,
+        executableClass=PythonModule.Function)
+
+    pythonEvalContext = builder.createNewAtomicPomset(
+        name='os.makedirs',
+        executableObject = executableObject,
+        commandBuilderType = 'python eval',
+        executeEnvironmentType = 'python eval')
+    
+    definition= pythonEvalContext.pomset()
+    builder.addPomsetParameter(
+        definition, 'eval result',
+        {'direction':ParameterModule.PORT_DIRECTION_OUTPUT,
+         'commandline':False})
+    builder.addPomsetParameter(
+        definition, 'path',
+        {'direction':ParameterModule.PORT_DIRECTION_OUTPUT,
+         'optional':False})
+    builder.addPomsetParameter(
+        definition, 'mode',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT,
+         'optional':True,
+         'default value':0777})
+
+    builder.addParameterOrdering(definition, 'path', 'mode')
+
+    definition.id(DefinitionLibraryModule.ID_OSMAKEDIRS)
+    definition.isLibraryDefinition(True)
+
+    return definition
+
+
+
 def createRangeDefinition():
 
     builder = BuilderModule.Builder()
@@ -110,7 +149,7 @@ def createRangeDefinition():
     builder.addParameterOrdering(definition, 'start', 'end')
     builder.addParameterOrdering(definition, 'end', 'step')
 
-    definition.id(DefinitionLibraryModule.ID_LOADLISTVALUESFROMFILES)
+    definition.id(DefinitionLibraryModule.ID_RANGENUMBERS)
     definition.isLibraryDefinition(True)
 
     return definition

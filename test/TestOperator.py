@@ -657,3 +657,133 @@ class TestRange4(TestRange1):
     # END class TestRange4
     pass
 
+
+
+class TestMakeDirs1(BaseModule.BaseTestClass, unittest.TestCase):
+
+    PATH_TO_CREATE = os.path.sep.join(['', 'tmp', 'TestMakeDirs1'])
+
+    def setUp(self):
+        BaseModule.BaseTestClass.setUp(self)
+        self.builder = BuilderModule.Builder()
+
+        if os.path.exists(TestMakeDirs1.PATH_TO_CREATE):
+            import shutil
+            shutil.rmtree(TestMakeDirs1.PATH_TO_CREATE)
+        return
+
+    def tearDown(self):
+        if os.path.exists(TestMakeDirs1.PATH_TO_CREATE):
+            import shutil
+            shutil.rmtree(TestMakeDirs1.PATH_TO_CREATE)
+        return
+
+    def getPythonEvalDefinition(self):
+        pythonEvalDefinition = \
+            TestUtilsModule.createMakeDirsDefinition()
+        return pythonEvalDefinition
+
+
+    def createDefinition(self):
+        pythonEvalDefinition = self.getPythonEvalDefinition()
+
+        parentContext = self.builder.createNewNestPomset(name='root')
+        parentDefinition = parentContext.pomset()
+        
+
+        self.definition = self.builder.createNewNode(
+            parentDefinition, name='node', 
+            definitionToReference=pythonEvalDefinition)
+
+        self.bindParameterValues()
+
+        return parentDefinition
+
+
+    def bindParameterValues(self):
+        self.builder.bindParameterValue(
+            self.definition,
+            'path', TestMakeDirs1.PATH_TO_CREATE)
+
+        return
+
+
+    def createCommandBuilderMap(self):
+        commandBuilderMap = BaseModule.BaseTestClass.createCommandBuilderMap(self)
+        commandBuilderMap['python eval'] = PythonModule.CommandBuilder()
+        return commandBuilderMap
+
+
+    def createExecuteEnvironmentMap(self):
+        return {
+            'python eval':PythonModule.PythonEval()
+            }
+
+
+    def createTask(self, definition):
+
+        parentTask = TaskModule.CompositeTask()
+        parentTask.definition(definition)
+        taskGenerator = TaskModule.NestTaskGenerator()
+        parentTask.taskGenerator(taskGenerator)
+
+        self.parentTask = parentTask
+
+        return parentTask
+
+
+    def getPicklePath(self):
+        return os.path.sep + \
+            os.path.join('tmp', 'TestOperator.%s.testExecute2' % self.__class__.__name__)
+
+
+    def assertPreExecute(self):
+        self.assertFalse(os.path.exists(TestMakeDirs1.PATH_TO_CREATE))
+        return
+
+    def assertPostExecute(self):
+        self.assertTrue(os.path.exists(TestMakeDirs1.PATH_TO_CREATE))
+        return 
+
+
+    # END class TestMakeDirs1
+    pass
+
+
+class TestMakeDirs2(TestMakeDirs1):
+
+    PATH_PARENT = os.path.sep.join(['', 'tmp', 'TestMakeDirs2'])
+    PATH_TO_CREATE = os.path.sep.join([PATH_PARENT, 'level2'])
+
+    def setUp(self):
+        BaseModule.BaseTestClass.setUp(self)
+        self.builder = BuilderModule.Builder()
+
+        if os.path.exists(TestMakeDirs2.PATH_PARENT):
+            import shutil
+            shutil.rmtree(TestMakeDirs2.PATH_PARENT)
+        return
+
+    def tearDown(self):
+        if os.path.exists(TestMakeDirs2.PATH_PARENT):
+            import shutil
+            shutil.rmtree(TestMakeDirs2.PATH_PARENT)
+        return
+
+    def bindParameterValues(self):
+        self.builder.bindParameterValue(
+            self.definition,
+            'path', TestMakeDirs2.PATH_TO_CREATE)
+
+        return
+
+    def assertPreExecute(self):
+        self.assertFalse(os.path.exists(TestMakeDirs2.PATH_PARENT))
+        return
+
+    def assertPostExecute(self):
+        self.assertTrue(os.path.exists(TestMakeDirs2.PATH_TO_CREATE))
+        return 
+
+    # END TestMakeDirs2
+    pass

@@ -20,6 +20,8 @@ ID_LOADLIBRARYDEFINITION = 'load library definition::bb028375-bbd5-43ec-b6c3-495
 ID_BOOTSTRAPLOADER = 'library bootstrap loader::751fe366-1448-4db3-9db4-944075de7a5b'
 
 ID_LOADLISTVALUESFROMFILES = 'load list values from files_fc6175d6-c18b-4403-9b79-bd2b0b0012ff'
+ID_RANGENUMBERS = 'range numbers_79fb1a45-c9b9-4708-9493-81a64d00d3e7'
+ID_OSMAKEDIRS = 'os.makedirs_8036683f-33ce-4607-a2c8-b6b6fdeb97dc'
 
 
 def getBootstrapLoaderPomsetsFilter():
