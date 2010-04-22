@@ -247,9 +247,7 @@ class Automaton(ResourceModule.Struct):
         return request
 
 
-    def executePomset(self, task=None, pomset=None, requestKwds=None,
-                      shouldWait=True):
-
+    def initializeTaskObjectForExecution(self, pomset, task=None):
         # create a new task
         # we assume that the pomset is a composite definition
         import pomsets.task as TaskModule
@@ -263,6 +261,13 @@ class Automaton(ResourceModule.Struct):
         task.taskGenerator(taskGenerator)
 
         task.automaton(self)
+        return task
+
+
+    def executePomset(self, task=None, pomset=None, requestKwds=None,
+                      shouldWait=True):
+
+        task = self.initializeTaskObjectForExecution(pomset, task=task)
         
         # generate the request
         request = self.generateRequest(task=task,

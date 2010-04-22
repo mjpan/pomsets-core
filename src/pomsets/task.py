@@ -166,7 +166,10 @@ class CompositeTask(Task):
         'tasksTable',
         'allChildTasksHaveCompleted',
         'hasGeneratedTasks',
-        'isParameterSweepTasksHolder'
+        'isParameterSweepTasksHolder',
+        'executionIsPaused',
+        'shouldLimitChildrenConcurrency',
+        'childrenConcurrencyLimit'
     ]
     
     def __init__(self):
@@ -175,6 +178,13 @@ class CompositeTask(Task):
         self.allChildTasksHaveCompleted(False)
         self.initializeTasksTable()
         self.isParameterSweepTasksHolder(False)
+
+        # default to not limiting children concurrency
+        # but once the flag is switched
+        # default to only one
+        self.shouldLimitChildrenConcurrency(False)
+        self.childrenConcurrencyLimit(1)
+
         return
 
     def initializeTasksTable(self):
@@ -347,8 +357,6 @@ class CompositeTask(Task):
             []
         )
         
-        
-
         # if every one of those predecessors
         # can be found in tokens, and vice versa
         readyToExecute = len(set(completedPredecessors).symmetric_difference(allPredecessors)) is 0
@@ -540,7 +548,7 @@ class CompositeTask(Task):
             return True
         return False
     
-        
+
     def initializeForChildDefinition(self, definition):
         command = CommandModule.CompositeCommand()
 
@@ -811,6 +819,8 @@ class AtomicTask(Task):
         for parameter in self.definition().getParametersByFilter(filter):
             values = self.getParameterBinding(parameter.id())
             for value in values:
+                logging.debug("staging parameter %s file %s" % (parameter.id(),
+                                                                value))
                 shell.stageFile(file=value, task=self, parameter=parameter)
             pass
             
@@ -1117,6 +1127,9 @@ class NestTaskGenerator(TaskGenerator):
     
     def generateReadyTasks(self, parentTask, completedChildTask=None):
 
+        if parentTask.executionIsPaused():
+            return
+
         definitionsForNextTasks = []
         if not hasattr(parentTask, 'hasGeneratedMinimalTasks') or \
            not parentTask.hasGeneratedMinimalTasks:
@@ -1260,6 +1273,9 @@ class LoopTaskGenerator(TaskGenerator):
     
     def generateReadyTasks(self, parentTask, completedChildTask=None):
         
+        if parentTask.executionIsPaused():
+            return
+
         # the initial state does not satisfy the continue condition
         if not self.canGenerateMoreTasks(parentTask):
             return
@@ -1366,6 +1382,9 @@ class BranchTaskGenerator(TaskGenerator):
 
     def generateReadyTasks(self, parentTask, completedChildTask=None):
         
+        if parentTask.executionIsPaused():
+            return
+
         if not self.canGenerateMoreTasks(
             parentTask, completedChildTask=completedChildTask):
             return
@@ -1482,6 +1501,9 @@ class ParameterSweepTaskGenerator(TaskGenerator):
     
     def generateReadyTasks(self, parentTask, completedChildTask=None):
 
+        if parentTask.executionIsPaused():
+            return
+
         definitionsForNextTasks = []
         
         if not parentTask.hasGeneratedTasks():
@@ -1491,8 +1513,6 @@ class ParameterSweepTaskGenerator(TaskGenerator):
             # that are not Parameter Sweep Tasks
             # but use the same definition
             # we will need to bind the correct values to the parameters
-            # CODE HERE
-            # for definitionForNextTask in definitionsForNextTasks:
 
             # TODO: handle chunking
             # first, we need to determine how many tasks to create

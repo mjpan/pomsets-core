@@ -112,15 +112,15 @@ class PythonEval(EnvironmentModule.Environment):
 
         command = commandBuilder.buildCommand(task)
 
-        request.kwds['executed command'] = command
-        
-        logging.debug('%s executing command "%s"' % (self.__class__, command))
 
         # evalResult = eval(command)
         moduleName = task.definition().executable().module()
         if moduleName is not None:
             module = PythonEval.importModule(moduleName)
             command = '.'.join(['module', command])
+
+        request.kwds['executed command'] = [command]
+        logging.debug('%s executing command "%s"' % (self.__class__, command))
 
         evalResult = eval(command)
 

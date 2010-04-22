@@ -22,5 +22,12 @@ def loadListValuesFromFiles(filePaths):
     return values
 
 
-def stringReplace(fullString, originalSubstring, newSubstring, *args):
-    return fullString.replace(originalSubstring, newSubstring, *args)
+def stringReplace(strings, originalSubstring, newSubstring, *args):
+    if type(strings) is str:
+        strings = [strings]
+    values = []
+    for fullString in strings:
+        values.append(
+            fullString.replace(originalSubstring, newSubstring, *args))
+        pass
+    return values

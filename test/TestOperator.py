@@ -827,7 +827,7 @@ class TestStringReplace1(BaseModule.BaseTestClass, unittest.TestCase):
     def bindParameterValues(self):
         self.builder.bindParameterValue(
             self.definition,
-            'string to modify', 'this is a test')
+            'string to modify', ['this is a test'])
         self.builder.bindParameterValue(
             self.definition,
             'original substring', ' is a ')
@@ -874,7 +874,7 @@ class TestStringReplace1(BaseModule.BaseTestClass, unittest.TestCase):
 
         values = childTask.getParameterBinding('eval result')
 
-        self.assertEquals('this is a successful test', values)
+        self.assertEquals(['this is a successful test'], values)
         return 
 
 
