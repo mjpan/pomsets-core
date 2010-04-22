@@ -578,7 +578,14 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         # remove any blackboard parameters
         for connections, additionalParameterIds in self.parameterConnectionPathTable().retrieve(filter=filter, columns=['path', 'additional parameters']):
 
-            map(self.removeParameterConnection, list(connections))
+            if connections is None:
+                # we reach here if the connection path
+                # is actually exposing the node parameter
+                # to the parent pomset
+                pass
+            else:
+                map(self.removeParameterConnection, list(connections))
+
             parameters = [self.getParameter(x) 
                           for x in additionalParameterIds]
             map(self.removeParameter, parameters)
