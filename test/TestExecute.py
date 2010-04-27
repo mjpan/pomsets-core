@@ -174,13 +174,15 @@ class BaseTestClass(object):
         self.assertPreExecute()
 
         definition = self.createDefinition()
+        reference = DefinitionModule.ReferenceDefinition()
+        reference.definitionToReference(definition)
 
-        definition = GeneratePomsetsModule.pickleAndReloadDefinition(
+        reference = GeneratePomsetsModule.pickleAndReloadDefinition(
             '.'.join([self.getPicklePath(), 'pomset']),
-            definition
+            reference
         )
 
-        task = self.createTask(definition)
+        task = self.createTask(reference)
         request = self.executeTask(task)
         self.request = request
 
@@ -420,10 +422,151 @@ class TestCase10(BaseTestClass, unittest.TestCase):
     def getPicklePath(self):
         return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase10.testExecute2')
 
-    # END class TestCase
+    # END class TestCase10
+    pass
+
+
+class TestCase11(TestCase1):
+    """
+    execute of atomic function
+    """
+
+    def getNumWorkersToInstantiate(self):
+        return 0
+
+    
+    def executeTask(self, task, 
+                    executeEnvironmentMap=None):
+
+        automaton = self.automaton
+        successCallback = automaton.getPostExecuteCallbackFor(task)
+        errorCallback = automaton.getErrorCallbackFor(task)
+        executeTaskFunction = automaton.getExecuteTaskFunction(task)
+        
+        requestContext = self.getRequestContext(
+            task=task, executeEnvironmentMap=executeEnvironmentMap
+        )
+        request = threadpool.WorkRequest(
+            executeTaskFunction,
+            args = [],
+            kwds = requestContext,
+            callback = successCallback,
+            exc_callback = errorCallback
+        )
+
+        try:
+            automaton.enqueueRequest(request)
+            assert False
+        except ErrorModule.ExecutionError, e:
+            self.assertEquals('need to start thread before execution',
+                              str(e))
+
+        return request
+
+
+
+    # END TestCase11
+    pass
+
+
+class TestCase12(BaseTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        atomicDefinition = DEFINITION_ECHO
+        nestDefinition = DefinitionModule.getNewNestDefinition()
+        parameter = ParameterModule.DataParameter(
+            id='item to echo', 
+            portDirection=ParameterModule.PORT_DIRECTION_INPUT)
+        nestDefinition.addParameter(parameter)
+        
+        node = nestDefinition.createNode(id='node')
+        node.definitionToReference(atomicDefinition)
+        node.name('echo')
+
+        nestDefinition._connectParameters(
+            nestDefinition, 'item to echo',
+            node, 'item to echo'
+        )
+
+        compositeDefinition = DefinitionModule.getNewNestDefinition()
+        node = compositeDefinition.createNode(id='nest')
+        node.definitionToReference(nestDefinition)
+
+        node.setParameterBinding('item to echo', ['foo'])
+
+        return compositeDefinition
+
+
+    def createTask(self, definition):
+
+        compositeTask = TaskModule.CompositeTask()
+        compositeTask.definition(definition)
+        taskGenerator = TaskModule.NestTaskGenerator()
+        compositeTask.taskGenerator(taskGenerator)
+
+        return compositeTask
+
+
+    def getPicklePath(self):
+        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase12.testExecute2')
+
+    # END class TestCase12
+    pass
+
+
+class TestCase13(BaseTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        atomicDefinition = DEFINITION_ECHO
+        nestDefinition = DefinitionModule.getNewNestDefinition()
+        parameter = ParameterModule.DataParameter(
+            id='item to echo', 
+            portDirection=ParameterModule.PORT_DIRECTION_INPUT)
+        nestDefinition.addParameter(parameter)
+        
+        node = nestDefinition.createNode(id='node')
+        node.definitionToReference(atomicDefinition)
+        node.name('echo')
+
+        nestDefinition._connectParameters(
+            nestDefinition, 'item to echo',
+            node, 'item to echo'
+        )
+
+        compositeDefinition = DefinitionModule.getNewNestDefinition()
+        parameter = ParameterModule.DataParameter(
+            id='item to echo', 
+            portDirection=ParameterModule.PORT_DIRECTION_INPUT)
+        compositeDefinition.addParameter(parameter)
+
+        node = compositeDefinition.createNode(id='nest')
+        node.definitionToReference(nestDefinition)
+
+        compositeDefinition._connectParameters(
+            compositeDefinition, 'item to echo',
+            node, 'item to echo'
+        )
+
+        return compositeDefinition
+
+
+    def createTask(self, definition):
+
+        compositeTask = TaskModule.CompositeTask()
+        compositeTask.definition(definition)
+        taskGenerator = TaskModule.NestTaskGenerator()
+        compositeTask.taskGenerator(taskGenerator)
+        compositeTask.setParameterBinding('item to echo', ['foo'])
+
+        return compositeTask
+
+
+    def getPicklePath(self):
+        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase12.testExecute2')
+
+    # END class TestCase13
     pass
     
-
 
 class TestParameterSweep1(BaseTestClass, unittest.TestCase):
     
@@ -1130,47 +1273,6 @@ class TestBranch1(BaseTestClass, unittest.TestCase):
     pass
 
 
-class TestCase11(TestCase1):
-    """
-    execute of atomic function
-    """
-
-    def getNumWorkersToInstantiate(self):
-        return 0
-
-    
-    def executeTask(self, task, 
-                    executeEnvironmentMap=None):
-
-        automaton = self.automaton
-        successCallback = automaton.getPostExecuteCallbackFor(task)
-        errorCallback = automaton.getErrorCallbackFor(task)
-        executeTaskFunction = automaton.getExecuteTaskFunction(task)
-        
-        requestContext = self.getRequestContext(
-            task=task, executeEnvironmentMap=executeEnvironmentMap
-        )
-        request = threadpool.WorkRequest(
-            executeTaskFunction,
-            args = [],
-            kwds = requestContext,
-            callback = successCallback,
-            exc_callback = errorCallback
-        )
-
-        try:
-            automaton.enqueueRequest(request)
-            assert False
-        except ErrorModule.ExecutionError, e:
-            self.assertEquals('need to start thread before execution',
-                              str(e))
-
-        return request
-
-
-
-    # END TestCase11
-    pass
 
 
 
@@ -1196,6 +1298,7 @@ def main():
     runner = unittest.TextTestRunner()
     runner.run(suite)
     return
+
 
 if __name__=="__main__":
     main()

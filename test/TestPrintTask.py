@@ -175,6 +175,55 @@ class TestCase10(BaseModule.TestCase10):
     pass
 
 
+class TestCase12(BaseModule.TestCase12):
+    """
+    execute of composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expected = """echo
+/bin/echo foo
+"""
+        actual = self.env.outputStream().getvalue()
+        assert expected == actual, \
+               'expected "%s", got "%s"' % (expected, actual)
+        return
+    
+    # END class TestCase12
+    pass
+
+
+class TestCase13(BaseModule.TestCase13):
+    """
+    execute of composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expected = """echo
+/bin/echo foo
+"""
+        actual = self.env.outputStream().getvalue()
+        assert expected == actual, \
+               'expected "%s", got "%s"' % (expected, actual)
+        return
+    
+    # END class TestCase13
+    pass
+
 
 class TestParameterSweep1(BaseModule.TestParameterSweep1):
 
@@ -345,7 +394,6 @@ class TestParameterSweep5(BaseModule.TestParameterSweep4):
     
     # END class TestParameterSweep5
     pass
-
 
 
 
