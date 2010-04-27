@@ -86,6 +86,7 @@ def wrapPomsetInContext(pomset):
     if reference is None:
         reference = DefinitionModule.ReferenceDefinition()
         reference.definitionToReference(pomset)
+        reference.name(pomset.name())
 
     pomsetContext = Context()
     pomsetContext.pomset(pomset)
