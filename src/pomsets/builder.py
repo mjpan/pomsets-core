@@ -223,7 +223,8 @@ class Builder(object):
 
         # TODO:
         # see if it's possible to not have to run this line
-        node.executable = definitionToReference.executable
+        if definitionToReference.isAtomic():
+            node.executable = definitionToReference.executable
 
         return node
 
