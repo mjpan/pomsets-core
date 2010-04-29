@@ -728,10 +728,12 @@ class CompositeDefinition(GraphModule.Graph, Definition,
                 portDirection=portDirection)
             parameter.name(parameterId)
             self.parameterIsActive(True)
+
+            parameterAttributes = copy.copy(nodeParameter.attributes())
+            parameterAttributes['commandline'] = False
             ParameterModule.setAttributes(
                 parameter,
-                { 'commandline':False,
-                  ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT:parameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT)} 
+                parameterAttributes
                 )
             self.addParameter(parameter)
 
