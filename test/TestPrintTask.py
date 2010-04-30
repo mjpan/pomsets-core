@@ -43,8 +43,7 @@ class TestCase1(BaseModule.TestCase1):
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
         return
     
     
@@ -68,8 +67,7 @@ class TestCase2(BaseModule.TestCase2):
 /bin/echo "echoed testExecuteAtomicFunction2"
 """
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
         return
     
     # END class TestCase2
@@ -94,8 +92,7 @@ class TestCase4(BaseModule.TestCase4):
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
         return
 
     # END class TestCase4
@@ -124,8 +121,7 @@ echo 2
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
         return
     
     # END class TestCase8
@@ -152,8 +148,7 @@ echo 2
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
         return
     
     # END class TestCase9
@@ -192,8 +187,7 @@ class TestCase12(BaseModule.TestCase12):
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
         return
     
     # END class TestCase12
@@ -217,12 +211,270 @@ class TestCase13(BaseModule.TestCase13):
 /bin/echo foo
 """
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
         return
     
     # END class TestCase13
     pass
+
+
+class TestNest1(BaseModule.TestNest1):
+    """
+    execute of nest in composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expected = """atomic node 1
+/bin/echo foo 1
+atomic node 2
+/bin/echo foo 2
+"""
+        actual = self.env.outputStream().getvalue()
+        self.assertEquals(expected, actual)
+        return
+    
+    # END class TestNest1
+    pass
+
+
+class TestNest2(BaseModule.TestNest2):
+    """
+    execute of nest in composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expected = """atomic node 1
+/bin/echo foo 1
+atomic node 3
+/bin/echo foo 3
+atomic node 2
+/bin/echo foo 2
+"""
+        actual = self.env.outputStream().getvalue()
+        self.assertEquals(expected, actual)
+        return
+    
+    # END class TestNest2
+    pass
+
+
+class TestNest3(BaseModule.TestNest3):
+    """
+    execute of nest in composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expecteds = [
+"""atomic node 1
+/bin/echo foo 1
+atomic node 3
+/bin/echo foo 3
+atomic node 2
+/bin/echo foo 2
+""",
+"""atomic node 3
+/bin/echo foo 3
+atomic node 1
+/bin/echo foo 1
+atomic node 2
+/bin/echo foo 2
+"""
+]
+        actual = self.env.outputStream().getvalue()
+        self.assertTrue(actual in expecteds)
+        return
+    
+    # END class TestNest3
+    pass
+
+
+class TestNest4(BaseModule.TestNest4):
+    """
+    execute of nest in composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expecteds = [
+"""atomic node 1
+/bin/echo foo 1
+atomic node 3
+/bin/echo foo 3
+atomic node 2
+/bin/echo foo 2
+""",
+"""atomic node 1
+/bin/echo foo 1
+atomic node 2
+/bin/echo foo 2
+atomic node 3
+/bin/echo foo 3
+"""
+]
+        actual = self.env.outputStream().getvalue()
+        self.assertTrue(actual in expecteds)
+        return
+    
+    # END class TestNest4
+    pass
+
+
+class TestNest5(BaseModule.TestNest5):
+    """
+    execute of nest in composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expected = """atomic node 1
+/bin/echo foo 1
+atomic node 3
+/bin/echo foo 3
+atomic node 2
+/bin/echo foo 2
+"""
+        actual = self.env.outputStream().getvalue()
+        self.assertEquals(expected, actual)
+        return
+    
+    # END class TestNest5
+    pass
+
+
+class TestNest6(BaseModule.TestNest6):
+    """
+    execute of nest in composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expected = """atomic node 1
+/bin/echo foo 1
+atomic node 2
+/bin/echo foo 2
+atomic node 3
+/bin/echo foo 3
+"""
+        actual = self.env.outputStream().getvalue()
+        self.assertEquals(expected, actual)
+        return
+    
+    # END class TestNest6
+    pass
+
+
+class TestNest7(BaseModule.TestNest7):
+    """
+    execute of nest in composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expecteds = [
+"""atomic node 1
+/bin/echo foo 1
+atomic node 2
+/bin/echo foo 2
+atomic node 3
+/bin/echo foo 3
+""",
+"""atomic node 2
+/bin/echo foo 2
+atomic node 1
+/bin/echo foo 1
+atomic node 3
+/bin/echo foo 3
+"""
+]
+        actual = self.env.outputStream().getvalue()
+        self.assertTrue(actual in expecteds)
+        return
+    
+    # END class TestNest7
+    pass
+
+
+class TestNest8(BaseModule.TestNest8):
+    """
+    execute of nest in composite function
+    """
+
+    def createExecuteEnvironmentMap(self):
+        self.env = createExecuteEnvironment()
+        return {
+            'shell process':self.env
+            }
+
+
+    def assertPostExecute(self):
+        expecteds = [
+"""atomic node 3
+/bin/echo foo 3
+atomic node 1
+/bin/echo foo 1
+atomic node 2
+/bin/echo foo 2
+""",
+"""atomic node 3
+/bin/echo foo 3
+atomic node 2
+/bin/echo foo 2
+atomic node 1
+/bin/echo foo 1
+"""
+]
+        actual = self.env.outputStream().getvalue()
+        self.assertTrue(actual in expecteds)
+        return
+    
+    # END class TestNest8
+    pass
+
 
 
 class TestParameterSweep1(BaseModule.TestParameterSweep1):
@@ -235,13 +487,12 @@ class TestParameterSweep1(BaseModule.TestParameterSweep1):
 
     def assertPostExecute(self):
         expected = """echo
-/bin/echo "echoed testExecuteParameterSweep1 : 1"
+/bin/echo "echoed TestParameterSweep1 : 1"
 echo
-/bin/echo "echoed testExecuteParameterSweep1 : 2"
+/bin/echo "echoed TestParameterSweep1 : 2"
 """
         actual = self.env.outputStream().getvalue()
-        assert expected == actual, \
-               'expected "%s", got "%s"' % (expected, actual)
+        self.assertEquals(expected, actual)
         return
     
     

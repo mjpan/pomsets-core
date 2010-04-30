@@ -137,9 +137,9 @@ class TestHadoop1(TestHadoopBase, unittest.TestCase):
         definition = GeneratePomsetsModule.createHadoopWordcountDefinition()
         return definition
     
-    def getPicklePath(self):
-        return os.path.sep + \
-               os.path.join('tmp', 'TestExecute.TestHadoop1.testExecute2')
+    #def getPicklePath(self):
+    #    return os.path.sep + \
+    #           os.path.join('tmp', 'TestExecute.TestHadoop1.testExecute2')
     
     def assertPostExecute(self):
         BaseModule.BaseTestClass.assertPostExecute(self)
@@ -203,9 +203,9 @@ class TestHadoopStreaming1(TestHadoopBase, unittest.TestCase):
         definition = GeneratePomsetsModule.createHadoopStreamingDefinition()
         return definition
     
-    def getPicklePath(self):
-        return os.path.sep + \
-               os.path.join('tmp', 'TestExecute.TestHadoopStreaming1.testExecute2')
+    #def getPicklePath(self):
+    #    return os.path.sep + \
+    #           os.path.join('tmp', 'TestExecute.TestHadoopStreaming1.testExecute2')
     
     def assertPostExecute(self):
         BaseModule.BaseTestClass.assertPostExecute(self)

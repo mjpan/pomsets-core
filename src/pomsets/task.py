@@ -601,20 +601,17 @@ class CompositeTask(Task):
         self.automaton().executeCommand(command)
 
         # TODO: add this as a critical section
-        #self.completedChildTask = task
+
+        # need to check if all have completed
+        # if so, then mark as completed
+        # otherwise generate more tasks
         if self.taskGenerator().canGenerateMoreTasks(self, completedChildTask=task):
 
             self.taskGenerator().generateReadyTasks(self, completedChildTask=task)
             self.startNextTasks()
         elif self.taskGenerator().allGeneratedTasksHaveExecuted(self):
-            # a maximal node just completed
-            # need to check if all have completed
-            # if so, then mark as completed
             self.postProcessForAllChildTasksHaveCompleted()
             pass
-            
-            pass
-        #del self.completedChildTask
         
         return
 
@@ -1142,13 +1139,28 @@ class NestTaskGenerator(TaskGenerator):
             
         if hasattr(parentTask, 'definitionsForNextTasks'):
             definitionsForNextTasks.extend(parentTask.definitionsForNextTasks)
-        
-        for definitionForNextTask in definitionsForNextTasks:
 
-            if not parentTask.hasInitializedChildTask(definitionForNextTask):
-                parentTask.initializeForChildDefinition(definitionForNextTask)
+        if len(definitionsForNextTasks) is 0:
+            # if there are no more ready tasks
+            # and all generated tasks have executed
+            # (this includes the case where the nest is empty
+            #  i.e. no tasks were generated)
+            # then just call the post process
+            if self.allGeneratedTasksHaveExecuted(parentTask):
+                parentTask.postProcessForAllChildTasksHaveCompleted()
                 pass
+            else:
+                raise NotImplementedError('not implemented for when there are no more tasks ready to execute, but when the nest is not empty')
             pass
+        else:
+            for definitionForNextTask in definitionsForNextTasks:
+                # the task may have already have been initialized
+                # if it is expecting multiple tokens
+                # and this is not the first one
+                if not parentTask.hasInitializedChildTask(definitionForNextTask):
+                    parentTask.initializeForChildDefinition(definitionForNextTask)
+                    pass
+                pass
         
         return
 

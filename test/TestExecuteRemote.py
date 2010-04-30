@@ -9,9 +9,6 @@ import logging
 import paramiko
 import simplejson as ConfigModule
 
-#import util
-#util.setPythonPath()
-
 import currypy
 
 import cloudpool.shell as ShellModule

@@ -17,7 +17,7 @@ import pomsets.test_utils as TestUtilsModule
 
 
 import TestExecute as BaseModule
-import TestLoadLibraryReference as TestLibraryModule
+
 
 class TestPythonFunction(unittest.TestCase):
 
@@ -387,11 +387,6 @@ class TestLoadListValues1(BaseModule.BaseTestClass, unittest.TestCase):
         return parentTask
 
 
-    def getPicklePath(self):
-        return os.path.sep + \
-            os.path.join('tmp', 'TestOperator.%s.testExecute2' % self.__class__.__name__)
-
-
     def assertPostExecute(self):
         BaseModule.BaseTestClass.assertPostExecute(self)
 
@@ -519,11 +514,6 @@ class TestRange1(BaseModule.BaseTestClass, unittest.TestCase):
         self.parentTask = parentTask
 
         return parentTask
-
-
-    def getPicklePath(self):
-        return os.path.sep + \
-            os.path.join('tmp', 'TestOperator.%s.testExecute2' % self.__class__.__name__)
 
 
     def assertPostExecute(self):
@@ -732,11 +722,6 @@ class TestMakeDirs1(BaseModule.BaseTestClass, unittest.TestCase):
         return parentTask
 
 
-    def getPicklePath(self):
-        return os.path.sep + \
-            os.path.join('tmp', 'TestOperator.%s.testExecute2' % self.__class__.__name__)
-
-
     def assertPreExecute(self):
         BaseModule.BaseTestClass.assertPreExecute(self)
         self.assertFalse(os.path.exists(TestMakeDirs1.PATH_TO_CREATE))
@@ -859,11 +844,6 @@ class TestStringReplace1(BaseModule.BaseTestClass, unittest.TestCase):
         self.parentTask = parentTask
 
         return parentTask
-
-
-    def getPicklePath(self):
-        return os.path.sep + \
-            os.path.join('tmp', 'TestOperator.%s.testExecute2' % self.__class__.__name__)
 
 
     def assertPostExecute(self):

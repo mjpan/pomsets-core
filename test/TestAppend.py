@@ -9,7 +9,6 @@ import shutil
 
 import utils
 utils.setPythonPath()
-POMSET_ROOT = utils.getPomsetRoot()
 
 import currypy
 import pypatterns.command as CommandPatternModule
@@ -64,23 +63,24 @@ def createLinguisticDefinition():
 DEFINITION_LINGUISTIC = createLinguisticDefinition()
 
 
-class TestCase1(BaseModule.BaseTestClass):
+class TestCase1(unittest.TestCase, BaseModule.BaseTestClass):
     """
     execute of atomic linguistic function
     """
+
+    def setUp(self):
+        BaseModule.BaseTestClass.setUp(self)
+        return
 
     def createDefinition(self):
 
         definition = DEFINITION_LINGUISTIC
         return definition
 
-    def createTask(self, definition):
-        task = TaskModule.AtomicTask()
-        task.definition(definition)
+    def bindTaskParameterValues(self, task):
         task.setParameterBinding('input sentence', ['hello'])
         task.setParameterBinding('terms to append', ['world'])
-
-        return task
+        return
 
     def createCommandBuilderMap(self):
         commandBuilder = TaskCommandModule.CommandBuilder()
@@ -99,16 +99,17 @@ class TestCase1(BaseModule.BaseTestClass):
         assert task.parameterBindings().get('output sentence') == ['hello', 'world']
         return
 
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase1.testExecute2')
-
     # END class TestCase1
     pass
 
-class TestCase2(BaseModule.BaseTestClass):
+
+class TestCase2(unittest.TestCase, BaseModule.BaseTestClass):
     """
     execute of linguistic composite function
     """
+    def setUp(self):
+        BaseModule.BaseTestClass.setUp(self)
+        return
 
     def createDefinition(self):
         atomicDefinition = DEFINITION_LINGUISTIC
@@ -151,13 +152,9 @@ class TestCase2(BaseModule.BaseTestClass):
         )
         return compositeDefinition
 
-    def createTask(self, definition):
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding('input sentence', ['hello'])
-        return compositeTask
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding('input sentence', ['hello'])
+        return
 
     def createCommandBuilderMap(self):
         commandBuilder = TaskCommandModule.CommandBuilder()
@@ -175,16 +172,17 @@ class TestCase2(BaseModule.BaseTestClass):
         assert task.parameterBindings().get('output sentence') == ['hello', 'world']
         return 
 
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase2.testExecute2')
-
     # END class TestCase2
     pass
 
-class TestCase3(BaseModule.BaseTestClass):
+
+class TestCase3(unittest.TestCase, BaseModule.BaseTestClass):
     """
     execute of linguistic composite function
     """
+    def setUp(self):
+        BaseModule.BaseTestClass.setUp(self)
+        return
 
     def createDefinition(self):
         atomicDefinition = DEFINITION_LINGUISTIC
@@ -238,13 +236,9 @@ class TestCase3(BaseModule.BaseTestClass):
         return compositeDefinition
 
 
-    def createTask(self, definition):
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding('input sentence', [])
-        return compositeTask
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding('input sentence', [])
+        return
 
     def createCommandBuilderMap(self):
         commandBuilder = TaskCommandModule.CommandBuilder()
@@ -264,16 +258,18 @@ class TestCase3(BaseModule.BaseTestClass):
         
         return 
 
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase3.testExecute2')
-
     # END class TestCase3
     pass
 
-class TestCase4(BaseModule.BaseTestClass):
+
+class TestCase4(unittest.TestCase, BaseModule.BaseTestClass):
     """
     execute of linguistic composite function
     """
+    def setUp(self):
+        BaseModule.BaseTestClass.setUp(self)
+        return
+
 
     def createDefinition(self):
         atomicDefinition = DEFINITION_LINGUISTIC
@@ -331,13 +327,9 @@ class TestCase4(BaseModule.BaseTestClass):
         return compositeDefinition
 
 
-    def createTask(self, definition):
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding('input sentence', [])
-        return compositeTask
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding('input sentence', [])
+        return
 
     def createCommandBuilderMap(self):
         commandBuilder = TaskCommandModule.CommandBuilder()
@@ -364,27 +356,10 @@ class TestCase4(BaseModule.BaseTestClass):
         
         return 
 
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase4.testExecute2')
-
     # END class TestCase4
     pass
 
 
-def main():
-    
-    utils.configLogging()
-
-    suite = unittest.TestSuite()
-
-    suite.addTest(unittest.makeSuite(TestCase1, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase2, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase3, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase4, 'test'))
-    
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
-    return
 
 if __name__=="__main__":
     main()

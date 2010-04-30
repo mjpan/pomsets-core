@@ -13,9 +13,10 @@ import pypatterns.command as CommandPatternModule
 import cloudpool as CloudModule
 import cloudpool.shell as ShellModule
 
-import pomsets.automaton as AutomatonModule
 import pypatterns.filter as FilterModule
 
+import pomsets.automaton as AutomatonModule
+import pomsets.builder as BuilderModule
 import pomsets.command as TaskCommandModule
 import pomsets.definition as DefinitionModule
 import pomsets.error as ErrorModule
@@ -31,8 +32,6 @@ def createEchoDefinition():
     command = ['/bin/echo']
     executable = TaskCommandModule.Executable()
     executable.stageable(False)
-    # executable.command(command)
-    # executable.path(command[0])
     executable.path(command)
     executable.staticArgs([])
     
@@ -64,7 +63,12 @@ class BaseTestClass(object):
             CloudModule.Pool(self.getNumWorkersToInstantiate()))
         automaton.commandManager(CommandPatternModule.CommandManager())
         self.automaton = automaton
+
+        builder = BuilderModule.Builder()
+        self.builder = builder
+
         return
+
 
     def tearDown(self):
         return
@@ -150,6 +154,24 @@ class BaseTestClass(object):
 
         return
 
+    def createTask(self, reference):
+        
+        definitionToReference = reference.definitionToReference()
+        if definitionToReference.isAtomic():
+            task = TaskModule.AtomicTask()
+            task.definition(reference)
+            return task
+
+        task = TaskModule.CompositeTask()
+        task.definition(reference)
+        taskGenerator = TaskModule.NestTaskGenerator()
+        task.taskGenerator(taskGenerator)
+        return task
+
+
+    def bindTaskParameterValues(self, task):
+        return
+
     def testExecute1(self):
 
         self.assertPreExecute()
@@ -160,6 +182,8 @@ class BaseTestClass(object):
         reference.definitionToReference(definition)
 
         task = self.createTask(reference)
+        self.bindTaskParameterValues(task)
+
         request = self.executeTask(task)
 
         self.request = request
@@ -183,11 +207,20 @@ class BaseTestClass(object):
         )
 
         task = self.createTask(reference)
+        self.bindTaskParameterValues(task)
+
         request = self.executeTask(task)
         self.request = request
 
         self.assertPostExecute()
         return 
+
+
+    def getPicklePath(self):
+        return os.path.sep + os.path.join(
+            'tmp', '.'.join([self.__class__.__module__,
+                             self.__class__.__module__,
+                             'pickle.pomset']))
 
     
     # END class BaseTestClass
@@ -202,17 +235,10 @@ class TestCase1(BaseTestClass, unittest.TestCase):
     def createDefinition(self):
         return DEFINITION_ECHO
 
-    def createTask(self, definition):
-        task = TaskModule.AtomicTask()
-
-        task.definition(definition)
-
+    def bindTaskParameterValues(self, task):
         task.setParameterBinding('item to echo', ['foo'])
-        return task
-
-
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase1.testExecute2')
+        return
+    
 
     # END TestCase1
     pass
@@ -227,18 +253,13 @@ class TestCase2(BaseTestClass, unittest.TestCase):
         definition = DEFINITION_ECHO
         return definition
 
-    def createTask(self, definition):
-
-        task = TaskModule.AtomicTask()
-        task.definition(definition)
+    def bindTaskParameterValues(self, task):
         task.setParameterBinding('item to echo', ['"echoed testExecuteAtomicFunction2"'])
-        return task
+        return
 
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase2.testExecute2')
 
     # END class TestCase2
-    
+    pass
 
 
 class TestCase4(BaseTestClass, unittest.TestCase):
@@ -265,19 +286,9 @@ class TestCase4(BaseTestClass, unittest.TestCase):
         )
         return compositeDefinition
 
-    def createTask(self, definition):
-
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding('item to echo', ['foo'])
-
-        return compositeTask
-
-
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase4.testExecute2')
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding('item to echo', ['foo'])
+        return
 
 
     # END class TestCase4
@@ -312,19 +323,11 @@ class TestCase8(BaseTestClass, unittest.TestCase):
 
         return compositeDefinition
 
-    def createTask(self, definition):
 
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding('item to echo', ['foo'])
-        
-        return compositeTask
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding('item to echo', ['foo'])
+        return
 
-
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase8.testExecute2')
 
     # END class TestCase8
     pass
@@ -364,21 +367,11 @@ class TestCase9(BaseTestClass, unittest.TestCase):
             pass
         return compositeDefinition
 
-    def createTask(self, definition):
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        
-        compositeTask.setParameterBinding('item to echo', ['foo'])
-        
-        return compositeTask
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding('item to echo', ['foo'])
+        return
 
 
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase9.testExecute2')
-
-    
     # END class TestCase9
     pass
 
@@ -404,23 +397,15 @@ class TestCase10(BaseTestClass, unittest.TestCase):
         return compositeDefinition
 
 
-    def createTask(self, definition):
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding('item to echo', ['foo'])
-        
-        return compositeTask
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding('item to echo', ['foo'])
+        return
 
 
     def assertPostExecute(self):
         request = self.request
         assert request.exception
         return
-
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase10.testExecute2')
 
     # END class TestCase10
     pass
@@ -497,19 +482,6 @@ class TestCase12(BaseTestClass, unittest.TestCase):
         return compositeDefinition
 
 
-    def createTask(self, definition):
-
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-
-        return compositeTask
-
-
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase12.testExecute2')
-
     # END class TestCase12
     pass
 
@@ -550,19 +522,10 @@ class TestCase13(BaseTestClass, unittest.TestCase):
         return compositeDefinition
 
 
-    def createTask(self, definition):
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding('item to echo', ['foo'])
+        return
 
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding('item to echo', ['foo'])
-
-        return compositeTask
-
-
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestCase12.testExecute2')
 
     # END class TestCase13
     pass
@@ -594,21 +557,12 @@ class TestParameterSweep1(BaseTestClass, unittest.TestCase):
 
         return compositeDefinition
 
-    def createTask(self, definition):
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding(
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding(
             'item to echo', 
-            ['"echoed testExecuteParameterSweep1 : 1"',
-             '"echoed testExecuteParameterSweep1 : 2"'])
-        return compositeTask
-    
-
-    def getPicklePath(self):
-        return os.path.sep + \
-               os.path.join('tmp', 'TestExecute.TestParameterSweep1.testExecute2')
+            ['"echoed %s : 1"' % self.__class__.__name__,
+             '"echoed %s : 2"' % self.__class__.__name__])
+        return
 
 
     # END class TestParameterSweep1
@@ -623,10 +577,6 @@ class TestParameterSweep2(BaseTestClass, unittest.TestCase):
     INPUT_FILES = ['text1', 'text2']
     OUTPUT_FILES = ['count1', 'count2']
     
-    def getPicklePath(self):
-        return os.path.sep + \
-               os.path.join('tmp', 'TestExecute.TestParameterSweep2.testExecute2')
-
     def removeFile(self, file):
         try:
             os.remove(file)
@@ -716,23 +666,16 @@ class TestParameterSweep2(BaseTestClass, unittest.TestCase):
 
         return compositeDefinition
 
-        
-    def createTask(self, definition):
-
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding(
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding(
             'input file',
             self.inputFiles
         )
-        compositeTask.setParameterBinding(
+        task.setParameterBinding(
             'output file',
             self.outputFiles
         )
-        
-        return compositeTask
+        return
 
         
     def assertPreExecute(self):
@@ -848,23 +791,16 @@ class TestParameterSweep3(BaseTestClass, unittest.TestCase):
 
         return compositeDefinition
 
-
-    def createTask(self, definition):
-
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding(
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding(
             'input files',
             self.inputFiles
         )
-        compositeTask.setParameterBinding(
+        task.setParameterBinding(
             'output file',
             self.outputFiles
         )
-        return compositeTask
-        
+        return
 
     def assertPreExecute(self):
 
@@ -891,10 +827,6 @@ class TestParameterSweep3(BaseTestClass, unittest.TestCase):
             pass
         
         return 
-
-    def getPicklePath(self):
-        return os.path.sep + \
-               os.path.join('tmp', 'TestExecute.TestParameterSweep3.testExecute2')
 
     # END class TestParameterSweep3
     pass
@@ -1021,26 +953,20 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
         return compositeDefinition
 
 
-    def createTask(self, definition):
-
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        compositeTask.setParameterBinding(
+    def bindTaskParameterValues(self, task):
+        task.setParameterBinding(
             'input file',
             self.inputFiles
         )
-        compositeTask.setParameterBinding(
+        task.setParameterBinding(
             'output file',
             self.outputFiles
         )
-        compositeTask.setParameterBinding(
+        task.setParameterBinding(
             'intermediate file',
             self.intermediateFiles
         )
-        return compositeTask
-
+        return
 
     def assertPostExecute(self):
         BaseTestClass.assertPostExecute(self)
@@ -1052,12 +978,283 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
         
         return
         
-    def getPicklePath(self):
-        return os.path.sep + \
-               os.path.join('tmp', 'TestExecute.TestParameterSweep4.testExecute2')
-
     # END class TestParameterSweep4
     pass
+
+
+class BaseNestTestClass(object):
+
+    ATOMIC_DEFINITION = DEFINITION_ECHO
+
+    def createDefinitionWithEmptyNest(self):
+
+        nestContext = self.builder.createNewNestPomset('nest')
+        nestDefinition = nestContext.pomset()
+
+        parentContext = self.builder.createNewNestPomset('parent')
+        parentDefinition = parentContext.pomset()
+
+        atomicNode1 = self.builder.createNewNode(
+            parentDefinition,
+            name='atomic node 1',
+            definitionToReference=BaseNestTestClass.ATOMIC_DEFINITION)
+        atomicNode2 = self.builder.createNewNode(
+            parentDefinition,
+            name='atomic node 2',
+            definitionToReference=BaseNestTestClass.ATOMIC_DEFINITION)
+        nestNode = self.builder.createNewNode(
+            parentDefinition,
+            name='nest node',
+            definitionToReference=nestDefinition)
+
+        self.builder.bindParameterValue(atomicNode1, 'item to echo', ['foo 1'])
+        self.builder.bindParameterValue(atomicNode2, 'item to echo', ['foo 2'])
+
+        return parentDefinition
+
+    
+    def createDefinitionWithNonEmptyNest(self):
+        parentDefinition = self.createDefinitionWithEmptyNest()
+
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+        nestDefinition = nestNode.definitionToReference()
+
+        atomicNode3 = self.builder.createNewNode(
+            nestDefinition,
+            name='atomic node 3',
+            definitionToReference=BaseNestTestClass.ATOMIC_DEFINITION)
+
+        self.builder.bindParameterValue(atomicNode3, 'item to echo', ['foo 3'])
+
+        return parentDefinition
+
+    # END BaseNestTestClass
+    pass
+
+
+class TestNest1(BaseTestClass, BaseNestTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        parentDefinition = BaseNestTestClass.createDefinitionWithEmptyNest(self)
+        
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 1']
+        atomicNode1 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 2']
+        atomicNode2 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output', 
+            nestNode, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            nestNode, 'temporal output',
+            atomicNode2, 'temporal input')
+
+        return parentDefinition
+
+
+    # END class TestNest1
+    pass
+
+
+class TestNest2(BaseTestClass, BaseNestTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        parentDefinition = BaseNestTestClass.createDefinitionWithNonEmptyNest(self)
+        
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 1']
+        atomicNode1 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 2']
+        atomicNode2 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output', 
+            nestNode, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            nestNode, 'temporal output',
+            atomicNode2, 'temporal input')
+
+        return parentDefinition
+
+    # END class TestNest2
+    pass
+
+
+class TestNest3(BaseTestClass, BaseNestTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        parentDefinition = BaseNestTestClass.createDefinitionWithNonEmptyNest(self)
+        
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 1']
+        atomicNode1 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 2']
+        atomicNode2 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output', 
+            atomicNode2, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            nestNode, 'temporal output',
+            atomicNode2, 'temporal input')
+
+        return parentDefinition
+
+    # END class TestNest3
+    pass
+
+
+class TestNest4(BaseTestClass, BaseNestTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        parentDefinition = BaseNestTestClass.createDefinitionWithNonEmptyNest(self)
+        
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 1']
+        atomicNode1 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 2']
+        atomicNode2 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output', 
+            nestNode, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output',
+            atomicNode2, 'temporal input')
+
+        return parentDefinition
+
+    # END class TestNest4
+    pass
+
+
+class TestNest5(BaseTestClass, BaseNestTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        parentDefinition = BaseNestTestClass.createDefinitionWithNonEmptyNest(self)
+        
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 1']
+        atomicNode1 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 2']
+        atomicNode2 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output', 
+            nestNode, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output',
+            atomicNode2, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            nestNode, 'temporal output',
+            atomicNode2, 'temporal input')
+
+        return parentDefinition
+
+    # END class TestNest5
+    pass
+
+class TestNest6(BaseTestClass, BaseNestTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        parentDefinition = BaseNestTestClass.createDefinitionWithNonEmptyNest(self)
+        
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 1']
+        atomicNode1 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 2']
+        atomicNode2 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output', 
+            nestNode, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output',
+            atomicNode2, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            atomicNode2, 'temporal output',
+            nestNode, 'temporal input')
+
+        return parentDefinition
+
+    # END class TestNest6
+    pass
+
+class TestNest7(BaseTestClass, BaseNestTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        parentDefinition = BaseNestTestClass.createDefinitionWithNonEmptyNest(self)
+        
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 1']
+        atomicNode1 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 2']
+        atomicNode2 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+
+        self.builder.connect(
+            parentDefinition,
+            atomicNode1, 'temporal output', 
+            nestNode, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            atomicNode2, 'temporal output',
+            nestNode, 'temporal input')
+
+        return parentDefinition
+
+    # END class TestNest7
+    pass
+
+
+class TestNest8(BaseTestClass, BaseNestTestClass, unittest.TestCase):
+
+    def createDefinition(self):
+        parentDefinition = BaseNestTestClass.createDefinitionWithNonEmptyNest(self)
+        
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 1']
+        atomicNode1 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'atomic node 2']
+        atomicNode2 = nodes[0]
+        nodes = [x for x in parentDefinition.nodes() if x.name() == 'nest node']
+        nestNode = nodes[0]
+
+        self.builder.connect(
+            parentDefinition,
+            nestNode, 'temporal output', 
+            atomicNode1, 'temporal input')
+        self.builder.connect(
+            parentDefinition,
+            nestNode, 'temporal output',
+            atomicNode2, 'temporal input')
+
+        return parentDefinition
+
+    # END class TestNest8
+    pass
+
 
 
 class TestLoop1(BaseTestClass, unittest.TestCase):
@@ -1136,19 +1333,8 @@ class TestLoop1(BaseTestClass, unittest.TestCase):
         )
         
         return definition
-    
-    def createTask(self, definition):
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        return compositeTask
 
     
-    def getPicklePath(self):
-        return os.path.sep + os.path.join('tmp', 'TestExecute.TestLoop1.testExecute2')
-    
-
     def assertPostExecute(self):
         BaseTestClass.assertPostExecute(self)
         
@@ -1248,20 +1434,8 @@ class TestBranch1(BaseTestClass, unittest.TestCase):
         
         return definition
 
-    
-    def createTask(self, definition):
-        compositeTask = TaskModule.CompositeTask()
-        compositeTask.definition(definition)
-        taskGenerator = TaskModule.NestTaskGenerator()
-        compositeTask.taskGenerator(taskGenerator)
-        return compositeTask
 
     
-    def getPicklePath(self):
-        return os.path.sep + \
-               os.path.join('tmp', 'TestExecute.TestBranch1.testExecute2')
-
-
     def assertPostExecute(self):
         BaseTestClass.assertPostExecute(self)
         
@@ -1271,33 +1445,6 @@ class TestBranch1(BaseTestClass, unittest.TestCase):
     
     # END class TestBranch1
     pass
-
-
-
-
-
-def main():
-    
-    util.configLogging()
-
-    suite = unittest.TestSuite()
-
-    suite.addTest(unittest.makeSuite(TestCase1, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase2, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase4, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase8, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase9, 'test'))
-    suite.addTest(unittest.makeSuite(TestCase10, 'test'))
-    suite.addTest(unittest.makeSuite(TestParameterSweep1, 'test'))
-    suite.addTest(unittest.makeSuite(TestParameterSweep2, 'test'))
-    suite.addTest(unittest.makeSuite(TestParameterSweep3, 'test'))
-    suite.addTest(unittest.makeSuite(TestParameterSweep4, 'test'))
-    suite.addTest(unittest.makeSuite(TestLoop1, 'test'))
-    suite.addTest(unittest.makeSuite(TestBranch1, 'test'))
-    
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
-    return
 
 
 if __name__=="__main__":

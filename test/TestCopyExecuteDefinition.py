@@ -6,10 +6,6 @@ import logging
 
 import StringIO
 
-#import utils
-#utils.setPythonPath()
-
-
 import threadpool
 
 import pypatterns.command as CommandPatternModule
@@ -231,20 +227,4 @@ class TestReferenceDefinition(unittest.TestCase):
         
     # END class TestReferenceDefinition
     pass
-
-
-def main():
-    # utils.configLogging()
-
-    suite = unittest.TestSuite()
-    
-    suite.addTest(unittest.makeSuite(TestReferenceDefinition, 'test'))
-    suite.addTest(unittest.makeSuite(TestCompositeDefinition, 'test'))
-    
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
-    return
-
-if __name__=="__main__":
-    main()
 
