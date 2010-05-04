@@ -702,7 +702,34 @@ class CompositeDefinition(GraphModule.Graph, Definition,
 
         return edge
 
-    
+
+    def exposesNodeParameter(self, node, nodeParameterId):
+
+        # we check the parameter connection path
+        # for one of two possibilities
+        # self.x -> node.nodeParameterId
+        # or
+        # node.nodeParameterId -> self.x
+        filter = FilterModule.constructOrFilter()
+        filter.addFilter(
+            self.constructParameterConnectionFilter(
+                sourceNode=self,
+                targetNode=node,
+                targetParameterId=nodeParameterId)
+            )
+        filter.addFilter(
+            self.constructParameterConnectionFilter(
+                sourceNode=node,
+                sourceParameterId=nodeParameterId,
+                targetNode=self
+                )
+            )
+        paths = RelationalModule.Table.reduceRetrieve(
+            self.parameterConnectionPathTable(),
+            filter, ['path'], [])
+        return len(paths) is not 0
+
+
     def exposeNodeParameter(self, 
                             parameterId,
                             node, nodeParameterId,
@@ -830,33 +857,37 @@ class CompositeDefinition(GraphModule.Graph, Definition,
 
 
     def constructParameterConnectionFilter(self, 
-                                           sourceNode, sourceParameterId,
-                                           targetNode, targetParameterId):
+                                           sourceNode=None, sourceParameterId=None,
+                                           targetNode=None, targetParameterId=None):
         filter = FilterModule.constructAndFilter()
-        filter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'source node',
-                FilterModule.IdentityFilter(sourceNode)
+        if sourceNode is not None:
+            filter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'source node',
+                    FilterModule.IdentityFilter(sourceNode)
+                    )
                 )
-            )
-        filter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'source parameter',
-                FilterModule.EquivalenceFilter(sourceParameterId)
+        if sourceParameterId is not None:
+            filter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'source parameter',
+                    FilterModule.EquivalenceFilter(sourceParameterId)
+                    )
                 )
-            )
-        filter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'target node',
-                FilterModule.IdentityFilter(targetNode)
+        if targetNode is not None:
+            filter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'target node',
+                    FilterModule.IdentityFilter(targetNode)
+                    )
                 )
-            )
-        filter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'target parameter',
-                FilterModule.EquivalenceFilter(targetParameterId)
+        if targetParameterId is not None:
+            filter.addFilter(
+                RelationalModule.ColumnValueFilter(
+                    'target parameter',
+                    FilterModule.EquivalenceFilter(targetParameterId)
+                    )
                 )
-            )
         return filter
 
 

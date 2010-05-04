@@ -457,6 +457,7 @@ class TestParameterToEdit3(unittest.TestCase):
         return
 
 
+
     def testParameterToEdit2(self):
         """
         verify that a node's input parameter that's exposed
@@ -559,6 +560,49 @@ class TestParameterToEdit3(unittest.TestCase):
         self.assertEquals(expectedParameterId, parameterToEdit.id())
 
 
+        return
+
+
+    def testExposesNodeParameter1(self):
+        """
+        an exposed input parameter returns True
+        """
+        nodes = [x for x in self.pomset.nodes()
+                 if x.name() == 'render tile']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        parameterId = 'tile size'
+
+        self.assertTrue(self.pomset.exposesNodeParameter(node, parameterId))
+        return
+
+
+    def testExposesNodeParameter2(self):
+        """
+        an output parameter exposed returns True
+        """
+        nodes = [x for x in self.pomset.nodes()
+                 if x.name() == 'comp tiles']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        parameterId = 'output file'
+        self.assertTrue(self.pomset.exposesNodeParameter(node, parameterId))
+        return
+
+
+    def testExposesNodeParameter3(self):
+        """
+        verify returns correct value for a parameter not exposed 
+        """
+        nodes = [x for x in self.pomset.nodes()
+                 if x.name() == 'generate tile list']
+        self.assertTrue(len(nodes) is 1)
+        node = nodes[0]
+
+        parameterId = 'input file'
+        self.assertFalse(self.pomset.exposesNodeParameter(node, parameterId))
         return
 
 
