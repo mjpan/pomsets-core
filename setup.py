@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pomsets-core',
-    version='1.0.5',
+    version='1.0.6',
     packages=find_packages(
         'src',exclude=["*.test", "*.test.*", "test.*", "test",
                        "*.utils", "*.utils.*", "utils.*", "utils",]),
