@@ -5,6 +5,12 @@ class PomsetError(Exception):
 class ExecutionError(PomsetError):
     pass
 
+class UserStoppedExecution(ExecutionError):
+    pass
+
+class UserPausedExecution(ExecutionError):
+    pass
+
 class NodeNotExistError(PomsetError):
     pass
 

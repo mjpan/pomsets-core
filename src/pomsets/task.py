@@ -29,6 +29,8 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
         'parentTask',
         'workRequest',
         'automaton',
+        'executeStageResults',
+        'currentExecuteStageIndex'
     ]
     
     def __init__(self):
@@ -36,11 +38,18 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
         DefinitionModule.ParameterBindingsHolder.__init__(self)
         TaskModule.Task.__init__(self)
         
+        self.currentExecuteStageIndex(0)
+        self.executeStageResults({})
+
         pass
 
-    
     def hasParentTask(self):
         return self.parentTask() is not None
+
+    def notifyParentOnExecutionStart(self):
+        if self.parentTask() is not None:
+            self.parentTask().childTaskIsRunning(self)
+        return
     
     def notifyParentOfCompletion(self):
         if self.hasParentTask():
@@ -51,6 +60,12 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
         if self.hasParentTask():
             self.parentTask().childTaskHasErrored(self, errorInfo)
         return
+
+
+    def initializeExecuteStageIndex(self):
+        self.currentExecuteStageIndex(0)
+        return
+
 
     def getParameterBinding(self, key):
         if not self.hasParameterBinding(key):
@@ -151,6 +166,21 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
             raise NotImplementedError(
                 'validation for execution of task %s failed >> cannot process unbound parameters %s' % (self.definition().id(), unboundParameterIds))
 
+
+    def do(self):
+
+        for executeStage in self.__class__.EXECUTE_STAGES:
+            func = getattr(self, executeStage)
+            result = func()
+            self.executeStageResults()[executeStage] = result
+            self.currentExecuteStageIndex(self.currentExecuteStageIndex()+1)
+            pass
+
+        # if we ever need to return the value of the execution, then
+        # return self.executeStageResults()['executeFunction']
+        return
+
+
     # END class Task
     pass
 
@@ -172,6 +202,18 @@ class CompositeTask(Task):
         'childrenConcurrencyLimit'
     ]
     
+    EXECUTE_STAGES = [
+        'notifyParentOnExecutionStart',
+        'pullDataForParameters',
+        'pullDataForBlackboardParameters',
+        'pullParameterBindingsFromDefinition',
+        'validateParameters',
+        'preInitializeChildTasks',
+        'initializeChildTasks',
+        'startNextTasks'
+        ]
+
+
     def __init__(self):
         Task.__init__(self)
         
@@ -268,32 +310,15 @@ class CompositeTask(Task):
         return tasks[0]
     
     
-    def do(self):
+    def pause(self):
+        raise NotImplementedError
 
-        if self.parentTask() is not None:
-            self.parentTask().childTaskIsRunning(self)
+    def stop(self):
+        raise NotImplementedError
 
-        # create tasks for each of the minimal nodes in the graph
-        # add those tasks to the queue
-        # each of the requests being added to the queue
-        # should have a callback 
+    def resume(self):
+        raise NotImplementedError
 
-        self.pullDataForParameters()
-        
-        # see if there are any blackboard parameters to be handled
-        self.pullDataForBlackboardParameters()
-        
-        self.pullParameterBindingsFromDefinition()
-      
-        self.validateParameters()
-
-        self.preInitializeChildTasks()
-        
-        self.initializeChildTasks()
-
-        self.startNextTasks()
-        
-        return True
 
     
     def initializeChildTasks(self):
@@ -306,6 +331,8 @@ class CompositeTask(Task):
 
     
     def startNextTasks(self):
+
+        # find the definitions that have already been initialized
         theFilter = RelationalModule.ColumnValueFilter(
             'status',
             FilterModule.EquivalenceFilter('initialized')
@@ -679,34 +706,51 @@ class DynamicUpdateCompositeTask(CompositeTask):
 
 class AtomicTask(Task):
 
-    ATTRIBUTES = Task.ATTRIBUTES + []
-    
+    ATTRIBUTES = Task.ATTRIBUTES + [
+        ]
+
+    EXECUTE_STAGES = [
+        'notifyParentOnExecutionStart',
+        'configureExecuteEnvironment',
+        'pullDataForParameters',
+        'pullParameterBindingsFromDefinition',
+        'validateParameters',
+        'executeFunction',
+        'pushDataForParameters'
+        ]
+
+
     def __init__(self):
         Task.__init__(self)
-        
+
         pass
     
     
-    def do(self):
+    def pause(self):
+        raise NotImplementedError
 
-        if self.parentTask() is not None:
-            self.parentTask().childTaskIsRunning(self)
+    def stop(self):
+        raise NotImplementedError
 
-        self.configureExecuteEnvironment()
+    def resume(self):
+        raise NotImplementedError
+
+
+    def foo(self):
+        if self.isStopped():
+            raise ErrorModule.UserStoppedExecution
         
-        self.pullDataForParameters()
-        
-        self.pullParameterBindingsFromDefinition()
-        
-        self.validateParameters()
-                
+        if self.isPaused():
+            raise ErrorModule.UserPausedExecution
+
+        return
+
+
+    def executeFunction(self):
         functionToExecute = self.definition().functionToExecute()
         result = functionToExecute(self)
-
-        self.pushDataForParameters()
-
         return result
-    
+
     
     def configureExecuteEnvironment(self):
         """
