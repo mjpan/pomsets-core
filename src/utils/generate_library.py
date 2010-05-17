@@ -52,7 +52,7 @@ def generateBootstrapper():
 
 
     definition.isLibraryDefinition(True)
-    definition.functionToExecute(DefinitionModule.executeTaskInEnvironment)
+    # definition.functionToExecute(DefinitionModule.executeTaskInEnvironment)
     return definition
 
 

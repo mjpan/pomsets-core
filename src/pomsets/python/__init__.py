@@ -128,6 +128,16 @@ class PythonEval(EnvironmentModule.Environment):
         task.setParameterBinding('eval result', evalResult)
 
         return 0
+
+
+    # TODO:
+    # implement the following
+    # the question is, if this is a python eval
+    # and it's taking too long,
+    # is there a way to kill it?
+    # def kill(self, task, *args, **kwds):
+    #     raise NotImplementedError
+
     
     # END class PythonEval
     pass

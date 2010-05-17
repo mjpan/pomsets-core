@@ -20,50 +20,94 @@ import pomsets.parameter as ParameterModule
 
 
 
+# here's the issue that we have with a task's execution status
+# the status really should be an attribute of the task
+# however, we need to notify of when that status changes
+# and right now we are using mext/Reaction
+# and thus we are putting that value into a pypatterns.relational.Table
+# which then notifies a watcher that the execution status has changed
+# but by doing so, that means that for the root task,
+# where there is no parent task, that there is nothing keeping track
+# of its execution status
+
 
 class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
 
     ATTRIBUTES = DefinitionModule.ParameterBindingsHolder.ATTRIBUTES + [
-        'definition', 
-        'threadPool', # we may not need this, as the automaton holds the threadpool
-        'parentTask',
-        'workRequest',
+        'definition', # the task definition
+        'threadPool', # the threadpool in which the task will run
+        'parentTask', # the parent task of this task (None if root)
+        'workRequest', # all the info about running the task
         'automaton',
-        'executeStageResults',
-        'currentExecuteStageIndex'
+        'executeStepResults', # the results of each execution step of the task
+        'currentExecuteStepIndex', # the index of the current execution step
+        'executeStatus', # the execution status
     ]
+
+    EXECUTE_STATUS_UNINITIALIZED = 'uninitialized'
+    EXECUTE_STATUS_RUNNING = 'running'
+    EXECUTE_STATUS_COMPLETED = 'completed'
+    EXECUTE_STATUS_ERRORED = 'errored'
+    EXECUTE_STATUS_KILLED = 'killed'
     
     def __init__(self):
 
         DefinitionModule.ParameterBindingsHolder.__init__(self)
         TaskModule.Task.__init__(self)
         
-        self.currentExecuteStageIndex(0)
-        self.executeStageResults({})
+        self.initializeExecuteStageIndex()
+        self.executeStepResults({})
 
+        self.executeStatus(Task.EXECUTE_STATUS_UNINITIALIZED)
         pass
+
 
     def hasParentTask(self):
         return self.parentTask() is not None
 
+
     def notifyParentOnExecutionStart(self):
-        if self.parentTask() is not None:
+
+        # TODO:
+        # should separate out the notification to the parent
+        # from the setting of the status
+
+        self.executeStatus(Task.EXECUTE_STATUS_RUNNING)
+        if self.hasParentTask():
             self.parentTask().childTaskIsRunning(self)
         return
+
     
     def notifyParentOfCompletion(self):
+
+        # TODO:
+        # should separate out the notification to the parent
+        # from the setting of the status
+
+        self.executeStatus(Task.EXECUTE_STATUS_COMPLETED)
         if self.hasParentTask():
             self.parentTask().childTaskHasCompleted(self)
         return
 
+
     def notifyParentOfError(self, errorInfo):
+
+        # TODO:
+        # should separate out the notification to the parent
+        # from the setting of the status
+
+        # if it wasn't killed
+        # then we'll use the generic error status
+        if not self.executeStatus() == Task.EXECUTE_STATUS_KILLED:
+            self.executeStatus(Task.EXECUTE_STATUS_ERRORED)
+
         if self.hasParentTask():
             self.parentTask().childTaskHasErrored(self, errorInfo)
         return
 
 
     def initializeExecuteStageIndex(self):
-        self.currentExecuteStageIndex(0)
+        self.currentExecuteStepIndex(0)
         return
 
 
@@ -165,19 +209,61 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
         if len(unboundParameterIds):
             raise NotImplementedError(
                 'validation for execution of task %s failed >> cannot process unbound parameters %s' % (self.definition().id(), unboundParameterIds))
+        return
+
+
+    def isStoppable(self):
+        """
+        returns whether this task is stoppable.
+        a task is not stoppable if it has completed, killed, or has errored
+        """
+        if self.executeStatus() == Task.EXECUTE_STATUS_COMPLETED:
+            return False
+
+        if self.executeStatus() == Task.EXECUTE_STATUS_ERRORED:
+            return False
+
+        if self.executeStatus() == Task.EXECUTE_STATUS_KILLED:
+            return False
+
+        return True
+
+
+    def isStopped(self):
+        if self.hasParentTask():
+            return self.parentTask().childTaskIsStopped(self)
+        return False
+
+
+    def isPaused(self):
+        if self.hasParentTask():
+            return self.parentTask().childTaskIsPaused(self)
+        raise NotImplementedError
+
+
+    def checkIfShouldContinue(self):
+
+        if self.isStopped():
+            raise ErrorModule.UserStoppedExecution
+        
+        #if self.isPaused():
+        #    raise ErrorModule.UserPausedExecution
+
+        return
 
 
     def do(self):
 
-        for executeStage in self.__class__.EXECUTE_STAGES:
+        for executeStage in self.__class__.EXECUTE_STEPS:
+            self.checkIfShouldContinue()
             func = getattr(self, executeStage)
             result = func()
-            self.executeStageResults()[executeStage] = result
-            self.currentExecuteStageIndex(self.currentExecuteStageIndex()+1)
+            self.executeStepResults()[executeStage] = result
+            self.currentExecuteStepIndex(self.currentExecuteStepIndex()+1)
             pass
 
         # if we ever need to return the value of the execution, then
-        # return self.executeStageResults()['executeFunction']
+        # return self.executeStepResults()['executeFunction']
         return
 
 
@@ -197,12 +283,11 @@ class CompositeTask(Task):
         'allChildTasksHaveCompleted',
         'hasGeneratedTasks',
         'isParameterSweepTasksHolder',
-        'executionIsPaused',
         'shouldLimitChildrenConcurrency',
         'childrenConcurrencyLimit'
     ]
     
-    EXECUTE_STAGES = [
+    EXECUTE_STEPS = [
         'notifyParentOnExecutionStart',
         'pullDataForParameters',
         'pullDataForBlackboardParameters',
@@ -313,14 +398,64 @@ class CompositeTask(Task):
     def pause(self):
         raise NotImplementedError
 
+
+    def isStoppable(self):
+        if not Task.isStoppable(self):
+            return False
+
+        # even if this is running
+        # but if all of its children have completed
+        # then this has effectively completed
+        if self.allChildTasksHaveCompleted():
+            return False
+
+        return True
+
+
     def stop(self):
-        raise NotImplementedError
+        # if there are any active children
+        # then kill them
+
+        completedOrErroredFilter = FilterModule.constructOrFilter()
+        completedOrErroredFilter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'status',
+                FilterModule.EquivalenceFilter(Task.EXECUTE_STATUS_COMPLETED)
+                )
+            )
+        completedOrErroredFilter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'status',
+                FilterModule.EquivalenceFilter(Task.EXECUTE_STATUS_ERRORED)
+                )
+            )
+
+        stoppableTaskFilter = FilterModule.constructNotFilter()
+        stoppableTaskFilter.addFilter(completedOrErroredFilter)
+
+        for uncompletedTask in self.getChildTasks(stoppableTaskFilter):
+            uncompletedTask.stop()
+
+            # set status to stopped
+            self.setChildTaskStatus(uncompletedTask, Task.EXECUTE_STATUS_KILLED)
+            pass
+
+        self.executeStatus(Task.EXECUTE_STATUS_KILLED)
+
+        return
+
 
     def resume(self):
         raise NotImplementedError
 
 
+    def childTaskIsPaused(self, childTask):
+        raise NotImplementedError
+
+    def childTaskIsStopped(self, childTask):
+        return False
     
+
     def initializeChildTasks(self):
         self.taskGenerator().generateReadyTasks(self)
         return
@@ -329,7 +464,7 @@ class CompositeTask(Task):
     def preInitializeChildTasks(self):
         pass
 
-    
+
     def startNextTasks(self):
 
         # find the definitions that have already been initialized
@@ -374,7 +509,7 @@ class CompositeTask(Task):
         completedPredecessorFilter.addFilter(
             RelationalModule.ColumnValueFilter(
                 'status',
-                FilterModule.EquivalenceFilter('completed')
+                FilterModule.EquivalenceFilter(Task.EXECUTE_STATUS_COMPLETED)
             )
         )
         completedPredecessors = RelationalModule.Table.reduceRetrieve(
@@ -608,24 +743,48 @@ class CompositeTask(Task):
         return row
     
 
-    def childTaskIsRunning(self, task):
+    def getChildTaskStatus(self, task):
+        row = self.getTaskInformation(task)
+        return row.getColumn('status')
+
+    def setChildTaskStatus(self, task, status):
         row = self.getTaskInformation(task)
         
         command = RelationalCommandModule.SetColumnValueCommand(
-            row, 'status', 'running'
+            row, 'status', status
         )
         
         self.automaton().executeCommand(command)
         return
+        
+
+    def postProcessForAllChildTasksHaveCompleted(self):
+
+        # make sure that the values for the parameters
+        # are propogated correctly
+        self.pushDataForBlackboardParameters()
+        self.pushDataForParameters()
+
+        # set the value 
+        self.allChildTasksHaveCompleted(True)
+
+        # here we need to call this explicitly
+        # because for composite tasks, the "do" function
+        # only starts the minimal child tasks
+        # and this is called only after all tasks have completed
+        # so we cannot put this in the callback
+        # like we do for atomic tasks
+        self.notifyParentOfCompletion()
+        return
+    
+    
+    def childTaskIsRunning(self, task):
+        self.setChildTaskStatus(task, Task.EXECUTE_STATUS_RUNNING)
+        return
+
 
     def childTaskHasCompleted(self, task):
-        row = self.getTaskInformation(task)
-        
-        command = RelationalCommandModule.SetColumnValueCommand(
-            row, 'status', 'completed'
-        )
-        
-        self.automaton().executeCommand(command)
+        self.setChildTaskStatus(task, Task.EXECUTE_STATUS_COMPLETED)
 
         # TODO: add this as a critical section
 
@@ -643,28 +802,19 @@ class CompositeTask(Task):
         return
 
     
-    def postProcessForAllChildTasksHaveCompleted(self):
-
-        self.pushDataForBlackboardParameters()
-        self.pushDataForParameters()
-        self.allChildTasksHaveCompleted(True)
-        self.notifyParentOfCompletion()
-        return
-    
-    
     def childTaskHasErrored(self, task, errorInfo):
 
-        row = self.getTaskInformation(task)
-        
-        command = RelationalCommandModule.SetColumnValueCommand(
-            row, 'status', 'errored'
-        )
-        
-        self.automaton().executeCommand(command)
+        self.setChildTaskStatus(task, task.executeStatus())
         
         request = self.workRequest()
         request.exception = True
 
+        # we don't actually want to raise an exception
+        # because this is the error callback
+        # instead, we create an exception
+        # and then set that into the request object
+        # so that the receiver of the callback
+        # can use the information appropriately
         error = NotImplementedError('child task %s has errored')
         errorInfo = (type(error), error, errorInfo)
         request.kwds['error info'] = errorInfo
@@ -709,14 +859,16 @@ class AtomicTask(Task):
     ATTRIBUTES = Task.ATTRIBUTES + [
         ]
 
-    EXECUTE_STAGES = [
+    EXECUTE_STEPS = [
         'notifyParentOnExecutionStart',
         'configureExecuteEnvironment',
         'pullDataForParameters',
         'pullParameterBindingsFromDefinition',
         'validateParameters',
         'executeFunction',
-        'pushDataForParameters'
+        'pushDataForParameters',
+        # note that we do not need "notifyParentOfCompletion"
+        # because that is part of the completion callback
         ]
 
 
@@ -727,21 +879,36 @@ class AtomicTask(Task):
     
     
     def pause(self):
+        self.parentTask().setChildTaskStatus(self, 'paused')
         raise NotImplementedError
 
-    def stop(self):
-        raise NotImplementedError
 
     def resume(self):
+        self.parentTask().setChildTaskStatus(self, EXECUTE_STATUS_RUNNING)
         raise NotImplementedError
 
 
-    def foo(self):
-        if self.isStopped():
-            raise ErrorModule.UserStoppedExecution
-        
-        if self.isPaused():
-            raise ErrorModule.UserPausedExecution
+    def stop(self):
+
+        # check if the current stage 
+        # is the one executing the function
+        # i.e. executing the process
+        # if so, kill the process
+        if self.currentExecuteStepIndex() == AtomicTask.EXECUTE_STEPS.index('executeFunction'):
+            request = self.workRequest()
+            executeEnv = request.kwds.get('execute environment', None)
+            if executeEnv is not None:
+
+                # the environment should kill task
+                executeEnv.kill(self)
+
+                # reset the execution step index
+                self.currentExecuteStepIndex(-1)
+
+                # set the execute status to being killed
+                self.executeStatus(Task.EXECUTE_STATUS_KILLED)
+
+                pass
 
         return
 
@@ -1154,7 +1321,6 @@ class NestTaskGenerator(TaskGenerator):
            not parentTask.hasGeneratedMinimalTasks:
             return True
         
-        # if hasattr(parentTask, 'completedChildTask'):
         if completedChildTask is not None:
             completedDefinition = completedChildTask.definition()
             if len([x for x in completedDefinition.successors()]) is not 0:
@@ -1168,8 +1334,8 @@ class NestTaskGenerator(TaskGenerator):
     
     def generateReadyTasks(self, parentTask, completedChildTask=None):
 
-        if parentTask.executionIsPaused():
-            return
+        #if parentTask.isPaused():
+        #    return
 
         definitionsForNextTasks = []
         if not hasattr(parentTask, 'hasGeneratedMinimalTasks') or \
@@ -1239,7 +1405,7 @@ class NestTaskGenerator(TaskGenerator):
         theFilter.addFilter(
             RelationalModule.ColumnValueFilter(
                 'status',
-                FilterModule.EquivalenceFilter('completed')
+                FilterModule.EquivalenceFilter(Task.EXECUTE_STATUS_COMPLETED)
             )
         )
         completedMaximalDefinitions = RelationalModule.Table.reduceRetrieve(
@@ -1292,7 +1458,6 @@ class LoopTaskGenerator(TaskGenerator):
         
         # increment the state
         # if the previous task just completed
-        # if hasattr(parentTask, 'completedChildTask') and \
         if completedChildTask is not None and \
            not self.hasTransitionedState():
             # here we have to process the state transition
@@ -1329,8 +1494,8 @@ class LoopTaskGenerator(TaskGenerator):
     
     def generateReadyTasks(self, parentTask, completedChildTask=None):
         
-        if parentTask.executionIsPaused():
-            return
+        #if parentTask.isPaused():
+        #    return
 
         # the initial state does not satisfy the continue condition
         if not self.canGenerateMoreTasks(parentTask):
@@ -1380,7 +1545,7 @@ class LoopTaskGenerator(TaskGenerator):
         
         # now ensure that all the tasks have actually completed
         theNotCompletedFilter = FilterModule.constructNotFilter()
-        theNotCompletedFilter.addFilter(FilterModule.EquivalenceFilter('completed'))
+        theNotCompletedFilter.addFilter(FilterModule.EquivalenceFilter(Task.EXECUTE_STATUS_COMPLETED))
         
         taskFilter = RelationalModule.ColumnValueFilter(
             'status',
@@ -1438,8 +1603,8 @@ class BranchTaskGenerator(TaskGenerator):
 
     def generateReadyTasks(self, parentTask, completedChildTask=None):
         
-        if parentTask.executionIsPaused():
-            return
+        #if parentTask.isPaused():
+        #    return
 
         if not self.canGenerateMoreTasks(
             parentTask, completedChildTask=completedChildTask):
@@ -1482,7 +1647,7 @@ class BranchTaskGenerator(TaskGenerator):
         
         # now ensure that all the tasks have actually completed
         theNotCompletedFilter = FilterModule.constructNotFilter()
-        theNotCompletedFilter.addFilter(FilterModule.EquivalenceFilter('completed'))
+        theNotCompletedFilter.addFilter(FilterModule.EquivalenceFilter(Task.EXECUTE_STATUS_COMPLETED))
         
         taskFilter = RelationalModule.ColumnValueFilter(
             'status',
@@ -1557,8 +1722,8 @@ class ParameterSweepTaskGenerator(TaskGenerator):
     
     def generateReadyTasks(self, parentTask, completedChildTask=None):
 
-        if parentTask.executionIsPaused():
-            return
+        #if parentTask.isPaused():
+        #    return
 
         definitionsForNextTasks = []
         
@@ -1727,7 +1892,7 @@ class ParameterSweepTaskGenerator(TaskGenerator):
         
         # now ensure that all the tasks have actually completed
         theNotCompletedFilter = FilterModule.constructNotFilter()
-        theNotCompletedFilter.addFilter(FilterModule.EquivalenceFilter('completed'))
+        theNotCompletedFilter.addFilter(FilterModule.EquivalenceFilter(Task.EXECUTE_STATUS_COMPLETED))
         
         taskFilter = RelationalModule.ColumnValueFilter(
             'status',

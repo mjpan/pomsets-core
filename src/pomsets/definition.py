@@ -1086,10 +1086,19 @@ class AtomicDefinition(Definition):
 
 
 
+# TODO:
+# move this out of the pomsets.definition module
 def executeTaskInEnvironment(task, *args, **kwds):
 
     environment = task.getExecuteEnvironment()
     return environment.execute(task, *args, **kwds)
+
+# TODO:
+# move this out of the pomsets.definition module
+def killTaskInEnvironment(task, *args, **kwds):
+
+    environment = task.getExecuteEnvironment()
+    return environment.kill(task, *args, **kwds)
 
 
 def createParameterOrderingTable():
@@ -1097,26 +1106,6 @@ def createParameterOrderingTable():
                                          ['source', 'target'])
     return table
     
-
-"""
-def createPythonEvalDefinition():
-    definition = AtomicDefinition()
-    definition.commandBuilderType('python eval')
-    
-    parameter = ParameterModule.DataParameter(
-        id='command', optional=False, active=True,
-        portDirection=ParameterModule.PORT_DIRECTION_INPUT)
-    ParameterModule.setAttributes(parameter, {})
-    definition.addParameter(parameter)
-    
-    parameter = ParameterModule.DataParameter(
-        id='eval result', optional=False, active=True,
-        portDirection=ParameterModule.PORT_DIRECTION_OUTPUT)
-    ParameterModule.setAttributes(parameter, {})
-    definition.addParameter(parameter)
-    
-    return definition
-"""
 
 
 def createShellProcessDefinition(inputParameters=None,
