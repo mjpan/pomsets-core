@@ -114,7 +114,7 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
     def getParameterBinding(self, key):
         if not self.hasParameterBinding(key):
             if not self.definition().hasParameterBinding(key):
-                raise KeyError('%s not in %s\'s parameter bindings' % (key, self))
+                raise KeyError('%s not in %s\'s parameter bindings' % (key, self.definition().name()))
             return self.definition().getParameterBinding(key)
         return DefinitionModule.ParameterBindingsHolder.getParameterBinding(self, key)
 
@@ -155,9 +155,10 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
         """
         these functions take the perspective of the child as the active agent
 
-        data is pulled by the child from the blackboard parameters
-        and pushed by the child back to blackboard parameters
+        data is pulled by the child from the blackboard parameters of the parent
+        and pushed by the child back to blackboard parameters of the parent
         """
+
         if self.hasParentTask():
             self.parentTask().pullDataForParametersOfChild(self)
         return
@@ -775,6 +776,7 @@ class CompositeTask(Task):
         # so we cannot put this in the callback
         # like we do for atomic tasks
         self.notifyParentOfCompletion()
+
         return
     
     
@@ -1078,6 +1080,7 @@ class TaskGenerator(ResourceModule.Struct):
         ResourceModule.Struct.__init__(self)
         return
     
+
     def pullDataForBlackboardParameters(self, parentTask):
         """
         copies the data from the input parameter of the parent task
@@ -1100,8 +1103,8 @@ class TaskGenerator(ResourceModule.Struct):
             targetParameter = parentTask.definition().getParameter(targetParameterId)
             if not targetParameter.portType() == ParameterModule.PORT_TYPE_BLACKBOARD:
                 continue
-            sourceParameterId = parameterConnection.sourceParameter()
 
+            sourceParameterId = parameterConnection.sourceParameter()
 
             parentTask.setParameterBinding(
                 targetParameterId,
@@ -1123,36 +1126,30 @@ class TaskGenerator(ResourceModule.Struct):
         if isinstance(definition, DefinitionModule.ReferenceDefinition):
             definition = definition.definitionToReference()
             
-        # create a filter where the source nodes are parentTask,
-        # the target node is parentTask,
-        # and the target parameter is of type blackboard
-        theParameterConnectionFilter = FilterModule.constructAndFilter()
-        theParameterConnectionFilter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'source node',
-                FilterModule.IdentityFilter(definition)
-            )
-        )
-        theParameterConnectionFilter.addFilter(
-            RelationalModule.ColumnValueFilter(
-                'target node',
-                FilterModule.IdentityFilter(definition.graph())
-            )
-        )
+        theParameterConnectionFilter = \
+            parentTask.getFilterForOwnInternalParameterConnections()
+
 
         for parameterConnection in RelationalModule.Table.reduceRetrieve(
             definition.parameterConnectionsTable(),
             theParameterConnectionFilter,
             ['parameter connection']):
             
-            sourceId = parameterConnection.sourceParameter()
-            sourceParameter = parentTask.definition().getParameter(sourceId)
+            sourceParameterId = parameterConnection.sourceParameter()
+            sourceParameter = parentTask.definition().getParameter(sourceParameterId)
+
             if not sourceParameter.portType() == ParameterModule.PORT_TYPE_BLACKBOARD:
                 continue
-            targetId = parameterConnection.targetParameter()
+
+            if not parentTask.hasParameterBinding(sourceParameterId):
+                raise KeyError("parent task %s only has the following bindings >> %s" % 
+                               (parentTask.definition().name(),
+                                parentTask.parameterBindings()))
+
+            targetParameterId = parameterConnection.targetParameter()
             parentTask.setParameterBinding(
-                targetId,
-                parentTask.getParameterBinding(sourceId)
+                targetParameterId,
+                parentTask.getParameterBinding(sourceParameterId)
             )
             pass
         
@@ -1189,7 +1186,6 @@ class TaskGenerator(ResourceModule.Struct):
             x for x in definition.getParametersByFilter(parameterFilter)
         ]
 
-        
         # propagate the parameter bindings into the input parameters
         for referencedParameter in referencedParameters:
 
@@ -1256,8 +1252,6 @@ class TaskGenerator(ResourceModule.Struct):
         parentTaskDefinition = parentTask.definition()
         if isinstance(parentTaskDefinition, DefinitionModule.ReferenceDefinition):
             parentTaskDefinition = parentTaskDefinition.definitionToReference()
-            
-
         # parameter connection filter
         filter = FilterModule.constructAndFilter()
         filter.addFilter(
@@ -1284,8 +1278,9 @@ class TaskGenerator(ResourceModule.Struct):
 
             sourceParameter = sourceNode.getParameter(sourceParameterId)
             sourceParameterType = sourceParameter.portType()
-            if not sourceParameterType == ParameterModule.PORT_TYPE_DATA:
+            if not sourceParameterType == ParameterModule.PORT_TYPE_DATA: 
                 continue
+
             sourceParameterDirection = sourceParameter.portDirection()
             if not (sourceParameterDirection == ParameterModule.PORT_DIRECTION_OUTPUT or 
                     (sourceParameterDirection == ParameterModule.PORT_DIRECTION_INPUT and sourceParameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_ISSIDEEFFECT))):

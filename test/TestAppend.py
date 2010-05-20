@@ -11,19 +11,18 @@ import utils
 utils.setPythonPath()
 
 import currypy
-import pypatterns.command as CommandPatternModule
 
 import cloudpool
 import cloudpool.shell as ShellModule
 
-import pomsets.automaton as AutomatonModule
 import pypatterns.filter as FilterModule
 
+import pomsets.builder as BuilderModule
 import pomsets.command as TaskCommandModule
 import pomsets.definition as DefinitionModule
 import pomsets.library as DefinitionLibraryModule
 import pomsets.parameter as ParameterModule
-import pomsets.task as TaskModule
+import pomsets.python as PythonModule
 
 import test.TestExecute as BaseModule
 
@@ -32,6 +31,7 @@ import test.TestExecute as BaseModule
 def appendTerm(task, *args, **kargs):
     inputBindings = task.parameterBindings()
     newSentence = inputBindings['input sentence'] + inputBindings['terms to append']
+
     task.setParameterBinding(
         'output sentence', newSentence)
     return True
@@ -40,27 +40,60 @@ def appendTerm(task, *args, **kargs):
 # TODO: move this to linguistics execute module
 def createLinguisticDefinition():
 
-    definition = DefinitionModule.AtomicDefinition()
+    builder = BuilderModule.Builder()
+
+    path = ['test.TestAppend', 'appendTerm']
+    executableObject = builder.createExecutableObject(
+        path,
+        executableClass=PythonModule.Function)
+
+    context = builder.createNewAtomicPomset(
+        name='append',
+        executableObject=executableObject,
+        commandBuilderType='linguistic',
+        executeEnvironmentType='linguistic')
+    definition = context.pomset()
     definition.functionToExecute(appendTerm)
+
+    builder.addPomsetParameter(
+        definition,
+        'input sentence',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT})
     
-    parameter = ParameterModule.DataParameter(
-        id='input sentence', 
-        portDirection=ParameterModule.PORT_DIRECTION_INPUT)
-    definition.addParameter(parameter)
-    
-    parameter = ParameterModule.DataParameter(
-        id='terms to append', 
-        portDirection=ParameterModule.PORT_DIRECTION_INPUT)
-    definition.addParameter(parameter)
-    
-    parameter = ParameterModule.DataParameter(
-        id='output sentence', 
-        portDirection=ParameterModule.PORT_DIRECTION_OUTPUT)
-    definition.addParameter(parameter)
+    builder.addPomsetParameter(
+        definition,
+        'terms to append',
+        {'direction':ParameterModule.PORT_DIRECTION_INPUT})
+        
+    builder.addPomsetParameter(
+        definition,
+        'output sentence',
+        {'direction':ParameterModule.PORT_DIRECTION_OUTPUT})
     
     return definition
 
+
 DEFINITION_LINGUISTIC = createLinguisticDefinition()
+
+
+
+def createCommandBuilderMap():
+    commandBuilder = TaskCommandModule.CommandBuilder()
+    commandBuilderMap = {
+        'shell process':commandBuilder,
+        'print task':commandBuilder,
+        'linguistic':commandBuilder
+    }
+    return commandBuilderMap
+
+
+def createExecuteEnvironmentMap():
+    return {
+        'shell process':ShellModule.LocalShell(),
+        'linguistic':ShellModule.LocalShell(),
+        }
+
+
 
 
 class TestCase1(unittest.TestCase, BaseModule.BaseTestClass):
@@ -71,24 +104,27 @@ class TestCase1(unittest.TestCase, BaseModule.BaseTestClass):
     def setUp(self):
         BaseModule.BaseTestClass.setUp(self)
         return
+ 
+
+    def createCommandBuilderMap(self):
+        return createCommandBuilderMap()
+
+
+    def createExecuteEnvironmentMap(self):
+        return createExecuteEnvironmentMap()
+
 
     def createDefinition(self):
 
         definition = DEFINITION_LINGUISTIC
         return definition
 
+
     def bindTaskParameterValues(self, task):
         task.setParameterBinding('input sentence', ['hello'])
         task.setParameterBinding('terms to append', ['world'])
         return
 
-    def createCommandBuilderMap(self):
-        commandBuilder = TaskCommandModule.CommandBuilder()
-        commandBuilderMap = {
-            'shell process':commandBuilder,
-            'print task':commandBuilder
-        }
-        return commandBuilderMap
 
 
     def assertPostExecute(self):
@@ -107,69 +143,65 @@ class TestCase2(unittest.TestCase, BaseModule.BaseTestClass):
     """
     execute of linguistic composite function
     """
+
     def setUp(self):
         BaseModule.BaseTestClass.setUp(self)
         return
+ 
+
+    def createCommandBuilderMap(self):
+        return createCommandBuilderMap()
+
+
+    def createExecuteEnvironmentMap(self):
+        return createExecuteEnvironmentMap()
+
 
     def createDefinition(self):
+
         atomicDefinition = DEFINITION_LINGUISTIC
 
-        compositeDefinition = DefinitionModule.getNewNestDefinition()
-        
-        parameterInfo = [
-            ('input sentence', ParameterModule.DataParameter, 
-             ParameterModule.PORT_DIRECTION_INPUT),
-            ('output sentence', ParameterModule.DataParameter, 
-             ParameterModule.PORT_DIRECTION_OUTPUT),
-            ('synsem data', ParameterModule.BlackboardParameter, None)]
-        
-        for parameterName, parameterClass, portDirection in parameterInfo:
-            parameter = parameterClass(
-                id=parameterName, 
-                portDirection=portDirection)
-            compositeDefinition.addParameter(parameter)
-            pass
-        
-        node = compositeDefinition.createNode(id='node')
-        node.definitionToReference(atomicDefinition)
-        node.setParameterBinding('terms to append', ['world'])
-        
-        compositeDefinition.connectNodes(
+        context = self.builder.createNewNestPomset(name='nest')
+        compositeDefinition = context.pomset()
+
+        node = self.builder.createNewNode(
+            compositeDefinition, name='node',
+            definitionToReference=atomicDefinition)
+        self.builder.bindParameterValue(
+            node, 'terms to append', ['world'])
+
+        self.builder.exposeNodeParameter(
             compositeDefinition, 'input sentence',
-            compositeDefinition, 'synsem data'
-        )
-        compositeDefinition.connectNodes(
-            compositeDefinition, 'synsem data',
-            compositeDefinition, 'output sentence'
-        )
-        compositeDefinition.connectNodes(
-            compositeDefinition, 'synsem data',
-            node, 'input sentence'
-        )
-        compositeDefinition.connectNodes(
+            node, 'input sentence',
+            shouldCreate=True)
+        self.builder.exposeNodeParameter(
+            compositeDefinition, 'output sentence',
             node, 'output sentence',
-            compositeDefinition, 'synsem data'
-        )
+            shouldCreate=True)
+
         return compositeDefinition
+
 
     def bindTaskParameterValues(self, task):
         task.setParameterBinding('input sentence', ['hello'])
         return
 
-    def createCommandBuilderMap(self):
-        commandBuilder = TaskCommandModule.CommandBuilder()
-        commandBuilderMap = {
-            'shell process':commandBuilder,
-            'print task':commandBuilder
-        }        
-        return commandBuilderMap
 
     def assertPostExecute(self):
         BaseModule.BaseTestClass.assertPostExecute(self)
 
         request = self.request
         task = request.kwds['task']
-        assert task.parameterBindings().get('output sentence') == ['hello', 'world']
+
+        childTask = task.getChildTasks()[0]
+        expected = ['hello', 'world']
+        actual = childTask.parameterBindings().get('output sentence')
+        self.assertEquals(expected, actual)
+
+        expected = ['hello', 'world']
+        actual = task.parameterBindings().get('output sentence')
+        self.assertEquals(expected, actual)
+
         return 
 
     # END class TestCase2
@@ -180,14 +212,26 @@ class TestCase3(unittest.TestCase, BaseModule.BaseTestClass):
     """
     execute of linguistic composite function
     """
+
     def setUp(self):
         BaseModule.BaseTestClass.setUp(self)
         return
+ 
+
+    def createCommandBuilderMap(self):
+        return createCommandBuilderMap()
+
+
+    def createExecuteEnvironmentMap(self):
+        return createExecuteEnvironmentMap()
+
 
     def createDefinition(self):
         atomicDefinition = DEFINITION_LINGUISTIC
 
-        compositeDefinition = DefinitionModule.getNewNestDefinition()
+        context = self.builder.createNewNestPomset(name='nest')
+        compositeDefinition = context.pomset()
+
         
         parameterInfo = [
             ('input sentence', ParameterModule.DataParameter, 
@@ -196,43 +240,52 @@ class TestCase3(unittest.TestCase, BaseModule.BaseTestClass):
              ParameterModule.PORT_DIRECTION_OUTPUT),
             ('synsem data', ParameterModule.BlackboardParameter, None)]
         for parameterName, parameterClass, portDirection in parameterInfo:
-            parameter = parameterClass(
-                id=parameterName, 
-                portDirection=portDirection)
-            compositeDefinition.addParameter(parameter)
+            self.builder.addPomsetParameter(
+                compositeDefinition,
+                parameterName,
+                {'direction':portDirection},
+                parameterClass=parameterClass)
             pass
-        
+
         expectedSentence = ['a', 'b', 'c', 'd']
         nodes = []
         for index in range(len(expectedSentence)):
-            node = compositeDefinition.createNode(id='node%s' % index)
-            node.definitionToReference(atomicDefinition)
-            compositeDefinition.connectNodes(
+            node = self.builder.createNewNode(
+                compositeDefinition, name='node%s' % index,
+                definitionToReference=atomicDefinition)
+
+            compositeDefinition._connectParameters(
                 compositeDefinition, 'synsem data',
                 node, 'input sentence'
             )
-            compositeDefinition.connectNodes(
+            compositeDefinition._connectParameters(
                 node, 'output sentence',
                 compositeDefinition, 'synsem data'
             )
-            node.setParameterBinding('terms to append', [expectedSentence[index]])
+
+            self.builder.bindParameterValue(
+                node, 'terms to append', [expectedSentence[index]])
+
             nodes.append(node)
             pass
-        compositeDefinition.connectNodes(
+
+        compositeDefinition._connectParameters(
             compositeDefinition, 'input sentence',
             compositeDefinition, 'synsem data'
         )
-        compositeDefinition.connectNodes(
+        compositeDefinition._connectParameters(
             compositeDefinition, 'synsem data',
             compositeDefinition, 'output sentence'
         )
 
         # add temporal connections
         for sourceNode, targetNode in zip(nodes[:-1], nodes[1:]):
-            compositeDefinition.connectNodes(
+            self.builder.connect(
+                compositeDefinition,
                 sourceNode, 'temporal output',
                 targetNode, 'temporal input'
             )
+
         return compositeDefinition
 
 
@@ -240,21 +293,16 @@ class TestCase3(unittest.TestCase, BaseModule.BaseTestClass):
         task.setParameterBinding('input sentence', [])
         return
 
-    def createCommandBuilderMap(self):
-        commandBuilder = TaskCommandModule.CommandBuilder()
-        commandBuilderMap = {
-            'shell process':commandBuilder,
-            'print task':commandBuilder
-        }        
-        return commandBuilderMap
-
 
     def assertPostExecute(self):
         BaseModule.BaseTestClass.assertPostExecute(self)
 
         request = self.request
         task = request.kwds['task']
-        assert task.parameterBindings().get('output sentence') == ['a', 'b', 'c', 'd']
+
+        actual = task.parameterBindings().get('output sentence') 
+        expected = ['a', 'b', 'c', 'd']
+        self.assertEquals(expected, actual)
         
         return 
 
@@ -269,12 +317,21 @@ class TestCase4(unittest.TestCase, BaseModule.BaseTestClass):
     def setUp(self):
         BaseModule.BaseTestClass.setUp(self)
         return
+ 
+
+    def createCommandBuilderMap(self):
+        return createCommandBuilderMap()
+
+
+    def createExecuteEnvironmentMap(self):
+        return createExecuteEnvironmentMap()
 
 
     def createDefinition(self):
         atomicDefinition = DEFINITION_LINGUISTIC
 
-        compositeDefinition = DefinitionModule.getNewNestDefinition()
+        context = self.builder.createNewNestPomset(name='nest')
+        compositeDefinition = context.pomset()
         
         parameterInfo = [
             ('input sentence', ParameterModule.DataParameter, 
@@ -283,61 +340,61 @@ class TestCase4(unittest.TestCase, BaseModule.BaseTestClass):
              ParameterModule.PORT_DIRECTION_OUTPUT),
             ('synsem data', ParameterModule.BlackboardParameter, None)]
         for parameterName, parameterClass, portDirection in parameterInfo:
-            parameter = parameterClass(
-                id=parameterName, 
-                portDirection=portDirection)
-            compositeDefinition.addParameter(parameter)
+            self.builder.addPomsetParameter(
+                compositeDefinition,
+                parameterName,
+                {'direction':portDirection},
+                parameterClass=parameterClass)
             pass
 
         expectedSentence = ['a', 'b', 'c', 'd', 'e', 'f']
         nodes = []
         for index in range(len(expectedSentence)):
-            node = compositeDefinition.createNode(id='node%s' % index)
-            node.definitionToReference(atomicDefinition)
-            compositeDefinition.connectNodes(
+
+            node = self.builder.createNewNode(
+                compositeDefinition, name='node%s' % index,
+                definitionToReference=atomicDefinition)
+
+            compositeDefinition._connectParameters(
                 compositeDefinition, 'synsem data',
                 node, 'input sentence'
             )
-            compositeDefinition.connectNodes(
+            compositeDefinition._connectParameters(
                 node, 'output sentence',
                 compositeDefinition, 'synsem data'
             )
-            node.setParameterBinding('terms to append', [expectedSentence[index]])
+
+            self.builder.bindParameterValue(
+                node, 'terms to append', [expectedSentence[index]])
             nodes.append(node)
             pass
-        compositeDefinition.connectNodes(
+
+        compositeDefinition._connectParameters(
             compositeDefinition, 'input sentence',
             compositeDefinition, 'synsem data'
         )
-        compositeDefinition.connectNodes(
+        compositeDefinition._connectParameters(
             compositeDefinition, 'synsem data',
             compositeDefinition, 'output sentence'
         )
 
         # add temporal connections
-        for sourceIndex, targetIndex in [(0, 1), (1,2), 
-                                         (0, 3), (3, 4),
-                                         (2, 5), (4, 5)]:
+        for sourceIndex, targetIndex in zip(range(5), range(1,6)):
+
             sourceNode = nodes[sourceIndex]
             targetNode = nodes[targetIndex]
-            compositeDefinition.connectNodes(
+            self.builder.connect(
+                compositeDefinition,
                 sourceNode, 'temporal output',
                 targetNode, 'temporal input'
             )
+
         return compositeDefinition
 
 
     def bindTaskParameterValues(self, task):
         task.setParameterBinding('input sentence', [])
         return
-
-    def createCommandBuilderMap(self):
-        commandBuilder = TaskCommandModule.CommandBuilder()
-        commandBuilderMap = {
-            'shell process':commandBuilder,
-            'print task':commandBuilder
-        }
-        return commandBuilderMap
 
 
     def assertPostExecute(self):
@@ -346,13 +403,10 @@ class TestCase4(unittest.TestCase, BaseModule.BaseTestClass):
         request = self.request
         task = request.kwds['task']
 
-        output = task.parameterBindings().get('output sentence')
-        for sourceTerm, targetTerm in [
-            ('a', 'b'), ('a', 'd'),
-            ('b', 'c'), ('d', 'e'),
-            ('c', 'f'), ('e', 'f')
-            ]:
-            assert output.index(sourceTerm) < output.index(targetTerm)
+        actual = task.parameterBindings().get('output sentence') 
+        expected = ['a', 'b', 'c', 'd', 'e', 'f']
+        self.assertEquals(expected, actual)
+
         
         return 
 

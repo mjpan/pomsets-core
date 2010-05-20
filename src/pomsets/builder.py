@@ -29,7 +29,8 @@ class Builder(object):
         pomset.removeParameter(parameter)
         return
         
-    def addPomsetParameter(self, pomset, parameterName, attributes):
+    def addPomsetParameter(self, pomset, parameterName, attributes, 
+                           parameterClass=ParameterModule.DataParameter):
 
         # TODO:
         # should verify that the pomset
@@ -87,7 +88,7 @@ class Builder(object):
             ParameterModule.PORT_ATTRIBUTE_KEYWORDTOPASS:keywordToPass,
             }
 
-        parameter = ParameterModule.DataParameter(
+        parameter = parameterClass(
             id=parameterName, 
             optional=isOptional, active=isActive,
             portDirection=direction)

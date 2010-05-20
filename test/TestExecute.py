@@ -180,6 +180,7 @@ class BaseTestClass(object):
 
         reference = DefinitionModule.ReferenceDefinition()
         reference.definitionToReference(definition)
+        reference.name(definition.name())
 
         task = self.createTask(reference)
         self.bindTaskParameterValues(task)
@@ -200,6 +201,7 @@ class BaseTestClass(object):
         definition = self.createDefinition()
         reference = DefinitionModule.ReferenceDefinition()
         reference.definitionToReference(definition)
+        reference.name(definition.name())
 
         reference = GeneratePomsetsModule.pickleAndReloadDefinition(
             '.'.join([self.getPicklePath(), 'pomset']),
@@ -914,41 +916,26 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
         reducerNode.definitionToReference(DEFINITION_WORDCOUNT_REDUCE)
         reducerNode.name('reducer')
 
-        inputParameter = \
-            ParameterModule.DataParameter(
-                id='input file', 
-                portDirection=ParameterModule.PORT_DIRECTION_INPUT)
-        inputParameter.setAttribute(
-            ParameterModule.PORT_ATTRIBUTE_PARAMETERSWEEP, True)
-        compositeDefinition.addParameter(inputParameter)
-        compositeDefinition._connectParameters(
+        self.builder.exposeNodeParameter(
             compositeDefinition, 'input file',
-            mapperNode, 'input file'
-        )
-        
-        outputParameter = \
-            ParameterModule.DataParameter(
-                id='output file', 
-                portDirection=ParameterModule.PORT_DIRECTION_INPUT)
-        compositeDefinition.addParameter(outputParameter)
-        compositeDefinition._connectParameters(
-            compositeDefinition, 'output file',
-            reducerNode, 'output file'
-        )
-        
-        blackboardParameter = \
-            ParameterModule.BlackboardParameter('intermediate file')
-        compositeDefinition.addParameter(blackboardParameter)
-        compositeDefinition._connectParameters(
-            compositeDefinition, 'intermediate file',
-            mapperNode, 'output file'
-        )
+            mapperNode, 'input file',
+            shouldCreate=True)
 
-        edge = compositeDefinition.connectNodes(
+        self.builder.exposeNodeParameter(
+            compositeDefinition, 'output file',
+            reducerNode, 'output file',
+            shouldCreate=True)
+
+        self.builder.exposeNodeParameter(
+            compositeDefinition, 'intermediate file',
+            mapperNode, 'output file',
+            shouldCreate=True)
+
+        edge = self.builder.connect(
+            compositeDefinition,
             mapperNode, 'output file',
             reducerNode, 'input files',
         )
-        self.intermediateParameterId = edge.path()[3]
 
         return compositeDefinition
 
@@ -966,6 +953,7 @@ class TestParameterSweep4(BaseTestClass, unittest.TestCase):
             'intermediate file',
             self.intermediateFiles
         )
+
         return
 
     def assertPostExecute(self):
