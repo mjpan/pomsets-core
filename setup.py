@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pomsets-core',
-    version='1.0.6',
+    version='1.0.7',
     packages=find_packages(
         'src',exclude=["*.test", "*.test.*", "test.*", "test",
                        "*.utils", "*.utils.*", "utils.*", "utils",]),
@@ -12,7 +12,7 @@ setup(
         'euca2ools>=1.1'
         ],
     install_requires = [
-        'cloudpool>=0.1.2',
+        'cloudpool>=0.1.3',
         'pypatterns>=0.1.1',
         'Reaction>=0.2',
         'simplejson>=2.0.9'
