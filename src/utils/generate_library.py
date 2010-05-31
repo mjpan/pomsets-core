@@ -4,7 +4,8 @@ import uuid
 
 import optparse as OptparseModule
 
-sys.path.insert(0, os.getenv('POMSETS_HOME'))
+if os.getenv('POMSETS_HOME') is not None:
+    sys.path.insert(0, os.getenv('POMSETS_HOME'))
 
 import pomsets.builder as BuilderModule
 import pomsets.context as ContextModule
