@@ -103,6 +103,65 @@ class TestBuilder(unittest.TestCase):
 
         return
 
+
+    def createPomsetToTestRemoveParameter(self):
+        path = ['', 'bin', 'foo']
+        executableObject = self.builder.createExecutableObject(path)
+
+        pomsetContext = self.builder.createNewAtomicPomset(
+            executableObject=executableObject)
+        pomset = pomsetContext.pomset()
+
+        attributes = {
+            'direction':ParameterModule.PORT_DIRECTION_INPUT,
+            }
+        parameterNames = ['parameter 1', 'parameter 2', 'parameter 3']
+        for parameterName in parameterNames:
+            parameter = self.builder.addPomsetParameter(
+                pomset, parameterName, attributes)
+            pass
+        for sourceParameterName, targetParameterName in zip(
+            parameterNames[:-1], parameterNames[1:]):
+            self.builder.addParameterOrdering(
+                pomset, sourceParameterName, targetParameterName)
+            pass
+        return pomset
+
+    def testRemoveParameter3(self):
+        pomset = self.createPomsetToTestRemoveParameter()
+
+        parameterOrderings = pomset.parameterOrderingTable()
+        self.assertTrue(parameterOrderings.rowCount() == 2)
+
+        self.builder.removePomsetParameter(pomset, 'parameter 1')
+        self.assertTrue(parameterOrderings.rowCount() == 1)
+
+        return
+
+    def testRemoveParameter4(self):
+        pomset = self.createPomsetToTestRemoveParameter()
+
+        parameterOrderings = pomset.parameterOrderingTable()
+        self.assertTrue(parameterOrderings.rowCount() == 2)
+
+        self.builder.removePomsetParameter(pomset, 'parameter 2')
+        self.assertTrue(parameterOrderings.rowCount() == 0)
+
+        return
+
+    def testRemoveParameter5(self):
+        pomset = self.createPomsetToTestRemoveParameter()
+
+        parameterOrderings = pomset.parameterOrderingTable()
+        self.assertTrue(parameterOrderings.rowCount() == 2)
+
+        self.builder.removePomsetParameter(pomset, 'parameter 3')
+        self.assertTrue(parameterOrderings.rowCount() == 1)
+
+        return
+
+
+
     def testAddParameterToAtomicPomset1(self):
         """
         test for basic input value (non-file) parameter

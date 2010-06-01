@@ -19,16 +19,31 @@ class Builder(object):
         nodeToEdit.setParameterBinding(parameterToEdit.id(), value)
         return
 
+
     def removePomsetParameter(self, pomset, parameterName):
 
         if parameterName in [DefinitionModule.Definition.SYMBOL_INPUT_TEMPORAL,
                              DefinitionModule.Definition.SYMBOL_OUTPUT_TEMPORAL]:
             raise ValueError('cannot remove parameters defined by the system')
 
+
+        parameterOrderings = pomset.parameterOrderingTable()
+        filter = FilterModule.constructOrFilter()
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'source',
+                FilterModule.EquivalenceFilter(parameterName)))
+        filter.addFilter(
+            RelationalModule.ColumnValueFilter(
+                'target',
+                FilterModule.EquivalenceFilter(parameterName)))
+        parameterOrderings.removeRows(filter)
+
         parameter = pomset.getParameter(parameterName)
         pomset.removeParameter(parameter)
         return
         
+
     def addPomsetParameter(self, pomset, parameterName, attributes, 
                            parameterClass=ParameterModule.DataParameter):
 
