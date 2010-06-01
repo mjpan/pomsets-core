@@ -1,10 +1,13 @@
 import os
 import unittest
 
+import pypatterns.filter as FilterModule
+import pypatterns.relational as RelationalModule
+
 import pomsets.builder as BuilderModule
 import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
-
+import pomsets.parameter as ParameterModule
 
 
 def createTestPomset1(builder):
@@ -30,6 +33,29 @@ def createTestPomset1(builder):
     
     return compositeDefinition
 
+
+def createTestPomset2(builder):
+    path = ['', 'bin', 'foo']
+    executableObject = builder.createExecutableObject(path)
+
+    pomsetContext = builder.createNewAtomicPomset(
+        executableObject=executableObject)
+    pomset = pomsetContext.pomset()
+
+    attributes = {
+        'direction':ParameterModule.PORT_DIRECTION_INPUT,
+        }
+    parameterNames = ['parameter 1', 'parameter 2', 'parameter 3']
+    for parameterName in parameterNames:
+        parameter = builder.addPomsetParameter(
+            pomset, parameterName, attributes)
+        pass
+    for sourceParameterName, targetParameterName in zip(
+        parameterNames[:-1], parameterNames[1:]):
+        builder.addParameterOrdering(
+            pomset, sourceParameterName, targetParameterName)
+        pass
+    return pomset
 
 
 class TestDefinition1(unittest.TestCase):
@@ -610,3 +636,201 @@ class TestParameterToEdit3(unittest.TestCase):
     # END class TestParameterToEdit3
     pass
 
+
+class TestRenameParameter1(unittest.TestCase):
+
+    def setUp(self):
+
+        self.builder = BuilderModule.Builder()
+
+        pomset = createTestPomset2(self.builder)
+        self.pomset = pomset
+
+        return
+
+
+    def test1(self):
+
+        pomset = self.pomset
+        
+        originalName = 'parameter 1'
+        newName = 'parameter x'
+
+        self.assertTrue(pomset.hasParameter(originalName))
+        parameter = pomset.getParameter(originalName)
+
+        filterList = [
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(originalName)), 1),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(originalName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(newName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(newName)), 0)]
+
+        for filter, count in filterList:
+            orderings = [
+                x for x in pomset.parameterOrderingTable().retrieve(filter)]
+            self.assertTrue(len(orderings) == count)
+            pass
+
+        pomset.renameParameter(originalName, newName)
+        
+        self.assertFalse(pomset.hasParameter(originalName))
+        self.assertTrue(pomset.hasParameter(newName))
+
+
+        filterList = [
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(originalName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(originalName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(newName)), 1),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(newName)), 0)]
+
+        for filter, count in filterList:
+            orderings = [
+                x for x in pomset.parameterOrderingTable().retrieve(filter)]
+            self.assertTrue(len(orderings) == count)
+            pass
+           
+            
+
+        return
+
+
+    def test2(self):
+
+        pomset = self.pomset
+        
+        originalName = 'parameter 2'
+        newName = 'parameter x'
+
+        self.assertTrue(pomset.hasParameter(originalName))
+        parameter = pomset.getParameter(originalName)
+
+        filterList = [
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(originalName)), 1),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(originalName)), 1),
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(newName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(newName)), 0)]
+
+        for filter, count in filterList:
+            orderings = [
+                x for x in pomset.parameterOrderingTable().retrieve(filter)]
+            self.assertTrue(len(orderings) == count)
+            pass
+
+        pomset.renameParameter(originalName, newName)
+        
+        self.assertFalse(pomset.hasParameter(originalName))
+        self.assertTrue(pomset.hasParameter(newName))
+
+
+        filterList = [
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(originalName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(originalName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(newName)), 1),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(newName)), 1)]
+
+        for filter, count in filterList:
+            orderings = [
+                x for x in pomset.parameterOrderingTable().retrieve(filter)]
+            self.assertTrue(len(orderings) == count)
+            pass
+           
+            
+
+        return
+
+
+    def test3(self):
+
+        pomset = self.pomset
+        
+        originalName = 'parameter 3'
+        newName = 'parameter x'
+
+        self.assertTrue(pomset.hasParameter(originalName))
+        parameter = pomset.getParameter(originalName)
+
+        filterList = [
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(originalName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(originalName)), 1),
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(newName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(newName)), 0)]
+
+        for filter, count in filterList:
+            orderings = [
+                x for x in pomset.parameterOrderingTable().retrieve(filter)]
+            self.assertTrue(len(orderings) == count)
+            pass
+
+        pomset.renameParameter(originalName, newName)
+        
+        self.assertFalse(pomset.hasParameter(originalName))
+        self.assertTrue(pomset.hasParameter(newName))
+
+
+        filterList = [
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(originalName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(originalName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'source',
+                    FilterModule.EquivalenceFilter(newName)), 0),
+            (RelationalModule.ColumnValueFilter(
+                    'target',
+                    FilterModule.EquivalenceFilter(newName)), 1)]
+
+        for filter, count in filterList:
+            orderings = [
+                x for x in pomset.parameterOrderingTable().retrieve(filter)]
+            self.assertTrue(len(orderings) == count)
+            pass
+           
+            
+
+        return
+
+
+    # END class TestRenameParameter1
+    pass

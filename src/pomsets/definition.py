@@ -193,6 +193,19 @@ class Definition(ResourceModule.Struct):
             parameter.id(newName)
             parameter.name(newName)
             pass
+
+        # update the parameter orderings table
+        # so that it holds the new name
+        filter = FilterModule.TRUE_FILTER
+        for row in self.parameterOrderingTable().retrieveForModification(filter):
+            sourceParameterName = row.getColumn('source')
+            if sourceParameterName == originalName:
+                row.setColumn('source', newName)
+            targetParameterName = row.getColumn('target')
+            if targetParameterName == originalName:
+                row.setColumn('target', newName)
+            pass
+
         return
 
 
