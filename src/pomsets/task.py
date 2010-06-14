@@ -62,6 +62,9 @@ class Task(DefinitionModule.ParameterBindingsHolder, TaskModule.Task):
         pass
 
 
+    def name(self, *args, **kwds):
+        return 'task for %s' % self.definition().name()
+
     def hasParentTask(self):
         return self.parentTask() is not None
 
