@@ -120,6 +120,9 @@ class Context(ResourceModule.Struct):
     def getParameterToEdit(self, definition, parameterName):
         nodeToEdit, parameterToEdit = \
             definition.getParameterToEdit(parameterName)
+
+        # cannot edit the definition directly
+        # instead, edit the reference to the definition
         if nodeToEdit is self.pomset():
             nodeToEdit = self.reference()
 

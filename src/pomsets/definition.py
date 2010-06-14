@@ -4,11 +4,12 @@ import subprocess
 import time
 
 import pypatterns.filter as FilterModule
-import pomsets.graph as GraphModule
 import pypatterns.relational as RelationalModule
-import pomsets.resource as ResourceModule
 
+import pomsets.error as ErrorModule
+import pomsets.graph as GraphModule
 import pomsets.parameter as ParameterModule
+import pomsets.resource as ResourceModule
 
 
 def doTask(task, *args, **kwds):
@@ -36,17 +37,27 @@ class ParameterBindingsHolder(ResourceModule.Struct):
     def setParameterBinding(self, key, value):
         logging.debug(
             'setting key "%s" to values "%s" to %s\'s parameter bindings' % 
-            (key, value, self))       
+            (key, value, self.name()))
 
         self.parameterBindings()[key] = value
     
     def getParameterBinding(self, key):
         if not self.hasParameterBinding(key):
-            raise KeyError('%s not in %s\'s parameter bindings' % (key, self))
+            raise KeyError('"%s" not in "%s"\'s parameter bindings' % (key, self.name()))
         return self.parameterBindings()[key]
         
     def hasParameterBinding(self, key):
         return key in self.parameterBindings()
+
+    def validateParameterBindings(self):
+        errors = [x for x in self.parameterBindingErrors()]
+        if len(errors) == 0:
+            return
+        raise ErrorModule.ValidationError(errors)
+
+    def parameterBindingErrors(self):
+        raise NotImplementedError(
+            'need to implement method to determine the parameter binding errors')
 
     # END class ParameterBindingsHolder
     pass
@@ -978,6 +989,33 @@ class CompositeDefinition(GraphModule.Graph, Definition,
         return allNodes.difference(sourceNodes)
 
 
+    def parameterBindingErrors(self):
+
+        for node in self.nodes():
+            # these are all the possible errors for the node
+            nodeErrors = [x for x in node.parameterBindingErrors()]
+
+            # now iterate through the error
+            # and if the error indicates that 
+            # and if it's for a parameter that's actually connected
+            for parameter, nodeError in nodeErrors:
+                if not isinstance(nodeError, KeyError):
+                    continue
+
+                # if the actual parameter to edit
+                # is not the one specified by the error
+                # then that means we can ignore this error
+                nodeToEdit, parameterToEdit = \
+                    node.getParameterToEdit(parameter.id())
+                if not (nodeToEdit is node and parameterToEdit is parameter):
+                    continue
+
+                yield (parameter, nodeError)
+                
+            pass
+
+        raise StopIteration
+
     
     def functionToExecute(self):
         return doTask
@@ -1661,6 +1699,21 @@ class ReferenceDefinition(GraphModule.Node, ParameterBindingsHolder):
         return parameterFilter
 
 
+    def parameterBindingErrors(self):
+        filter = self.getFilterForCommandlineArguments()
+        for parameter in self.getParametersByFilter(filter):
+            key = parameter.id()
+            if not self.hasParameterBinding(key):
+                yield (parameter, KeyError('"%s" not in "%s"\'s parameter bindings' % (key, self.name())))
+
+        definition = self.definitionToReference()
+        if not definition.isAtomic():
+            # now iterate through all the nodes 
+            # and check whether all have been validated
+            for error in definition.parameterBindingErrors():
+                yield error
+            
+        raise StopIteration
 
     
     # END class ReferenceDefinition

@@ -17,3 +17,6 @@ class NodeNotExistError(PomsetError):
 class InvalidValueError(PomsetError):
     pass
 
+class ValidationError(PomsetError):
+    pass
+

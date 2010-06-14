@@ -14,7 +14,10 @@ setup(
     install_requires = [
         'cloudpool>=0.1.3',
         'pypatterns>=0.1.1',
-        'Reaction>=0.2',
+        # there's a problem, because PyPi
+        # can't seem to find this older version of Contextual_fork
+        # 'Contextual_fork==0.3.r1583',
+        'Reaction==0.2_r282',
         'simplejson>=2.0.9'
         ],
 

@@ -7,8 +7,9 @@ import pypatterns.relational as RelationalModule
 import pomsets.builder as BuilderModule
 import pomsets.context as ContextModule
 import pomsets.definition as DefinitionModule
+import pomsets.error as ErrorModule
 import pomsets.parameter as ParameterModule
-
+import pomsets.test_utils as TestUtilsModule
 
 def createTestPomset1(builder):
 
@@ -833,4 +834,83 @@ class TestRenameParameter1(unittest.TestCase):
 
 
     # END class TestRenameParameter1
+    pass
+
+
+class TestParameterBindingErrors(unittest.TestCase):
+
+
+    def setUp(self):
+
+        self.builder = BuilderModule.Builder()
+
+        return
+
+
+    def test1(self):
+        pomset = createTestPomset1(self.builder)
+        context = ContextModule.wrapPomsetInContext(pomset)
+
+        errors = [x for x in context.reference().parameterBindingErrors()]
+        self.assertEquals(len(errors), 2)
+        for expectedInfo, actualInfo in zip([
+                ('input file', KeyError),
+                ('output file', KeyError)], errors):
+            expectedParameterName, expectedErrorClass = expectedInfo
+            actualParameter, actualError = actualInfo
+            self.assertEquals(expectedParameterName, actualParameter.id())
+            self.assertEquals(expectedErrorClass, actualError.__class__)
+            pass
+
+        self.assertRaises(ErrorModule.ValidationError,
+                          context.reference().validateParameterBindings)
+        return
+
+
+    def test2(self):
+        pomset = createTestPomset2(self.builder)
+
+        context = ContextModule.wrapPomsetInContext(pomset)
+
+        errors = [x for x in context.reference().parameterBindingErrors()]
+        self.assertEquals(len(errors), 3)
+        for expectedInfo, actualInfo in zip([
+                ('parameter 1', KeyError),
+                ('parameter 2', KeyError),
+                ('parameter 3', KeyError)], errors):
+            expectedParameterName, expectedErrorClass = expectedInfo
+            actualParameter, actualError = actualInfo
+            self.assertEquals(expectedParameterName, actualParameter.id())
+            self.assertEquals(expectedErrorClass, actualError.__class__)
+            pass
+
+        self.assertRaises(ErrorModule.ValidationError,
+                          context.reference().validateParameterBindings)
+
+        return
+
+
+    def test3(self):
+        pomset = TestUtilsModule.createPomsetContainingParameterSweep()
+
+        context = ContextModule.wrapPomsetInContext(pomset)
+
+        errors = [x for x in context.reference().parameterBindingErrors()]
+        self.assertEquals(len(errors), 3)
+        for expectedInfo, actualInfo in zip([
+                ('output file', KeyError),
+                ('input file', KeyError),
+                ('output file', KeyError)], errors):
+            expectedParameterName, expectedErrorClass = expectedInfo
+            actualParameter, actualError = actualInfo
+            self.assertEquals(expectedParameterName, actualParameter.id())
+            self.assertEquals(expectedErrorClass, actualError.__class__)
+            pass
+
+        self.assertRaises(ErrorModule.ValidationError,
+                          context.reference().validateParameterBindings)
+
+        return
+
+    # END class TestParameterBindingErrors
     pass
