@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pomsets-core',
-    version='1.0.7',
+    version='1.0.8',
     packages=find_packages(
         'src',exclude=["*.test", "*.test.*", "test.*", "test",
                        "*.utils", "*.utils.*", "utils.*", "utils",]),
@@ -13,7 +13,7 @@ setup(
         ],
     install_requires = [
         'cloudpool>=0.1.3',
-        'pypatterns>=0.1.1',
+        'pypatterns>=0.1.2',
         'Reaction>=0.2.2',
         'simplejson>=2.0.9'
         ],
