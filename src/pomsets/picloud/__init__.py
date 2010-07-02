@@ -21,6 +21,16 @@ class CommandBuilder(PythonModule.CommandBuilder):
 
 class PythonEval(PythonModule.PythonEval):
 
+    KEY_TICKET_ID = 'picloud ticket id'
+
+    def kill(self, task, *args, **kargs):
+        request = task.workRequest()
+        if PythonEval.KEY_TICKET_ID in request.kwds:
+            ticketId = request.kwds[PythonEval.KEY_TICKET_ID]
+            cloud.kill(ticketId)
+        return
+
+
     def evalResult(self, task, command):
         # NOTE:
         # the import needs to be in the same function
@@ -31,8 +41,13 @@ class PythonEval(PythonModule.PythonEval):
             module = PythonEval.importModule(moduleName)
         import cloud
 
-        evalResult = eval(command)
-        return evalResult
+        ticketId = eval(command)
+
+        # store off the ticket id immediately
+        request = task.workRequest()
+        request.kwds[PythonEval.KEY_TICKET_ID] = ticketId
+
+        return ticketId
 
 
     def storeEvalResult(self, task, evalResult):
@@ -44,9 +59,6 @@ class PythonEval(PythonModule.PythonEval):
 
         ticketId = evalResult
         evalResult = cloud.result(ticketId)
-
-        request = task.workRequest()
-        request.kwds['picloud ticket id'] = ticketId
 
         PythonModule.PythonEval.storeEvalResult(self, task, evalResult)
 
