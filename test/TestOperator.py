@@ -16,7 +16,7 @@ import pomsets.task as TaskModule
 import pomsets.test_utils as TestUtilsModule
 
 
-import TestExecute as BaseModule
+import test.TestExecute as BaseModule
 
 
 class TestPythonFunction(unittest.TestCase):
@@ -53,7 +53,7 @@ class TestPythonCommandBuilder(unittest.TestCase):
 
         self.functionName = 'testFunction'
         self.executableObject = self.builder.createExecutableObject(
-            ['', self.functionName],
+            [None, self.functionName],
             executableClass=PythonModule.Function)
 
         parentContext = self.builder.createNewNestPomset(name='root')
@@ -858,5 +858,5 @@ class TestStringReplace1(BaseModule.BaseTestClass, unittest.TestCase):
         return 
 
 
-    # END class TestMakeDirs1
+    # END class TestStringReplace1
     pass

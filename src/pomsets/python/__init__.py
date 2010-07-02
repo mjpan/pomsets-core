@@ -31,16 +31,19 @@ class Function(CommandModule.Executable):
 
 class CommandBuilder(TaskModule.CommandBuilder):
 
-    def buildCommand(self, task):
-        workRequest = task.workRequest()
-
-        
+    def getFunctionName(self, task):
         # get the function name
         functionName = task.definition().executable().name()
-        
+
+        moduleName = task.definition().executable().module()
+        if moduleName is not None:
+            functionName = '.'.join(['module', functionName])
+
+        return functionName
+
+    def getArguments(self, task):
 
         parameterBindings = task.parameterBindings()
-    
 
         parameterFilter = task.definition().getFilterForCommandlineArguments()
     
@@ -64,7 +67,6 @@ class CommandBuilder(TaskModule.CommandBuilder):
             else:
                 value = str(value)
 
-            # TODO:
             # need to determine if should pass as keyword
             # and if so, need to retrieve the keyword
             if parameter.getAttribute(ParameterModule.PORT_ATTRIBUTE_KEYWORD):
@@ -74,13 +76,29 @@ class CommandBuilder(TaskModule.CommandBuilder):
             commandArgList.append(value)
             pass
 
+        return commandArgList
+
+
+    def buildEvalString(self, functionName, arguments):
         commandList = []
         commandList.append(functionName)
         commandList.append('(')
-        commandList.append(', '.join(commandArgList))
+        commandList.append(', '.join(arguments))
         commandList.append(')')
 
         command = ''.join(commandList)
+        return command
+
+
+    def buildCommand(self, task):
+        workRequest = task.workRequest()
+
+        
+        # get the function name
+        functionName = self.getFunctionName(task)
+        arguments = self.getArguments(task)
+
+        command = self.buildEvalString(functionName, arguments)
         return command
     
     # END class CommandBuilder
@@ -103,7 +121,27 @@ class PythonEval(EnvironmentModule.Environment):
 
         return module
 
-    
+
+    def storeEvalResult(self, task, evalResult):
+        request = task.workRequest()
+        request.kwds['eval result'] = evalResult
+        task.setParameterBinding('eval result', evalResult)
+        return
+
+
+    def evalResult(self, task, command):
+        # NOTE:
+        # the import needs to be in the same function
+        # as the eval() call
+        moduleName = task.definition().executable().module()
+        module = None
+        if moduleName is not None:
+            module = PythonEval.importModule(moduleName)
+
+        evalResult = eval(command)
+        return evalResult
+
+
     def execute(self, task, *args, **kargs):
 
         request = task.workRequest()
@@ -112,20 +150,12 @@ class PythonEval(EnvironmentModule.Environment):
 
         command = commandBuilder.buildCommand(task)
 
-
-        # evalResult = eval(command)
-        moduleName = task.definition().executable().module()
-        if moduleName is not None:
-            module = PythonEval.importModule(moduleName)
-            command = '.'.join(['module', command])
-
         request.kwds['executed command'] = [command]
         logging.debug('%s executing command "%s"' % (self.__class__, command))
 
-        evalResult = eval(command)
+        evalResult = self.evalResult(task, command)
 
-        request.kwds['eval result'] = evalResult
-        task.setParameterBinding('eval result', evalResult)
+        self.storeEvalResult(task, evalResult)
 
         return 0
 
