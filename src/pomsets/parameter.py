@@ -20,6 +20,7 @@ PORT_ATTRIBUTE_ISOPTIONAL = 'isOptional'
 PORT_ATTRIBUTE_DESCRIPTION = 'description'
 PORT_ATTRIBUTE_KEYWORD = 'isKeyword'
 PORT_ATTRIBUTE_KEYWORDTOPASS = 'keywordToPass'
+PORT_ATTRIBUTE_DATATYPE = 'datatype'
 
 
 # these are actually dynamic parameter attributes
