@@ -102,11 +102,15 @@ class Context(ResourceModule.Struct):
         'isModified',
         'pomset',
         'reference',
-        'url'
+        'url',
+        'executeEnvironments',
+        'commandBuilders'
         ]
 
     def __init__(self):
         ResourceModule.Struct.__init__(self)
+        self.executeEnvironments([])
+        self.commandBuilders([])
         return
     
     def getContextPathFor(self, pomset):
@@ -127,6 +131,65 @@ class Context(ResourceModule.Struct):
             nodeToEdit = self.reference()
 
         return (nodeToEdit, parameterToEdit)
+
+
+    def addExecuteEnvironment(self, key, path):
+        # TODO:
+        # verify that it's a valid path
+        if self.executeEnvironments() is None:
+            self.executeEnvironments([])
+        self.executeEnvironments().append((key, path))
+        return
+
+    def overlayExecuteEnvironments(self, baseValues):
+        execEnvs = self.executeEnvironments()
+
+        # this check is legacy
+        # for people who have pomsets that do not have this attribute
+        # initialized by default
+        if execEnvs is None:
+            return
+
+        return self.overlayObjects(baseValues, execEnvs)
+
+
+    def addCommandBuilder(self, key, path):
+        # TODO:
+        # verify that it's a valid path
+        if self.commandBuilders() is None:
+            self.commandBuilders([])
+        self.commandBuilders().append((key, path))
+        return
+
+    def overlayCommandBuilders(self, baseValues):
+        commandBuilders = self.commandBuilders()
+
+        # this check is legacy
+        # for people who have pomsets that do not have this attribute
+        # initialized by default
+        if commandBuilders is None:
+            return
+
+        return self.overlayObjects(baseValues, commandBuilders)
+
+
+    def overlayObjects(self, baseValues, objectPaths):
+        import pomsets.python
+        for key, path in objectPaths:
+            index = path.rfind('.')
+
+            classObj = None
+            if index == -1:
+                # no "." found, so import directly
+                raise NotImplementedError('not implemented for non-namespaced modules')
+            else:
+                moduleName = path[:index]
+                module = pomsets.python.PythonEval.importModule(moduleName)
+                classObj = getattr(module, path[index+1:])
+            instanceObj = classObj()
+            baseValues[key] = instanceObj
+            pass
+        return
 
     # END class Context
     pass
